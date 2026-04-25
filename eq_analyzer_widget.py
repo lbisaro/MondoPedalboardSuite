@@ -2,7 +2,9 @@ import numpy as np
 import sounddevice as sd
 from PySide6 import QtCore, QtWidgets, QtGui
 import qtawesome as qta
-from ui_utils import FrequencyPlotWidget, apply_smoothing
+from pathlib import Path
+from ui_utils import FrequencyPlotWidget, apply_smoothing, sanitize_filename
+from audio_comparator import AudioComparator
 
 # --- CONFIGURACIÓN DE AUDIO Y DSP ---
 SAMPLE_RATE = 48000
@@ -125,6 +127,10 @@ class EQAnalyzerWidget(QtWidgets.QWidget):
         self.main_window = main_window
         # Diccionario de {nombre: objeto_curva_de_pyqtgraph}
         self.active_ref_curves = {} 
+        self.comparator = AudioComparator()
+        self.refs_path = Path("./user_data/eq_references")
+        self.refs_path.mkdir(parents=True, exist_ok=True)
+        
         self.init_ui()
         self.refresh_ref_list()
 
@@ -225,24 +231,55 @@ class EQAnalyzerWidget(QtWidgets.QWidget):
             self.curve.setData(self.analyzer.freqs, smoothed)
             
         # Actualizar todas las curvas de referencia activas
-        settings = self.main_window.load_settings()
-        refs = settings.get("references", {})
-        
         for name, curve_obj in self.active_ref_curves.items():
-            if name in refs:
-                ref_data = refs[name]
-                curve_obj.setData(ref_data["freqs"], ref_data["values"])
+            path = self.refs_path / f"{name}.mndEqRef"
+            if path.exists():
+                try:
+                    # En una app real, podríamos cachear los datos en memoria
+                    # para no leer del disco 30 veces por segundo.
+                    # Por ahora lo dejamos así o cacheamos en la clase.
+                    if not hasattr(self, '_ref_cache'): self._ref_cache = {}
+                    if name not in self._ref_cache:
+                        freqs, values = self.comparator.load_eq_reference(str(path))
+                        self._ref_cache[name] = (freqs, values)
+                    
+                    freqs, values = self._ref_cache[name]
+                    curve_obj.setData(freqs, values)
+                except: pass
 
     def refresh_ref_list(self):
         self.list_refs.clear()
-        settings = self.main_window.load_settings()
-        refs = settings.get("references", {})
-        for name in refs.keys():
+        self.migrate_references_to_files()
+        
+        for f in self.refs_path.glob("*.mndEqRef"):
+            name = f.stem
             item = QtWidgets.QListWidgetItem(self.list_refs)
             widget = ReferenceItemWidget(name, self.list_refs, self)
             item.setSizeHint(widget.sizeHint())
             self.list_refs.addItem(item)
             self.list_refs.setItemWidget(item, widget)
+
+    def migrate_references_to_files(self):
+        """Migra referencias de settings.json a archivos .mndEqRef"""
+        settings = self.main_window.load_settings()
+        refs = settings.get("references", {})
+        if not refs: return
+        
+        migrated = False
+        for name, data in refs.items():
+            safe_name = sanitize_filename(name)
+            path = self.refs_path / f"{safe_name}.mndEqRef"
+            if not path.exists():
+                try:
+                    self.comparator.save_eq_reference(str(path), np.array(data["freqs"]), np.array(data["values"]))
+                    migrated = True
+                except Exception as e:
+                    print(f"Error migrando referencia {name}: {e}")
+        
+        if migrated:
+            # settings.pop("references", None)
+            # self.main_window.save_settings(settings)
+            pass
 
     def toggle_reference_visibility(self, name, visible):
         if visible:
@@ -250,11 +287,16 @@ class EQAnalyzerWidget(QtWidgets.QWidget):
                 # Añadir curva al gráfico (usamos un color naranja/amarillo para refs)
                 new_curve = self.plot_widget.add_curve(name, color='#FFAC41', width=1.5)
                 self.active_ref_curves[name] = new_curve
+                # Limpiar cache para forzar recarga
+                if hasattr(self, '_ref_cache') and name in self._ref_cache:
+                    del self._ref_cache[name]
         else:
             if name in self.active_ref_curves:
                 # Quitar curva del gráfico
                 self.plot_widget.plotItem.removeItem(self.active_ref_curves[name])
                 del self.active_ref_curves[name]
+                if hasattr(self, '_ref_cache') and name in self._ref_cache:
+                    del self._ref_cache[name]
 
     def on_ref_clicked(self, item):
         # Al hacer click en el item, disparamos el toggle del widget (ojo)
@@ -271,21 +313,29 @@ class EQAnalyzerWidget(QtWidgets.QWidget):
             
         name, ok = QtWidgets.QInputDialog.getText(self, "Guardar Referencia", "Nombre de la curva:")
         if ok and name.strip():
-            settings = self.main_window.load_settings()
-            if "references" not in settings: settings["references"] = {}
-            settings["references"][name.strip()] = {
-                "freqs": self.analyzer.freqs.tolist(),
-                "values": smoothed.tolist()
-            }
-            self.main_window.save_settings(settings)
-            self.refresh_ref_list()
+            safe_name = sanitize_filename(name.strip())
+            path = self.refs_path / f"{safe_name}.mndEqRef"
+            
+            if path.exists():
+                reply = QtWidgets.QMessageBox.question(self, "Referencia existente", 
+                                                     f"La referencia '{safe_name}' ya existe. ¿Sobrescribir?",
+                                                     QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
+                if reply == QtWidgets.QMessageBox.No: return
+            
+            try:
+                self.comparator.save_eq_reference(str(path), self.analyzer.freqs, smoothed)
+                self.refresh_ref_list()
+            except Exception as e:
+                QtWidgets.QMessageBox.critical(self, "Error", f"No se pudo guardar: {e}")
 
     def delete_reference(self, name): 
         # Asegurarse de quitar la curva si estaba visible
         self.toggle_reference_visibility(name, False)
         
-        settings = self.main_window.load_settings()
-        if "references" in settings and name in settings["references"]:
-            del settings["references"][name]
-            self.main_window.save_settings(settings)
-            self.refresh_ref_list()
+        path = self.refs_path / f"{name}.mndEqRef"
+        if path.exists():
+            try:
+                os.remove(path)
+                self.refresh_ref_list()
+            except Exception as e:
+                QtWidgets.QMessageBox.critical(self, "Error", f"No se pudo eliminar: {e}")

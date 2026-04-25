@@ -28,8 +28,11 @@ class AudioComparator:
         # 1. Sonoridad Percibida (LUFS)
         try:
             lufs = self.meter.integrated_loudness(audio_stereo)
+            # Evitar -infinito para compatibilidad con JSON
+            if np.isinf(lufs):
+                lufs = -99.0
         except Exception:
-            lufs = -np.inf
+            lufs = -99.0
 
         # 2. Max Peak
         max_peak = np.max(np.abs(audio))
@@ -37,7 +40,8 @@ class AudioComparator:
 
         # 3. Factor de Cresta y PLR
         # PLR = Peak to Loudness Ratio
-        plr = max_peak_db - lufs if lufs != -np.inf else 0
+        # Si es silencio (lufs muy bajo), el PLR no tiene sentido
+        plr = max_peak_db - lufs if lufs > -90.0 else 0.0
 
         # 4. Análisis Espectral Promediado (Long-term Average Spectrum)
         # Dividimos el audio en bloques, calculamos FFT y promediamos magnitudes.
@@ -102,3 +106,55 @@ class AudioComparator:
         gain_db = target_lufs - current_lufs
         gain_linear = 10 ** (gain_db / 20.0)
         return audio * gain_linear
+
+    def save_guitar_di(self, path, audio, sample_rate, metrics):
+        """
+        Guarda el audio y sus métricas en un único archivo binario (.mondodi).
+        """
+        import pickle
+        data = {
+            "version": "1.0",
+            "audio": audio,
+            "sample_rate": sample_rate,
+            "metrics": {
+                "lufs": metrics["lufs"],
+                "max_peak_db": metrics["max_peak_db"],
+                "plr": metrics["plr"],
+                "avg_spectrum": metrics["avg_spectrum"],
+                "freqs": metrics["freqs"],
+                "phase_corr": metrics.get("phase_corr", 0)
+            }
+        }
+        with open(path, 'wb') as f:
+            pickle.dump(data, f)
+
+    def load_guitar_di(self, path):
+        """
+        Carga un archivo .mondodi y devuelve el audio y las métricas.
+        """
+        import pickle
+        with open(path, 'rb') as f:
+            data = pickle.load(f)
+        return data["audio"], data["sample_rate"], data["metrics"]
+
+    def save_eq_reference(self, path, freqs, values):
+        """
+        Guarda una referencia de EQ en un archivo binario (.mndEqRef).
+        """
+        import pickle
+        data = {
+            "version": "1.0",
+            "freqs": freqs,
+            "values": values
+        }
+        with open(path, 'wb') as f:
+            pickle.dump(data, f)
+
+    def load_eq_reference(self, path):
+        """
+        Carga una referencia de EQ desde un archivo .mndEqRef.
+        """
+        import pickle
+        with open(path, 'rb') as f:
+            data = pickle.load(f)
+        return data["freqs"], data["values"]

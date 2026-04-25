@@ -19,11 +19,13 @@ class AudioDeviceDialog(QtWidgets.QDialog):
         self.device_combo = QtWidgets.QComboBox()
         self.in_combo = QtWidgets.QComboBox()
         self.out_combo = QtWidgets.QComboBox()
+        self.di_in_combo = QtWidgets.QComboBox()
         
         form.addRow("Driver (Host API):", self.driver_combo)
         form.addRow("Dispositivo:", self.device_combo)
         form.addRow("Canal Salida (PedalBoard In):", self.out_combo)
         form.addRow("Canal Entrada (PedalBoard Out):", self.in_combo)
+        form.addRow("Canal Entrada (DI Record):", self.di_in_combo)
         layout.addLayout(form)
         
         # Informativo
@@ -112,13 +114,14 @@ class AudioDeviceDialog(QtWidgets.QDialog):
             
         in_id, out_id = device_data
         try:
-            curr_in, curr_out = self.in_combo.currentData(), self.out_combo.currentData()
-            self.in_combo.clear(); self.out_combo.clear()
+            curr_in, curr_out, curr_di = self.in_combo.currentData(), self.out_combo.currentData(), self.di_in_combo.currentData()
+            self.in_combo.clear(); self.out_combo.clear(); self.di_in_combo.clear()
             
             if in_id is not None:
                 in_info = sd.query_devices(in_id)
                 for i in range(1, in_info['max_input_channels'] + 1):
                     self.in_combo.addItem(f"Channel {i}", i)
+                    self.di_in_combo.addItem(f"Channel {i}", i)
 
             if out_id is not None:
                 out_info = sd.query_devices(out_id)
@@ -131,6 +134,9 @@ class AudioDeviceDialog(QtWidgets.QDialog):
             if curr_out:
                 idx = self.out_combo.findData(curr_out)
                 if idx >= 0: self.out_combo.setCurrentIndex(idx)
+            if curr_di:
+                idx = self.di_in_combo.findData(curr_di)
+                if idx >= 0: self.di_in_combo.setCurrentIndex(idx)
                 
         except Exception as e: print(f"Error al obtener canales: {e}")
 
@@ -144,8 +150,10 @@ class AudioDeviceDialog(QtWidgets.QDialog):
                     self.device_combo.setCurrentIndex(dev_idx)
                     in_idx = self.in_combo.findData(conn.get("in_channel"))
                     out_idx = self.out_combo.findData(conn.get("out_channel"))
+                    di_idx = self.di_in_combo.findData(conn.get("di_channel"))
                     if in_idx >= 0: self.in_combo.setCurrentIndex(in_idx)
                     if out_idx >= 0: self.out_combo.setCurrentIndex(out_idx)
+                    if di_idx >= 0: self.di_in_combo.setCurrentIndex(di_idx)
                     return True
         except: pass
         return False
@@ -157,6 +165,7 @@ class AudioDeviceDialog(QtWidgets.QDialog):
             "device_name": self.device_combo.currentText(),
             "in_channel": self.in_combo.currentData(),
             "out_channel": self.out_combo.currentData(),
+            "di_channel": self.di_in_combo.currentData(),
             "device_id": device_data # (in_id, out_id)
         }
 

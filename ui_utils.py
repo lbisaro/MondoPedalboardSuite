@@ -217,3 +217,17 @@ def apply_smoothing(freqs, magnitude_db, fraction):
             smoothed_linear[i] = data_linear[i]
             
     return 20 * np.log10(smoothed_linear + 1e-12)
+
+def sanitize_filename(name):
+    """
+    Limpia un nombre de archivo para evitar caracteres inválidos en Windows y Linux.
+    """
+    import re
+    # Caracteres prohibidos en Windows: < > : " / \ | ? * 
+    # y caracteres de control (0-31)
+    # También evitamos espacios al final o puntos al final (problemas en Windows)
+    s = str(name).strip().replace(' ', '_')
+    s = re.sub(r'(?u)[^-\w.]', '', s)
+    if not s:
+        s = "unnamed"
+    return s

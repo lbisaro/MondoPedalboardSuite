@@ -1,4 +1,5 @@
 import os
+import time
 import numpy as np
 import sounddevice as sd
 import soundfile as sf
@@ -8,7 +9,7 @@ import shutil
 from pathlib import Path
 import qtawesome as qta
 from audio_comparator import AudioComparator
-from ui_utils import FrequencyPlotWidget, apply_smoothing
+from ui_utils import FrequencyPlotWidget, apply_smoothing, sanitize_filename
 
 class PresetCompareWidget(QtWidgets.QWidget):
     def __init__(self, analyzer_core, parent=None):
@@ -20,8 +21,19 @@ class PresetCompareWidget(QtWidgets.QWidget):
         self.preset_a_audio = None
         self.preset_b_audio = None
         
-        self.presets_path = Path("./wav/guitar_di")
-        self.presets_path.mkdir(parents=True, exist_ok=True)
+        self.presets_path = Path("./user_data/di")
+        old_path = Path("./user_data/guitar_di")
+        if old_path.exists() and old_path.is_dir():
+            if not self.presets_path.exists():
+                self.presets_path.mkdir(parents=True, exist_ok=True)
+            for item in old_path.iterdir():
+                if item.is_file():
+                    try: shutil.move(str(item), str(self.presets_path / item.name))
+                    except: pass
+            try: old_path.rmdir()
+            except: pass
+        else:
+            self.presets_path.mkdir(parents=True, exist_ok=True)
         
         self.preset_a_metrics = None
         self.preset_b_metrics = None
@@ -46,15 +58,15 @@ class PresetCompareWidget(QtWidgets.QWidget):
         lbl_lib = QtWidgets.QLabel("GUITAR DI FILES")
         lbl_lib.setStyleSheet("font-weight: bold; color: #00ADB5; font-size: 10pt; letter-spacing: 1px;")
         
-        self.btn_plus = QtWidgets.QPushButton(qta.icon('fa5s.plus', color='#00ADB5'), "")
-        self.btn_plus.setFixedSize(24, 24)
-        self.btn_plus.setToolTip("Importar Preset DI")
-        self.btn_plus.clicked.connect(self.import_preset)
-        self.btn_plus.setStyleSheet("background: transparent; border: 1px solid #333; border-radius: 4px;")
+        self.btn_record_di = QtWidgets.QPushButton(qta.icon('fa5s.microphone', color='#FF4B2B'), "")
+        self.btn_record_di.setFixedSize(24, 24)
+        self.btn_record_di.setToolTip("Grabar DI desde la Pedalboard")
+        self.btn_record_di.clicked.connect(self.record_di)
+        self.btn_record_di.setStyleSheet("background: transparent; border: 1px solid #333; border-radius: 4px;")
         
         header_lib.addWidget(lbl_lib)
         header_lib.addStretch()
-        header_lib.addWidget(self.btn_plus)
+        header_lib.addWidget(self.btn_record_di)
         left_layout.addLayout(header_lib)
         
         self.list_presets = QtWidgets.QListWidget()
@@ -137,8 +149,15 @@ class PresetCompareWidget(QtWidgets.QWidget):
         self.btn_stop.setVisible(False)
         self.btn_stop.clicked.connect(self.stop_capture)
         
+        self.btn_cancel_record = QtWidgets.QPushButton("CANCELAR")
+        self.btn_cancel_record.setFixedSize(80, 24)
+        self.btn_cancel_record.setStyleSheet("background-color: #555; color: white; font-size: 10pt; padding: 3px; font-weight: bold; border: none;")
+        self.btn_cancel_record.setVisible(False)
+        self.btn_cancel_record.clicked.connect(self.stop_capture)
+        
         prog_layout.addWidget(self.progress)
         prog_layout.addWidget(self.btn_stop)
+        prog_layout.addWidget(self.btn_cancel_record)
         layout.addLayout(prog_layout)
         
         smooth_layout = QtWidgets.QHBoxLayout()
@@ -199,22 +218,271 @@ class PresetCompareWidget(QtWidgets.QWidget):
 
     def refresh_preset_list(self):
         self.list_presets.clear()
-        for f in self.presets_path.glob("*.wav"):
+        # Primero migrar archivos antiguos si existen
+        self.migrate_old_files()
+        
+        for f in self.presets_path.glob("*.mndDI"):
             item = QtWidgets.QListWidgetItem(self.list_presets)
             widget = PresetItemWidget(f.name, self)
             item.setSizeHint(widget.sizeHint())
             self.list_presets.addItem(item)
             self.list_presets.setItemWidget(item, widget)
 
-    def import_preset(self):
-        path, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Importar Preset DI", "", "WAV Files (*.wav)")
-        if path:
-            dest = self.presets_path / os.path.basename(path)
-            if dest.exists():
-                QtWidgets.QMessageBox.warning(self, "Importar", "El archivo ya existe.")
+    def migrate_old_files(self):
+        """Migra archivos antiguos (.wav, .mondodi) al nuevo formato .mndDI"""
+        parent_win = self.window()
+        if not hasattr(parent_win, 'load_settings'): return
+        settings = parent_win.load_settings()
+        di_analysis = settings.get("di_analysis", {})
+        
+        # 1. Migrar .mondodi a .mndDI (solo renombrar)
+        for mondo_file in self.presets_path.glob("*.mondodi"):
+            new_file = mondo_file.with_suffix(".mndDI")
+            if not new_file.exists():
+                try: os.rename(mondo_file, new_file)
+                except: pass
+            else:
+                try: os.remove(mondo_file)
+                except: pass
+
+        # 2. Migrar .wav a .mndDI (convertir)
+        migrated = False
+        for wav_file in self.presets_path.glob("*.wav"):
+            safe_name = sanitize_filename(wav_file.stem)
+            dest_file = self.presets_path / f"{safe_name}.mndDI"
+            if dest_file.exists():
+                try: os.remove(wav_file)
+                except: pass
+                continue
+                
+            try:
+                data, fs = sf.read(str(wav_file))
+                metrics = None
+                if wav_file.name in di_analysis:
+                    cached = di_analysis[wav_file.name]
+                    metrics = {
+                        "lufs": cached["lufs"], "max_peak_db": cached["max_peak_db"], "plr": cached["plr"],
+                        "avg_spectrum": np.array(cached["avg_spectrum"]), "freqs": np.array(cached["freqs"])
+                    }
+                else:
+                    metrics = self.comparator.calculate_metrics(data)
+                
+                if metrics:
+                    self.comparator.save_guitar_di(str(dest_file), data, fs, metrics)
+                    os.remove(wav_file)
+                    migrated = True
+            except Exception as e:
+                print(f"Error migrando {wav_file.name}: {e}")
+        
+        if migrated:
+            # Si migramos todo, podríamos limpiar di_analysis pero mejor lo dejamos 
+            # para cuando estemos seguros de que todo funciona.
+            # settings.pop("di_analysis", None) 
+            # parent_win.save_settings(settings)
+            pass
+
+
+
+    def record_di(self):
+        parent_win = self.window()
+        settings = parent_win.load_settings() if hasattr(parent_win, 'load_settings') else {}
+        if "connection" not in settings or "di_channel" not in settings["connection"] or settings["connection"]["di_channel"] is None:
+            QtWidgets.QMessageBox.warning(self, "Audio", "Configura el dispositivo de audio y el 'Canal Entrada (DI Record)' primero.")
+            return
+            
+        name, ok = QtWidgets.QInputDialog.getText(self, "Grabar DI", "Nombre del archivo:")
+        if not ok or not name.strip(): return
+        
+        safe_name = sanitize_filename(name.strip())
+        filename = f"{safe_name}.mndDI"
+        dest_path = self.presets_path / filename
+        
+        if dest_path.exists():
+            reply = QtWidgets.QMessageBox.question(self, "Archivo existente", 
+                                                 f"El archivo '{filename}' ya existe. ¿Deseas sobrescribirlo?",
+                                                 QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
+            if reply == QtWidgets.QMessageBox.No:
                 return
-            shutil.copy(path, dest)
-            self.refresh_preset_list()
+
+        conn = settings["connection"]
+        device_id = conn["device_id"]
+        di_channel = conn["di_channel"] - 1 # 0-indexed
+        
+        if isinstance(device_id, (list, tuple)):
+            in_id = device_id[0] if device_id[0] is not None else device_id[1]
+        else:
+            in_id = device_id
+            
+        try:
+            dev_info_in = sd.query_devices(in_id)
+            device_sr = int(dev_info_in['default_samplerate'])
+            num_in = min(conn["di_channel"], dev_info_in['max_input_channels'])
+        except Exception as e:
+            QtWidgets.QMessageBox.critical(self, "Error", f"No se pudo consultar el dispositivo: {e}")
+            return
+
+        self.capture_running = True
+        self.capture_state = "waiting" # waiting -> countdown -> recording -> stopped
+        self.recorded_di_data = []
+        self.current_vol = 0
+        self.countdown_start_time = 0
+        self.signal_detected = False
+        
+        # Preparar gráficas para mostrar la entrada en tiempo real
+        self.curve_a.setData([], [])
+        self.curve_b.setData([], [])
+        if self.diff_fill in self.plot_widget.items():
+            self.plot_widget.removeItem(self.diff_fill)
+        self.curve_di.setData([], [])
+        
+        fft_size = 4096
+        self.fft_buffer = np.zeros(fft_size)
+        self.fft_freqs = np.fft.rfftfreq(fft_size, 1 / device_sr)[1:]
+        self.current_spectrum = None
+        
+        was_analyzing = False
+        if hasattr(parent_win, 'conn_mgr') and parent_win.conn_mgr.stream is not None:
+            parent_win.stop_audio()
+            was_analyzing = True
+        if hasattr(parent_win, 'set_btn_capturing'):
+            parent_win.set_btn_capturing(conn)
+            
+        def record_callback(indata, frames, time_info, status):
+            if indata.shape[1] > di_channel:
+                channel_data = indata[:, di_channel]
+                if self.capture_state == "recording":
+                    self.recorded_di_data.append(channel_data.copy())
+                # Calc volume
+                rms = np.sqrt(np.mean(channel_data**2))
+                db = 20 * np.log10(rms + 1e-12)
+                self.current_vol = max(0, min(100, int((db + 60) * (100/60))))
+                
+                # Actualizar buffer para FFT
+                L = len(channel_data)
+                if L > 0:
+                    if L >= fft_size:
+                        self.fft_buffer = channel_data[-fft_size:]
+                    else:
+                        self.fft_buffer = np.roll(self.fft_buffer, -L)
+                        self.fft_buffer[-L:] = channel_data
+                    
+                    window = np.hanning(fft_size)
+                    mag = np.abs(np.fft.rfft(self.fft_buffer * window))[1:] + 1e-12
+                    self.current_spectrum = 20 * np.log10(mag)
+            else:
+                if self.capture_state == "recording":
+                    self.recorded_di_data.append(np.zeros((frames,)))
+
+        def on_action_clicked():
+            if self.capture_state == "waiting":
+                self.capture_state = "countdown"
+                self.countdown_start_time = time.time()
+                self.btn_stop.setEnabled(False)
+            elif self.capture_state == "recording":
+                self.capture_state = "stopped"
+                self.capture_running = False
+
+        try: self.btn_stop.clicked.disconnect()
+        except: pass
+        self.btn_stop.clicked.connect(on_action_clicked)
+
+        self.btn_stop.setText("INICIAR GRABACIÓN")
+        self.btn_stop.setFixedSize(140, 28)
+        self.btn_stop.setStyleSheet("background-color: #00ADB5; color: white; font-size: 10pt; font-weight: bold; border: none; padding: 5px;")
+        self.btn_stop.setVisible(True)
+        self.btn_cancel_record.setVisible(True)
+
+        self.left_panel.setVisible(False)
+        self.lbl_status.setText(f"Listo para grabar: {filename} (Toca la guitarra para probar el volumen)")
+        self.progress.setVisible(True)
+        self.progress.setMaximum(100)
+        self.progress.setValue(0)
+
+        try:
+            with sd.InputStream(device=in_id, channels=num_in, samplerate=device_sr, callback=record_callback):
+                while self.capture_running:
+                    sd.sleep(50)
+                    
+                    if self.capture_state == "countdown":
+                        elapsed = time.time() - self.countdown_start_time
+                        remaining = 5 - int(elapsed)
+                        if remaining <= 0:
+                            self.capture_state = "recording"
+                            self.btn_stop.setEnabled(True)
+                            self.btn_stop.setText("DETENER")
+                            self.btn_stop.setStyleSheet("background-color: #FF4B2B; color: white; font-size: 10pt; font-weight: bold; border: none; padding: 5px;")
+                        else:
+                            self.lbl_status.setText(f"Comenzando en {remaining} segundos... ¡Prepárate!")
+                    
+                    if self.capture_state == "recording":
+                        if self.current_vol >= 5:
+                            self.signal_detected = True
+                            
+                        if self.current_vol < 5 and not self.signal_detected:
+                            self.lbl_status.setText(f"Grabando {filename}... <span style='color: #FF4B2B; font-weight: bold;'>¡SIN SEÑAL!</span>")
+                        else:
+                            self.lbl_status.setText(f"Grabando {filename}... (Recibiendo audio)")
+                    
+                    if self.capture_state in ["waiting", "recording", "countdown"]:
+                        self.progress.setValue(self.current_vol)
+                        if self.current_spectrum is not None:
+                            smooth_txt = self.smooth_sel.currentText()
+                            fraction = 6
+                            if "1/3" in smooth_txt: fraction = 3
+                            elif "1/6" in smooth_txt: fraction = 6
+                            elif "1/12" in smooth_txt: fraction = 12
+                            elif "None" in smooth_txt: fraction = 0
+                            
+                            smoothed = apply_smoothing(self.fft_freqs, self.current_spectrum, fraction)
+                            self.curve_di.setData(self.fft_freqs, smoothed)
+                            
+                    QtWidgets.QApplication.processEvents()
+                    
+            if self.recorded_di_data:
+                final_data = np.concatenate(self.recorded_di_data)
+                
+                # Verificar si se grabó silencio o señal muy baja
+                max_val = np.max(np.abs(final_data))
+                if max_val < 0.001: # Menos de -60dB
+                    QtWidgets.QMessageBox.warning(self, "Señal no detectada", 
+                        "La grabación parece estar en silencio o tiene un nivel extremadamente bajo.\n\n"
+                        "Por favor, verifica:\n"
+                        "1. Que el 'Canal Entrada (DI Record)' sea el correcto.\n"
+                        "2. Que la Pedalboard esté enviando señal por ese canal.\n"
+                        "3. Los niveles de entrada en tu interfaz.")
+                
+                # sf.write(str(dest_path), final_data, device_sr)
+                # Ahora calculamos métricas y guardamos en el nuevo formato
+                self.lbl_status.setText(f"Analizando y guardando {filename}...")
+                QtWidgets.QApplication.processEvents()
+                metrics = self.comparator.calculate_metrics(final_data)
+                self.comparator.save_guitar_di(str(dest_path), final_data, device_sr, metrics)
+                
+                self.refresh_preset_list()
+                QtWidgets.QMessageBox.information(self, "Grabación completada", f"Se guardó exitosamente: {filename}")
+        except Exception as e:
+            QtWidgets.QMessageBox.critical(self, "Error de Grabación", f"Fallo al grabar: {e}")
+        finally:
+            self.capture_running = False
+            self.capture_state = "stopped"
+            self.btn_stop.setEnabled(True)
+            self.btn_stop.setVisible(False)
+            self.btn_cancel_record.setVisible(False)
+            self.left_panel.setVisible(True)
+            self.lbl_status.setText("")
+            self.progress.setVisible(False)
+            
+            try: self.btn_stop.clicked.disconnect()
+            except: pass
+            self.btn_stop.clicked.connect(self.stop_capture)
+            self.btn_stop.setText("DETENER")
+            self.btn_stop.setFixedSize(80, 24)
+            self.btn_stop.setStyleSheet("background-color: #FF4B2B; color: white; font-size: 10pt; padding: 3px; font-weight: bold; border: none;")
+            
+            if was_analyzing and hasattr(parent_win, 'start_audio'):
+                parent_win.start_audio(conn)
+            elif hasattr(parent_win, 'set_btn_connected'):
+                parent_win.set_btn_connected(conn)
 
     def delete_preset_file(self, filename):
         reply = QtWidgets.QMessageBox.question(self, "Eliminar", f"¿Eliminar '{filename}'?",
@@ -236,33 +504,20 @@ class PresetCompareWidget(QtWidgets.QWidget):
         filename = widget.filename
         path = str(self.presets_path / filename)
         try:
-            data, fs = sf.read(path)
+            self.lbl_status.setText("Cargando archivo DI...")
+            QtWidgets.QApplication.processEvents()
+            
+            data, fs, metrics = self.comparator.load_guitar_di(path)
             self.di_audio = data
+            self.di_metrics = metrics
+            
+            # Asegurar que el comparator tenga el SR correcto del archivo cargado
+            self.comparator.set_sample_rate(fs)
+            
             self.lbl_di_info.setText(f"GUITAR DI FILE: {filename}")
-            parent_win = self.window()
-            settings = parent_win.load_settings()
-            if "di_analysis" not in settings: settings["di_analysis"] = {}
-            if filename in settings["di_analysis"]:
-                cached = settings["di_analysis"][filename]
-                self.di_metrics = {
-                    "lufs": cached["lufs"], "max_peak_db": cached["max_peak_db"], "plr": cached["plr"],
-                    "avg_spectrum": np.array(cached["avg_spectrum"]), "freqs": np.array(cached["freqs"])
-                }
-            else:
-                self.lbl_status.setText("Analizando archivo original...")
-                QtWidgets.QApplication.processEvents()
-                metrics = self.comparator.calculate_metrics(data)
-                mag_db = 20 * np.log10(metrics["avg_spectrum"] + 1e-12)
-                smoothed_db = apply_smoothing(metrics["freqs"], mag_db, 12)
-                metrics["avg_spectrum"] = 10 ** (smoothed_db / 20.0)
-                self.di_metrics = metrics
-                settings["di_analysis"][filename] = {
-                    "lufs": metrics["lufs"], "max_peak_db": metrics["max_peak_db"], "plr": metrics["plr"],
-                    "avg_spectrum": metrics["avg_spectrum"].tolist(), "freqs": metrics["freqs"].tolist()
-                }
-                parent_win.save_settings(settings)
             self.draw_metrics_curve("di", self.di_metrics)
             self.capture_process("preset_a")
+            self.lbl_status.setText("")
         except Exception as e:
             QtWidgets.QMessageBox.critical(self, "Error", f"No se pudo cargar: {e}")
 
@@ -436,7 +691,8 @@ class PresetItemWidget(QtWidgets.QWidget):
         layout.setContentsMargins(5, 2, 5, 2); self.setMinimumHeight(35)
         self.side_bar = QtWidgets.QFrame(); self.side_bar.setFixedWidth(3)
         self.side_bar.setStyleSheet("background-color: transparent; border-radius: 1px;")
-        self.lbl_name = QtWidgets.QLabel(filename)
+        display_name = filename.replace(".mndDI", "").replace(".mondodi", "")
+        self.lbl_name = QtWidgets.QLabel(display_name)
         self.lbl_name.setStyleSheet("color: #E0E0E0; background: transparent; font-weight: 500; margin-left: 5px;")
         self.btn_delete = QtWidgets.QPushButton(qta.icon('fa5s.times', color='#444'), "")
         self.btn_delete.setFixedSize(24, 24); self.btn_delete.setCursor(QtCore.Qt.PointingHandCursor)
