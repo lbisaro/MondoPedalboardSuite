@@ -3,3 +3,6 @@ scipy
 sounddevice
 pyqtgraph
 PySide6
+pyloudnorm
+soundfile
+qtawesome
