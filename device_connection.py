@@ -207,27 +207,30 @@ class ConnectionManager:
             self.analyzer.set_sample_rate(device_sr)
 
             # Pequeña pausa para permitir que el driver libere recursos
-            time.sleep(0.1)
+            time.sleep(0.2)
 
             try:
+                # OPTIMIZACIÓN: Intentar primero con el blocksize nativo del driver (0)
+                # y los canales exactos.
                 self.stream = sd.Stream(
                     device=(actual_in_id, actual_out_id),
                     channels=(num_in, num_out),
                     samplerate=device_sr,
-                    blocksize=4096,
+                    blocksize=0, # Dejar que el driver decida (más estable en ASIO)
                     callback=self.analyzer.audio_callback
                 )
                 self.stream.start()
             except Exception as e_inner:
-                # Fallback: intentar sin especificar blocksize (usa el del driver)
-                print(f"Reintentando sin blocksize fijo por error: {e_inner}")
+                print(f"Error con parámetros ideales: {e_inner}. Probando fallback absoluto...")
+                # Fallback absoluto: 44.1k o 48k, sin blocksize
                 self.stream = sd.Stream(
                     device=(actual_in_id, actual_out_id),
                     channels=(num_in, num_out),
-                    samplerate=device_sr,
                     callback=self.analyzer.audio_callback
                 )
                 self.stream.start()
+                # Si esto funciona, actualizar el samplerate del analyzer al real
+                self.analyzer.set_sample_rate(int(self.stream.samplerate))
 
             return True, "Conectado"
         except Exception as e:

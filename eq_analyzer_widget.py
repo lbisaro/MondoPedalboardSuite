@@ -1,3 +1,4 @@
+import os
 import numpy as np
 import sounddevice as sd
 from PySide6 import QtCore, QtWidgets, QtGui
@@ -38,6 +39,10 @@ class AudioAnalyzer:
         self.alpha = 0.5 
         self.analyzer_active = False # Desactivado por defecto
 
+        # Buffers para manejar tamaños de bloque variables (ASIO)
+        self.in_buffer = np.zeros(self.block_size, dtype=np.float32)
+        self.out_ptr = 0
+
     def set_sample_rate(self, fs):
         if self.fs != fs:
             self.fs = fs
@@ -47,20 +52,32 @@ class AudioAnalyzer:
 
     def audio_callback(self, indata, outdata, frames, time, status):
         outdata.fill(0)
+        
+        # Generar salida (ruido) usando un puntero circular
         if self.analyzer_active and outdata.shape[1] > self.out_ch:
-            outdata[:, self.out_ch] = self.test_signal
+            for i in range(frames):
+                outdata[i, self.out_ch] = self.test_signal[self.out_ptr]
+                self.out_ptr = (self.out_ptr + 1) % self.block_size
             
+        # Procesar entrada usando un buffer circular
         if indata.shape[1] > self.in_ch:
             meas_data = indata[:, self.in_ch]
-            meas_mag = np.abs(np.fft.rfft(meas_data))[1:] + 1e-12
+            # Desplazar buffer e insertar nuevos datos
+            self.in_buffer = np.roll(self.in_buffer, -frames)
+            self.in_buffer[-frames:] = meas_data
+            
+            # Realizar FFT sobre el bloque completo
+            meas_mag = np.abs(np.fft.rfft(self.in_buffer))[1:] + 1e-12
             
             if np.all(self.meas_mag_avg == 0):
                 self.meas_mag_avg = meas_mag
             else:
                 self.meas_mag_avg = self.alpha * meas_mag + (1 - self.alpha) * self.meas_mag_avg
             
-            transfer_mag = self.meas_mag_avg / self.ref_mag
-            self.magnitude_db = 20 * np.log10(transfer_mag)
+            # Asegurar que el tamaño coincida (por si acaso)
+            if len(self.meas_mag_avg) == len(self.ref_mag):
+                transfer_mag = self.meas_mag_avg / self.ref_mag
+                self.magnitude_db = 20 * np.log10(transfer_mag)
             
     def get_smoothed_curve(self, fraction=SMOOTHING_FRACTION):
         return apply_smoothing(self.freqs, self.magnitude_db, fraction)

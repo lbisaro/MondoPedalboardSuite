@@ -230,12 +230,7 @@ class PresetCompareWidget(QtWidgets.QWidget):
 
     def migrate_old_files(self):
         """Migra archivos antiguos (.wav, .mondodi) al nuevo formato .mndDI"""
-        parent_win = self.window()
-        if not hasattr(parent_win, 'load_settings'): return
-        settings = parent_win.load_settings()
-        di_analysis = settings.get("di_analysis", {})
-        
-        # 1. Migrar .mondodi a .mndDI (solo renombrar)
+        # 1. Migrar .mondodi a .mndDI (solo renombrar) - No requiere settings
         for mondo_file in self.presets_path.glob("*.mondodi"):
             new_file = mondo_file.with_suffix(".mndDI")
             if not new_file.exists():
@@ -244,6 +239,15 @@ class PresetCompareWidget(QtWidgets.QWidget):
             else:
                 try: os.remove(mondo_file)
                 except: pass
+
+        # 2. Migrar .wav a .mndDI (convertir) - Requiere settings para el cache
+        parent_win = self.window()
+        # Si no hay ventana, intentar usar el parent directo
+        if not parent_win: parent_win = self.parent()
+        
+        if not hasattr(parent_win, 'load_settings'): return
+        settings = parent_win.load_settings()
+        di_analysis = settings.get("di_analysis", {})
 
         # 2. Migrar .wav a .mndDI (convertir)
         migrated = False
