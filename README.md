@@ -2,7 +2,7 @@
 
 **Mondo Pedalboard Suite** is a professional-grade audio analysis desktop application designed specifically for guitarists and sound engineers using high-end modelers (like Line 6 Helix, Fractal Audio, Quad Cortex, etc.). It provides real-time frequency analysis and a specialized tool for comparing and matching presets using Direct Injection (DI) recordings.
 
-![Main Interface Mockup](https://raw.githubusercontent.com/lbisaro/MondoPedalboardSuite/main/docs/screenshot.png) *(Note: Add your actual screenshot here)*
+![Main Interface Mockup](https://github.com/lbisaro/MondoPedalboardSuite/blob/master/docs/screenshot.png) 
 
 ## 🚀 Key Features
 
