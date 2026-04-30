@@ -598,21 +598,21 @@ class PresetCompareWidget(QtWidgets.QWidget):
             self.prog_timer.timeout.connect(lambda: self.progress.setValue(self.current_frame))
             self.prog_timer.start(100)
             
-            try:
-                with sd.Stream(device=device_id, channels=(num_in, num_out), samplerate=device_sr, callback=callback):
-                    while self.current_frame < len(play_data) and self.capture_running:
-                        sd.sleep(50)
-                        QtWidgets.QApplication.processEvents()
-                        pct = int((self.current_frame / len(play_data)) * 100)
-                        self.lbl_status.setText(f"Capturando {mode.upper()}... {pct}%")
-            except Exception as e_stream:
-                QtWidgets.QMessageBox.warning(self, "Audio", f"Error con la frecuencia de muestreo ({device_sr}Hz). Reintentando sin especificar SR...")
-                with sd.Stream(device=device_id, channels=(num_in, num_out), callback=callback):
-                    while self.current_frame < len(play_data) and self.capture_running:
-                        sd.sleep(50)
-                        QtWidgets.QApplication.processEvents()
-                        pct = int((self.current_frame / len(play_data)) * 100)
-                        self.lbl_status.setText(f"Capturando {mode.upper()}... {pct}%")
+        try:
+            with sd.Stream(device=device_id, channels=(num_in, num_out), samplerate=device_sr, callback=callback):
+                while self.current_frame < len(play_data) and self.capture_running:
+                    sd.sleep(50)
+                    QtWidgets.QApplication.processEvents()
+                    pct = int((self.current_frame / len(play_data)) * 100)
+                    self.lbl_status.setText(f"Capturando {mode.upper()}... {pct}%")
+        except Exception as e_stream:
+            QtWidgets.QMessageBox.warning(self, "Audio", f"Error con la frecuencia de muestreo ({device_sr}Hz). Reintentando sin especificar SR...")
+            with sd.Stream(device=device_id, channels=(num_in, num_out), callback=callback):
+                while self.current_frame < len(play_data) and self.capture_running:
+                    sd.sleep(50)
+                    QtWidgets.QApplication.processEvents()
+                    pct = int((self.current_frame / len(play_data)) * 100)
+                    self.lbl_status.setText(f"Capturando {mode.upper()}... {pct}%")
 
             self.btn_stop.setVisible(False); self.btn_back_to_lib.setVisible(True)
             if not self.capture_running:
@@ -636,8 +636,23 @@ class PresetCompareWidget(QtWidgets.QWidget):
             if was_analyzing: parent_win.start_audio(settings["connection"])
             else: parent_win.set_btn_connected(settings["connection"])
         except Exception as e:
-            QtWidgets.QMessageBox.critical(self, "Error", f"Fallo: {e}")
+            QtWidgets.QMessageBox.critical(self, "Error de captura", f"Fallo: {e}")
+        finally:
+            # Siempre restaurar la UI y reconectar audio, incluso si hubo error
+            self.capture_running = False
             self.btn_capture_b.setEnabled(True)
+            self.btn_stop.setVisible(False)
+            self.btn_back_to_lib.setVisible(True)
+            self.left_panel.setVisible(True)
+            self.progress.setVisible(False)
+            if hasattr(self, 'prog_timer') and self.prog_timer.isActive():
+                self.prog_timer.stop()
+            # Reconectar audio si estaba activo antes
+            try:
+                if was_analyzing and hasattr(parent_win, 'start_audio'):
+                    parent_win.start_audio(settings["connection"])
+                elif hasattr(parent_win, 'set_btn_connected'):
+                    parent_win.set_btn_connected(settings.get("connection", {}))
 
     def update_dashboard(self):
         if not self.preset_a_metrics or not self.preset_b_metrics or not self.di_metrics:

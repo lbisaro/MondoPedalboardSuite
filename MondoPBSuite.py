@@ -1,5 +1,7 @@
 import os
 import sys
+import atexit
+import traceback
 
 # Habilitar soporte ASIO (DEBE ESTAR ANTES DE IMPORTAR SOUNDDEVICE)
 os.environ['SD_ENABLE_ASIO'] = '1'
@@ -272,12 +274,43 @@ class MainWindow(QtWidgets.QMainWindow):
     def save_settings(self, settings):
         self.conn_mgr.save_settings(settings)
 
+def _emergency_stop(conn_mgr):
+    """Cierre de emergencia del stream de audio. Se llama en crash o salida inesperada."""
+    try:
+        conn_mgr.stop_audio()
+    except Exception:
+        pass
+
 def main():
     app = QtWidgets.QApplication(sys.argv)
     app.setStyleSheet(DARK_THEME)
-    
+
     analyzer = AudioAnalyzer()
     window = MainWindow(analyzer)
+
+    # --- Capa 1: cierre limpio al salir normalmente ---
+    app.aboutToQuit.connect(window.conn_mgr.stop_audio)
+
+    # --- Capa 2: atexit garantiza el cierre aunque el event loop explote ---
+    atexit.register(_emergency_stop, window.conn_mgr)
+
+    # --- Capa 3: capturar excepciones no manejadas para cerrar el stream ---
+    _original_excepthook = sys.excepthook
+    def _excepthook(exc_type, exc_value, exc_tb):
+        _emergency_stop(window.conn_mgr)
+        # Mostrar el error al usuario antes de salir
+        try:
+            msg = "".join(traceback.format_exception(exc_type, exc_value, exc_tb))
+            QtWidgets.QMessageBox.critical(
+                None,
+                "Error inesperado",
+                f"Ocurrio un error. El audio fue cerrado para proteger el dispositivo.\n\n{msg[:800]}"
+            )
+        except Exception:
+            pass
+        _original_excepthook(exc_type, exc_value, exc_tb)
+    sys.excepthook = _excepthook
+
     window.show()
     sys.exit(app.exec())
 
