@@ -1,3 +1,54 @@
-__pycache__
-settings.json
-user_data
+# ── Python ─────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+*.egg
+
+# ── Entorno virtual ─────────────────────────────────────────────────────────
+.venv/
+venv/
+env/
+
+# ── Build PyInstaller ───────────────────────────────────────────────────────
+build/
+dist/
+*.spec.bak
+
+# ── Datos de usuario (settings, presets, DI, etc.) ─────────────────────────
+user_data/
+
+# ── IDEs ────────────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ── OS ──────────────────────────────────────────────────────────────────────
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# ── Lo que SÍ se publica (forzado explícito) ───────────────────────────────
+# Fuentes Python
+!*.py
+
+# Scripts de build y configuración del instalador
+!build.ps1
+!MondoPBSuite.spec
+!installer.iss
+
+# Instalador generado (en su carpeta de output)
+!installer_output/
+!installer_output/*.exe
+
+# Docs y README
+!README.md
+!docs/
+!docs/**
+
+# Dependencias declaradas
+!requirements.txt
+build.ps1
+installer_output/MondoPBSuite_Setup_v1.0.exe
