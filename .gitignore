@@ -57,3 +57,4 @@ desktop.ini
 # Batch launcher
 !build.bat
 
+installer_output/MondoPBSuite_Setup_v1.0.exe
