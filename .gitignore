@@ -52,3 +52,4 @@ desktop.ini
 !requirements.txt
 build.ps1
 installer_output/MondoPBSuite_Setup_v1.0.exe
+MondoPBSuite.spec
