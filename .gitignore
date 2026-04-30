@@ -11,13 +11,16 @@ __pycache__/
 venv/
 env/
 
-# ── Build PyInstaller ───────────────────────────────────────────────────────
+# ── Build PyInstaller (carpetas temporales) ─────────────────────────────────
 build/
 dist/
 *.spec.bak
 
 # ── Datos de usuario (settings, presets, DI, etc.) ─────────────────────────
 user_data/
+
+# ── Instalador (no distribuir por Git) ──────────────────────────────────────
+installer_output/
 
 # ── IDEs ────────────────────────────────────────────────────────────────────
 .vscode/
@@ -30,18 +33,21 @@ Thumbs.db
 desktop.ini
 .DS_Store
 
-# ── Lo que SÍ se publica (forzado explícito) ───────────────────────────────
+# ── Lo que SI se publica ────────────────────────────────────────────────────
 # Fuentes Python
 !*.py
 
-# Scripts de build y configuración del instalador
+# Scripts de build y configuracion
 !build.ps1
+!build.bat
 !MondoPBSuite.spec
 !installer.iss
 
-# Instalador generado (en su carpeta de output)
-!installer_output/
-!installer_output/*.exe
+# Ejecutable generado (en la raiz del proyecto)
+!MondoPBSuite.exe
+
+# Control de version
+!version.json
 
 # Docs y README
 !README.md
@@ -50,11 +56,3 @@ desktop.ini
 
 # Dependencias declaradas
 !requirements.txt
-
-# Control de versión automático
-!version.json
-
-# Batch launcher
-!build.bat
-
-installer_output/MondoPBSuite_Setup_v1.0.exe

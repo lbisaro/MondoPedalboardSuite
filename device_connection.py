@@ -1,4 +1,5 @@
 import os
+import sys
 import json
 import sounddevice as sd
 import time
@@ -174,7 +175,11 @@ class ConnectionManager:
     def __init__(self, analyzer):
         self.analyzer = analyzer
         self.stream = None
-        self.settings_file = "settings.json"
+        # Ruta base: directorio del ejecutable (o del script en desarrollo)
+        _base_dir = os.path.dirname(sys.executable if getattr(sys, 'frozen', False) else os.path.abspath(__file__))
+        _user_data = os.path.join(_base_dir, "user_data")
+        os.makedirs(_user_data, exist_ok=True)
+        self.settings_file = os.path.join(_user_data, "settings.json")
 
     def start_audio(self, settings):
         self.stop_audio()
