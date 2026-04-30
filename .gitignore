@@ -50,5 +50,10 @@ desktop.ini
 
 # Dependencias declaradas
 !requirements.txt
-installer_output/MondoPBSuite_Setup_v1.0.exe
+
+# Control de versión automático
+!version.json
+
+# Batch launcher
+!build.bat
 
