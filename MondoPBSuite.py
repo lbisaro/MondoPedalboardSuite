@@ -20,6 +20,12 @@ from eq_analyzer_widget import AudioAnalyzer, EQAnalyzerWidget, SAMPLE_RATE, BLO
 from preset_compare_widget import PresetCompareWidget
 from device_connection import AudioDeviceDialog, ConnectionManager
 
+def resource_path(relative):
+    """Resuelve rutas de recursos tanto en desarrollo como dentro del exe de PyInstaller."""
+    if hasattr(sys, '_MEIPASS'):
+        return os.path.join(sys._MEIPASS, relative)
+    return os.path.join(os.path.dirname(os.path.abspath(__file__)), relative)
+
 class NavCard(QtWidgets.QFrame):
     """Tarjeta interactiva para la pantalla de inicio."""
     def __init__(self, title, icon_name, desc, target, main_window):
@@ -82,7 +88,7 @@ class HomeWidget(QtWidgets.QWidget):
         
         self.card_eq = NavCard("EQ ANALYZER", "fa5s.wave-square", 
                                 "Análisis en tiempo real y Match EQ.", "eq", self.main_window)
-        self.card_preset = NavCard("PRESET COMPARE", "fa5s.redo-alt", 
+        self.card_preset = NavCard("PRESET COMPARE", "fa6s.code-compare", 
                                  "Gestión de reamping y comparación A/B.", "preset", self.main_window)
         
         cards_layout.addStretch()
@@ -285,6 +291,15 @@ def main():
     app = QtWidgets.QApplication(sys.argv)
     app.setStyleSheet(DARK_THEME)
 
+    # --- Splash screen -------------------------------------------------------
+    splash = None
+    logo_path = resource_path(os.path.join('docs', 'MondoPBSuite_Logo.png'))
+    if os.path.exists(logo_path):
+        splash_pix = QtGui.QPixmap(logo_path)
+        splash = QtWidgets.QSplashScreen(splash_pix, QtCore.Qt.WindowStaysOnTopHint)
+        splash.show()
+        app.processEvents()
+    # -------------------------------------------------------------------------
     analyzer = AudioAnalyzer()
     window = MainWindow(analyzer)
 
@@ -312,6 +327,8 @@ def main():
     sys.excepthook = _excepthook
 
     window.show()
+    if splash:
+        splash.finish(window)   # Cierra el splash cuando la ventana principal está lista
     sys.exit(app.exec())
 
 if __name__ == "__main__":

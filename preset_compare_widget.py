@@ -597,7 +597,10 @@ class PresetCompareWidget(QtWidgets.QWidget):
             self.prog_timer = QtCore.QTimer()
             self.prog_timer.timeout.connect(lambda: self.progress.setValue(self.current_frame))
             self.prog_timer.start(100)
-            
+        except Exception as e_setup:
+            QtWidgets.QMessageBox.critical(self, "Error de configuración", f"Fallo al inicializar captura: {e_setup}")
+            return
+
         try:
             with sd.Stream(device=device_id, channels=(num_in, num_out), samplerate=device_sr, callback=callback):
                 while self.current_frame < len(play_data) and self.capture_running:
@@ -607,13 +610,18 @@ class PresetCompareWidget(QtWidgets.QWidget):
                     self.lbl_status.setText(f"Capturando {mode.upper()}... {pct}%")
         except Exception as e_stream:
             QtWidgets.QMessageBox.warning(self, "Audio", f"Error con la frecuencia de muestreo ({device_sr}Hz). Reintentando sin especificar SR...")
-            with sd.Stream(device=device_id, channels=(num_in, num_out), callback=callback):
-                while self.current_frame < len(play_data) and self.capture_running:
-                    sd.sleep(50)
-                    QtWidgets.QApplication.processEvents()
-                    pct = int((self.current_frame / len(play_data)) * 100)
-                    self.lbl_status.setText(f"Capturando {mode.upper()}... {pct}%")
+            try:
+                with sd.Stream(device=device_id, channels=(num_in, num_out), callback=callback):
+                    while self.current_frame < len(play_data) and self.capture_running:
+                        sd.sleep(50)
+                        QtWidgets.QApplication.processEvents()
+                        pct = int((self.current_frame / len(play_data)) * 100)
+                        self.lbl_status.setText(f"Capturando {mode.upper()}... {pct}%")
+            except Exception as e_retry:
+                QtWidgets.QMessageBox.critical(self, "Error de captura", f"Fallo en reintento: {e_retry}")
+                return
 
+        try:
             self.btn_stop.setVisible(False); self.btn_back_to_lib.setVisible(True)
             if not self.capture_running:
                 self.lbl_status.setText("Captura cancelada."); self.progress.setVisible(False)
@@ -653,21 +661,31 @@ class PresetCompareWidget(QtWidgets.QWidget):
                     parent_win.start_audio(settings["connection"])
                 elif hasattr(parent_win, 'set_btn_connected'):
                     parent_win.set_btn_connected(settings.get("connection", {}))
+            except Exception:
+                pass
+
+    def _delta_pct(self, a, b):
+        """Calcula el delta porcentual de b respecto a a."""
+        if abs(a) < 0.001:
+            return "+∞%" if b > 0 else ("-∞%" if b < 0 else "0.0%")
+        pct = (b - a) / abs(a) * 100
+        return f"{pct:+.1f}%"
 
     def update_dashboard(self):
         if not self.preset_a_metrics or not self.preset_b_metrics or not self.di_metrics:
             if self.preset_a_metrics and self.di_metrics:
-                d_lufs, d_plr, d_peak = self.preset_a_metrics['lufs'] - self.di_metrics['lufs'], self.preset_a_metrics['plr'] - self.di_metrics['plr'], self.preset_a_metrics['max_peak_db'] - self.di_metrics['max_peak_db']
-                self.card_lufs.set_values(f"{self.preset_a_metrics['lufs']:.1f}", "---", f"{d_lufs:+.1f} vs DI")
-                self.card_plr.set_values(f"{self.preset_a_metrics['plr']:.1f}", "---", f"{d_plr:+.1f} vs DI")
-                self.card_peak.set_values(f"{self.preset_a_metrics['max_peak_db']:.1f}", "---", f"{d_peak:+.1f} vs DI")
+                # Solo Preset A capturado: mostrar valores sin delta
+                self.card_lufs.set_values(f"{self.preset_a_metrics['lufs']:.1f}", "---", None)
+                self.card_plr.set_values(f"{self.preset_a_metrics['plr']:.1f}", "---", None)
+                self.card_peak.set_values(f"{self.preset_a_metrics['max_peak_db']:.1f}", "---", None)
             return
-        gain_a, plr_a, peak_a = self.preset_a_metrics['lufs'] - self.di_metrics['lufs'], self.preset_a_metrics['plr'] - self.di_metrics['plr'], self.preset_a_metrics['max_peak_db'] - self.di_metrics['max_peak_db']
-        gain_b, plr_b, peak_b = self.preset_b_metrics['lufs'] - self.di_metrics['lufs'], self.preset_b_metrics['plr'] - self.di_metrics['plr'], self.preset_b_metrics['max_peak_db'] - self.di_metrics['max_peak_db']
-        d_gain, d_plr, d_peak = gain_b - gain_a, plr_b - plr_a, peak_b - peak_a
-        self.card_lufs.set_values(f"{self.preset_a_metrics['lufs']:.1f}", f"{self.preset_b_metrics['lufs']:.1f}", f"{d_gain:+.1f}")
-        self.card_plr.set_values(f"{self.preset_a_metrics['plr']:.1f}", f"{self.preset_b_metrics['plr']:.1f}", f"{d_plr:+.1f}")
-        self.card_peak.set_values(f"{self.preset_a_metrics['max_peak_db']:.1f}", f"{self.preset_b_metrics['max_peak_db']:.1f}", f"{d_peak:+.1f}")
+        # Ambos presets capturados: mostrar delta como porcentaje
+        pct_lufs = self._delta_pct(self.preset_a_metrics['lufs'], self.preset_b_metrics['lufs'])
+        pct_plr  = self._delta_pct(self.preset_a_metrics['plr'],  self.preset_b_metrics['plr'])
+        pct_peak = self._delta_pct(self.preset_a_metrics['max_peak_db'], self.preset_b_metrics['max_peak_db'])
+        self.card_lufs.set_values(f"{self.preset_a_metrics['lufs']:.1f}", f"{self.preset_b_metrics['lufs']:.1f}", pct_lufs)
+        self.card_plr.set_values(f"{self.preset_a_metrics['plr']:.1f}", f"{self.preset_b_metrics['plr']:.1f}", pct_plr)
+        self.card_peak.set_values(f"{self.preset_a_metrics['max_peak_db']:.1f}", f"{self.preset_b_metrics['max_peak_db']:.1f}", pct_peak)
         self.highlight_differences()
 
     def highlight_differences(self):
@@ -696,8 +714,8 @@ class MetricCard(QtWidgets.QFrame):
         self.lbl_preset_a.setText(a_val); self.lbl_preset_b.setText(b_val)
         if delta:
             self.lbl_delta.setText(f"Δ: {delta}")
-            if "+" in delta: self.lbl_delta.setStyleSheet("color: #FF4B2B; background: transparent;")
-            elif "-" in delta: self.lbl_delta.setStyleSheet("color: #00FFAB; background: transparent;")
+            if "+" in delta: self.lbl_delta.setStyleSheet("color: #00FFAB; background: transparent;")
+            elif "-" in delta: self.lbl_delta.setStyleSheet("color: #FF4B2B; background: transparent;")
             else: self.lbl_delta.setStyleSheet("color: #E0E0E0; background: transparent;")
         else: self.lbl_delta.setText("")
 

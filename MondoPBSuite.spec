@@ -8,7 +8,9 @@ from PyInstaller.utils.hooks import collect_data_files
 qtawesome_datas  = collect_data_files('qtawesome')
 pyqtgraph_datas  = collect_data_files('pyqtgraph')
 
-all_datas = qtawesome_datas + pyqtgraph_datas
+all_datas = qtawesome_datas + pyqtgraph_datas + [
+    ('docs/MondoPBSuite_Logo.png', 'docs'),
+]
 
 block_cipher = None
 
@@ -73,6 +75,6 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon=None,
+    icon='docs/MondoPBSuite_logo.ico',
 )
 # Sin bloque COLLECT -> no genera carpeta dist\MondoPBSuite\_internal

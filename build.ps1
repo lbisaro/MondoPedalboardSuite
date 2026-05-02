@@ -77,6 +77,20 @@ if (-not (Test-Path $PyInstaller)) {
 }
 Write-Ok "PyInstaller : $PyInstaller"
 
+# -- 1.5 Generar ICO desde el logo PNG ------------------------------------------
+Write-Step "Generando icono .ico desde logo PNG..."
+$MakeIco = Join-Path $ProjectRoot "make_ico.py"
+if (-not (Test-Path $MakeIco)) {
+    Write-Fail "No se encontro make_ico.py en: $MakeIco"
+}
+# Asegurar que Pillow esté instalado
+& (Join-Path $Venv "pip.exe") install --quiet Pillow | Out-Null
+& (Join-Path $Venv "python.exe") $MakeIco
+if ($LASTEXITCODE -ne 0) {
+    Write-Fail "No se pudo generar el .ico. Verifica que docs\MondoPBSuite_Logo.png existe."
+}
+Write-Ok "Icono generado: docs\MondoPBSuite_logo.ico"
+
 # -- 2. Build ---------------------------------------------------------------
 if (-not $SkipBuild) {
     Write-Step "Compilando ejecutable con PyInstaller..."

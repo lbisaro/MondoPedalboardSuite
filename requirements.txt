@@ -6,3 +6,4 @@ PySide6
 pyloudnorm
 soundfile
 qtawesome
+Pillow
