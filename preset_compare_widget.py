@@ -22,6 +22,9 @@ class PresetCompareWidget(QtWidgets.QWidget):
         self.preset_b_audio = None
         
         self.presets_path = Path("./user_data/di")
+        self.preset_refs_path = Path("./user_data/preset_references")
+        self.preset_refs_path.mkdir(parents=True, exist_ok=True)
+        
         old_path = Path("./user_data/guitar_di")
         if old_path.exists() and old_path.is_dir():
             if not self.presets_path.exists():
@@ -39,9 +42,11 @@ class PresetCompareWidget(QtWidgets.QWidget):
         self.preset_b_metrics = None
         self.di_metrics = None 
         self.capture_running = False
+        self.is_reference_mode = False # Flag para saber si A es una referencia cargada
         
         self.init_ui()
         self.refresh_preset_list()
+        self.refresh_preset_ref_list()
 
     def init_ui(self):
         main_layout = QtWidgets.QHBoxLayout(self)
@@ -72,7 +77,21 @@ class PresetCompareWidget(QtWidgets.QWidget):
         self.list_presets = QtWidgets.QListWidget()
         self.list_presets.setObjectName("PresetList")
         self.list_presets.itemDoubleClicked.connect(self.on_preset_selected)
-        left_layout.addWidget(self.list_presets)
+        left_layout.addWidget(self.list_presets, 2) # Estiramiento 2
+        
+        # --- SECCION 2: PRESET REFERENCES ---
+        header_refs = QtWidgets.QHBoxLayout()
+        header_refs.setContentsMargins(0, 10, 0, 0)
+        lbl_refs = QtWidgets.QLabel("PRESET REFERENCES")
+        lbl_refs.setStyleSheet("font-weight: bold; color: #FFAC41; font-size: 10pt; letter-spacing: 1px;")
+        header_refs.addWidget(lbl_refs)
+        header_refs.addStretch()
+        left_layout.addLayout(header_refs)
+        
+        self.list_preset_refs = QtWidgets.QListWidget()
+        self.list_preset_refs.setObjectName("PresetRefList")
+        self.list_preset_refs.itemDoubleClicked.connect(self.on_preset_ref_selected)
+        left_layout.addWidget(self.list_preset_refs, 1) # Estiramiento 1 (más pequeña)
         
         main_layout.addWidget(self.left_panel)
         
@@ -98,8 +117,16 @@ class PresetCompareWidget(QtWidgets.QWidget):
         self.btn_capture_b.setVisible(False)
         self.btn_capture_b.clicked.connect(lambda: self.capture_process("preset_b"))
         
+        self.btn_save_a = QtWidgets.QPushButton(qta.icon('fa5s.save', color='#00ADB5'), " Guardar A")
+        self.btn_save_a.setObjectName("GhostButton")
+        self.btn_save_a.setFixedHeight(35)
+        self.btn_save_a.setVisible(False)
+        self.btn_save_a.setToolTip("Guardar Preset A como referencia permanente (.mndPrstRef)")
+        self.btn_save_a.clicked.connect(self.save_preset_a_reference)
+        
         toolbar.addWidget(self.lbl_di_info)
         toolbar.addStretch()
+        toolbar.addWidget(self.btn_save_a)
         toolbar.addWidget(self.btn_capture_b)
         layout.addLayout(toolbar)
         
@@ -266,6 +293,15 @@ class PresetCompareWidget(QtWidgets.QWidget):
             item.setSizeHint(widget.sizeHint())
             self.list_presets.addItem(item)
             self.list_presets.setItemWidget(item, widget)
+            
+    def refresh_preset_ref_list(self):
+        self.list_preset_refs.clear()
+        for f in self.preset_refs_path.glob("*.mndPrstRef"):
+            item = QtWidgets.QListWidgetItem(self.list_preset_refs)
+            widget = PresetItemWidget(f.name, self, is_ref=True)
+            item.setSizeHint(widget.sizeHint())
+            self.list_preset_refs.addItem(item)
+            self.list_preset_refs.setItemWidget(item, widget)
 
     def migrate_old_files(self):
         """Migra archivos antiguos (.wav, .mondodi) al nuevo formato .mndDI"""
@@ -527,12 +563,17 @@ class PresetCompareWidget(QtWidgets.QWidget):
             elif hasattr(parent_win, 'set_btn_connected'):
                 parent_win.set_btn_connected(conn)
 
-    def delete_preset_file(self, filename):
+    def delete_preset_file(self, filename, is_ref=False):
         reply = QtWidgets.QMessageBox.question(self, "Eliminar", f"¿Eliminar '{filename}'?",
                                              QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
         if reply == QtWidgets.QMessageBox.Yes:
-            os.remove(self.presets_path / filename)
-            self.refresh_preset_list()
+            path = self.preset_refs_path if is_ref else self.presets_path
+            try:
+                os.remove(path / filename)
+                if is_ref: self.refresh_preset_ref_list()
+                else: self.refresh_preset_list()
+            except Exception as e:
+                QtWidgets.QMessageBox.critical(self, "Error", f"No se pudo eliminar: {e}")
 
     def show_library(self):
         self.left_panel.setVisible(True)
@@ -559,10 +600,68 @@ class PresetCompareWidget(QtWidgets.QWidget):
             
             self.lbl_di_info.setText(f"GUITAR DI FILE: {filename}")
             self.draw_metrics_curve("di", self.di_metrics)
-            self.capture_process("preset_a")
+            
+            if self.is_reference_mode and self.preset_a_metrics:
+                # Si estamos en modo referencia, vamos directo a capturar B
+                self.capture_process("preset_b")
+            else:
+                # Flujo normal: capturar A primero
+                self.capture_process("preset_a")
+            
             self.lbl_status.setText("")
         except Exception as e:
             QtWidgets.QMessageBox.critical(self, "Error", f"No se pudo cargar: {e}")
+
+    def on_preset_ref_selected(self, item):
+        widget = self.list_preset_refs.itemWidget(item)
+        if not widget: return
+        filename = widget.filename
+        path = str(self.preset_refs_path / filename)
+        try:
+            self.lbl_status.setText("Cargando referencia de preset...")
+            QtWidgets.QApplication.processEvents()
+            
+            metrics = self.comparator.load_preset_reference(path)
+            self.preset_a_metrics = metrics
+            self.is_reference_mode = True
+            
+            # Limpiar estado B ya que estamos cargando una referencia nueva en A
+            self.preset_b_metrics = None
+            self.curve_b.setData([], [])
+            
+            self.lbl_di_info.setText(f"REFERENCE: {filename.replace('.mndPrstRef', '')}")
+            self.draw_metrics_curve("preset_a", self.preset_a_metrics)
+            
+            # Ocultar botón de captura B hasta que seleccionen un DI
+            self.btn_capture_b.setVisible(False)
+            self.btn_save_a.setVisible(False) # No se guarda sobre una referencia
+            
+            self.update_dashboard()
+            self.lbl_status.setText("Referencia cargada. Selecciona un archivo GUITAR DI para capturar PRESET B.")
+        except Exception as e:
+            QtWidgets.QMessageBox.critical(self, "Error", f"No se pudo cargar la referencia: {e}")
+
+    def save_preset_a_reference(self):
+        if not self.preset_a_metrics: return
+        
+        name, ok = QtWidgets.QInputDialog.getText(self, "Guardar Referencia", "Nombre del Preset:")
+        if not ok or not name.strip(): return
+        
+        filename = f"{sanitize_filename(name.strip())}.mndPrstRef"
+        path = self.preset_refs_path / filename
+        
+        if path.exists():
+            reply = QtWidgets.QMessageBox.question(self, "Sobrescribir", 
+                                                 f"El archivo '{filename}' ya existe. ¿Sobrescribir?",
+                                                 QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
+            if reply == QtWidgets.QMessageBox.No: return
+            
+        try:
+            self.comparator.save_preset_reference(str(path), self.preset_a_metrics)
+            self.refresh_preset_ref_list()
+            QtWidgets.QMessageBox.information(self, "Éxito", f"Referencia '{name}' guardada correctamente.")
+        except Exception as e:
+            QtWidgets.QMessageBox.critical(self, "Error", f"No se pudo guardar la referencia: {e}")
 
     def capture_process(self, mode):
         if self.di_audio is None: return
@@ -691,8 +790,10 @@ class PresetCompareWidget(QtWidgets.QWidget):
             metrics = self.comparator.calculate_metrics(captured)
             if mode == "preset_a":
                 self.preset_a_metrics = metrics
+                self.is_reference_mode = False # Al capturar A manualmente, salimos de modo referencia
                 self.draw_metrics_curve("preset_a", metrics)
                 self.btn_capture_b.setVisible(True)
+                self.btn_save_a.setVisible(True)
             else:
                 self.preset_b_metrics = metrics
                 self.draw_metrics_curve("preset_b", metrics)
@@ -825,25 +926,29 @@ class MetricCard(QtWidgets.QFrame):
         else: self.lbl_delta.setText("")
 
 class PresetItemWidget(QtWidgets.QWidget):
-    def __init__(self, filename, parent_module):
+    def __init__(self, filename, parent_module, is_ref=False):
         super().__init__()
-        self.filename, self.parent_module = filename, parent_module
+        self.filename, self.parent_module, self.is_ref = filename, parent_module, is_ref
         self.setStyleSheet("background: transparent;")
         layout = QtWidgets.QHBoxLayout(self)
         layout.setContentsMargins(5, 2, 5, 2); self.setMinimumHeight(35)
         self.side_bar = QtWidgets.QFrame(); self.side_bar.setFixedWidth(3)
         self.side_bar.setStyleSheet("background-color: transparent; border-radius: 1px;")
-        display_name = filename.replace(".mndDI", "").replace(".mondodi", "")
+        
+        ext = ".mndPrstRef" if is_ref else ".mndDI"
+        display_name = filename.replace(ext, "").replace(".mondodi", "")
+        
         self.lbl_name = QtWidgets.QLabel(display_name)
         self.lbl_name.setStyleSheet("color: #E0E0E0; background: transparent; font-weight: 500; margin-left: 5px;")
         self.btn_delete = QtWidgets.QPushButton(qta.icon('fa5s.times', color='#444'), "")
         self.btn_delete.setFixedSize(24, 24); self.btn_delete.setCursor(QtCore.Qt.PointingHandCursor)
         self.btn_delete.setStyleSheet("background: transparent; border: none;")
-        self.btn_delete.clicked.connect(lambda: self.parent_module.delete_preset_file(self.filename))
+        self.btn_delete.clicked.connect(lambda: self.parent_module.delete_preset_file(self.filename, self.is_ref))
         layout.addWidget(self.side_bar); layout.addWidget(self.lbl_name); layout.addStretch(); layout.addWidget(self.btn_delete)
     def enterEvent(self, event):
-        self.lbl_name.setStyleSheet("color: #00ADB5; background: transparent; font-weight: bold; margin-left: 5px;")
-        self.side_bar.setStyleSheet("background-color: #00ADB5; border-radius: 1px;")
+        color = "#FFAC41" if self.is_ref else "#00ADB5"
+        self.lbl_name.setStyleSheet(f"color: {color}; background: transparent; font-weight: bold; margin-left: 5px;")
+        self.side_bar.setStyleSheet(f"background-color: {color}; border-radius: 1px;")
         self.btn_delete.setIcon(qta.icon('fa5s.times', color='#FF4B2B'))
         super().enterEvent(event)
     def leaveEvent(self, event):

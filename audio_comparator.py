@@ -215,3 +215,24 @@ class AudioComparator:
         with open(path, 'rb') as f:
             data = pickle.load(f)
         return data["freqs"], data["values"]
+
+    def save_preset_reference(self, path, metrics):
+        """
+        Guarda las métricas de un preset como referencia (.mndPrstRef).
+        """
+        import pickle
+        data = {
+            "version": "1.1",
+            "metrics": metrics
+        }
+        with open(path, 'wb') as f:
+            pickle.dump(data, f)
+
+    def load_preset_reference(self, path):
+        """
+        Carga una referencia de preset (.mndPrstRef).
+        """
+        import pickle
+        with open(path, 'rb') as f:
+            data = pickle.load(f)
+        return data["metrics"]
