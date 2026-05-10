@@ -75,11 +75,60 @@ class AudioComparator:
         if audio.ndim > 1 and audio.shape[1] >= 2:
             l = audio[:, 0]
             r = audio[:, 1]
-            # Correlación de fase simplificada: (L*R) / (norm(L)*norm(R))
             norm_l = np.linalg.norm(l)
             norm_r = np.linalg.norm(r)
             if norm_l > 0 and norm_r > 0:
                 phase_corr = np.sum(l * r) / (norm_l * norm_r)
+        
+        # 6. Nuevas métricas para detectar Crunch/Distorsión
+        # Brillo (Spectral Centroid)
+        if np.sum(avg_spectrum) > 0:
+            centroid = np.sum(freqs * avg_spectrum) / np.sum(avg_spectrum)
+        else:
+            centroid = 0.0
+
+        # Saturation Index (basado en la densidad armónica y PLR)
+        # Una señal distorsionada tiene un PLR menor (más comprimida)
+        # y más energía en frecuencias altas (armónicos).
+        # Este es un valor heurístico (0-100)
+        # Referencia: Limpio usualmente PLR > 14, Crunch 8-12, Lead < 8
+        sat_val = max(0, min(100, (16 - plr) * 6.25)) if lufs > -70 else 0.0
+
+        # Energy Bands (Low: <250Hz, Mid: 250-4kHz, High: >4kHz)
+        low_mask = freqs < 250
+        mid_mask = (freqs >= 250) & (freqs < 4000)
+        high_mask = freqs >= 4000
+        
+        def get_band_energy(mask):
+            if np.any(mask):
+                return 20 * np.log10(np.mean(avg_spectrum[mask]) + 1e-12)
+            return -99.0
+
+        energy_bands = {
+            "low": get_band_energy(low_mask),
+            "mid": get_band_energy(mid_mask),
+            "high": get_band_energy(high_mask)
+        }
+
+        # 7. Sustain (Relación entre energía total y picos)
+        # Calculamos el ratio de energía mantenida.
+        # Un valor más alto significa que la nota 'dura' más tiempo a un volumen alto.
+        # Usamos una ventana de RMS para ver la consistencia.
+        window_size = int(0.05 * self.sample_rate) # 50ms
+        if len(audio) > window_size:
+            # Dividir en bloques y calcular RMS
+            n_blocks = len(audio) // window_size
+            rms_blocks = []
+            for i in range(n_blocks):
+                block = audio[i*window_size : (i+1)*window_size]
+                rms_blocks.append(np.sqrt(np.mean(block**2)))
+            
+            rms_blocks = np.array(rms_blocks)
+            max_rms = np.max(rms_blocks) + 1e-12
+            # Sustain es el porcentaje de bloques que mantienen al menos el 30% del RMS máximo
+            sustain_val = (np.sum(rms_blocks > (max_rms * 0.3)) / n_blocks) * 100
+        else:
+            sustain_val = 0.0
 
         return {
             "lufs": lufs,
@@ -87,7 +136,11 @@ class AudioComparator:
             "plr": plr,
             "avg_spectrum": avg_spectrum,
             "freqs": freqs,
-            "phase_corr": phase_corr
+            "phase_corr": phase_corr,
+            "centroid": centroid,
+            "saturation": sat_val,
+            "energy_bands": energy_bands,
+            "sustain": sustain_val
         }
 
     def normalize_to_target(self, audio, target_lufs):
@@ -122,7 +175,11 @@ class AudioComparator:
                 "plr": metrics["plr"],
                 "avg_spectrum": metrics["avg_spectrum"],
                 "freqs": metrics["freqs"],
-                "phase_corr": metrics.get("phase_corr", 0)
+                "phase_corr": metrics.get("phase_corr", 0),
+                "centroid": metrics.get("centroid", 0),
+                "saturation": metrics.get("saturation", 0),
+                "energy_bands": metrics.get("energy_bands", {}),
+                "sustain": metrics.get("sustain", 0)
             }
         }
         with open(path, 'wb') as f:

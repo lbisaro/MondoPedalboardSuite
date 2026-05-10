@@ -104,7 +104,12 @@ class PresetCompareWidget(QtWidgets.QWidget):
         layout.addLayout(toolbar)
         
         # Metrics
-        self.dash_layout = QtWidgets.QHBoxLayout()
+        self.dash_container = QtWidgets.QVBoxLayout()
+        self.dash_container.setSpacing(10)
+        
+        self.dash_row1 = QtWidgets.QHBoxLayout()
+        self.dash_row2 = QtWidgets.QHBoxLayout()
+        
         self.card_lufs = MetricCard("Loudness (LUFS)", "---")
         self.card_lufs.setToolTip(
             "<b>LOUDNESS (LUFS):</b> Mide la sonoridad promedio percibida.<br><br>"
@@ -119,10 +124,44 @@ class PresetCompareWidget(QtWidgets.QWidget):
         )
         self.card_peak = MetricCard("Max Peak", "---")
         
-        self.dash_layout.addWidget(self.card_lufs)
-        self.dash_layout.addWidget(self.card_plr)
-        self.dash_layout.addWidget(self.card_peak)
-        layout.addLayout(self.dash_layout)
+        self.dash_row1.addWidget(self.card_lufs)
+        self.dash_row1.addWidget(self.card_plr)
+        self.dash_row1.addWidget(self.card_peak)
+        
+        # Nuevas Métricas
+        self.card_sat = MetricCard("Saturation (Gain)", "---")
+        self.card_sat.setToolTip(
+            "<b>SATURATION:</b> Estima qué tan distorsionada está la señal.<br><br>"
+            "Se calcula analizando la compresión dinámica y la densidad armónica.<br>"
+            "<b>0-20%:</b> Clean | <b>20-50%:</b> Crunch | <b>50-100%:</b> High Gain"
+        )
+        self.card_bright = MetricCard("Brightness (Hz)", "---")
+        self.card_bright.setToolTip(
+            "<b>BRIGHTNESS:</b> Representa el centro de masa del espectro (Spectral Centroid).<br><br>"
+            "Un valor más alto indica un sonido más brillante o con más presencia de agudos.<br>"
+            "Útil para comparar qué tan 'abierto' suena un preset respecto al otro."
+        )
+        self.card_mids = MetricCard("Mid Focus", "---")
+        self.card_mids.setToolTip(
+            "<b>MID FOCUS:</b> Energía en el rango crítico de la guitarra (250Hz - 4kHz).<br><br>"
+            "En sonidos Rhythm, este rango define el 'cuerpo' y la claridad del ataque.<br>"
+            "Un Delta (+) significa que el Preset B tiene más presencia en medios."
+        )
+        self.card_sustain = MetricCard("Sustain", "---")
+        self.card_sustain.setToolTip(
+            "<b>SUSTAIN:</b> Capacidad de mantener la nota en el tiempo.<br><br>"
+            "Se calcula midiendo qué porcentaje del tiempo la señal se mantiene cerca de su nivel máximo.<br>"
+            "Un Delta (+) indica que el Preset B 'sostiene' más la nota (típico de compresores o distorsión)."
+        )
+        
+        self.dash_row2.addWidget(self.card_sat)
+        self.dash_row2.addWidget(self.card_bright)
+        self.dash_row2.addWidget(self.card_mids)
+        self.dash_row2.addWidget(self.card_sustain)
+        
+        self.dash_container.addLayout(self.dash_row1)
+        self.dash_container.addLayout(self.dash_row2)
+        layout.addLayout(self.dash_container)
         
         # Plot
         self.plot_widget = FrequencyPlotWidget(y_range=(-60, 10))
@@ -539,6 +578,20 @@ class PresetCompareWidget(QtWidgets.QWidget):
             self.card_lufs.set_values(f"{self.preset_a_metrics['lufs']:.1f}" if self.preset_a_metrics else "---", "---", "")
             self.card_plr.set_values(f"{self.preset_a_metrics['plr']:.1f}" if self.preset_a_metrics else "---", "---", "")
             self.card_peak.set_values(f"{self.preset_a_metrics['max_peak_db']:.1f}" if self.preset_a_metrics else "---", "---", "")
+            
+            def get_char(c):
+                if c < 1100: return "WARM"
+                if c < 1600: return "RHYTHM"
+                if c < 2400: return "LEAD/CUT"
+                return "PRESENCE"
+            
+            cent = self.preset_a_metrics.get('centroid', 0) if self.preset_a_metrics else 0
+            val_bright = f"{cent:.0f}Hz ({get_char(cent)})" if self.preset_a_metrics else "---"
+            
+            self.card_sat.set_values(f"{self.preset_a_metrics.get('saturation', 0):.0f}%" if self.preset_a_metrics else "---", "---", "")
+            self.card_bright.set_values(val_bright, "---", "")
+            self.card_mids.set_values(f"{self.preset_a_metrics.get('energy_bands', {}).get('mid', 0):.1f}dB" if self.preset_a_metrics else "---", "---", "")
+            self.card_sustain.set_values(f"{self.preset_a_metrics.get('sustain', 0):.0f}%" if self.preset_a_metrics else "---", "---", "")
         if self.diff_fill in self.plot_widget.items(): self.plot_widget.removeItem(self.diff_fill)
         QtWidgets.QApplication.processEvents()
         try:
@@ -582,8 +635,13 @@ class PresetCompareWidget(QtWidgets.QWidget):
                 chunk = play_data[self.current_frame : self.current_frame + frames]
                 outdata[:len(chunk)] = chunk
                 if len(chunk) < frames: outdata[len(chunk):].fill(0)
-                if indata.shape[1] > receive_ch: self.recorded_data.append(indata[:, receive_ch].copy())
-                else: self.recorded_data.append(np.zeros((frames,)))
+                
+                # Captura Mono estándar
+                if indata.shape[1] > receive_ch: 
+                    self.recorded_data.append(indata[:, receive_ch].copy())
+                else: 
+                    self.recorded_data.append(np.zeros((frames,)))
+                
                 self.current_frame += frames
                 if self.current_frame >= len(play_data): raise sd.CallbackStop
             self.btn_capture_b.setEnabled(False)
@@ -678,14 +736,61 @@ class PresetCompareWidget(QtWidgets.QWidget):
                 self.card_lufs.set_values(f"{self.preset_a_metrics['lufs']:.1f}", "---", None)
                 self.card_plr.set_values(f"{self.preset_a_metrics['plr']:.1f}", "---", None)
                 self.card_peak.set_values(f"{self.preset_a_metrics['max_peak_db']:.1f}", "---", None)
+                self.card_sat.set_values(f"{self.preset_a_metrics.get('saturation', 0):.0f}%", "---", None)
+                
+                def get_char(c):
+                    if c < 1100: return "WARM"
+                    if c < 1600: return "RHYTHM"
+                    if c < 2400: return "LEAD/CUT"
+                    return "PRESENCE"
+                
+                cent = self.preset_a_metrics.get('centroid', 0)
+                self.card_bright.set_values(f"{cent:.0f}Hz ({get_char(cent)})", "---", None)
+                self.card_mids.set_values(f"{self.preset_a_metrics.get('energy_bands', {}).get('mid', 0):.1f}dB", "---", None)
+                self.card_sustain.set_values(f"{self.preset_a_metrics.get('sustain', 0):.0f}%", "---", None)
             return
-        # Ambos presets capturados: mostrar delta como porcentaje
+        # Ambos presets capturados: mostrar deltas informativos
         pct_lufs = self._delta_pct(self.preset_a_metrics['lufs'], self.preset_b_metrics['lufs'])
         pct_plr  = self._delta_pct(self.preset_a_metrics['plr'],  self.preset_b_metrics['plr'])
-        pct_peak = self._delta_pct(self.preset_a_metrics['max_peak_db'], self.preset_b_metrics['max_peak_db'])
+        
+        # Max Peak: Diferencia directa en dBs (más informativo para picos)
+        diff_peak = self.preset_a_metrics['max_peak_db'] - self.preset_b_metrics['max_peak_db']
+        label_peak = f"{self.preset_b_metrics['max_peak_db'] - self.preset_a_metrics['max_peak_db']:+.1f} dB"
+        
+        sat_a = self.preset_a_metrics.get('saturation', 0)
+        sat_b = self.preset_b_metrics.get('saturation', 0)
+        pct_sat = f"{sat_b - sat_a:+.0f}%"
+        
+        cent_a = self.preset_a_metrics.get('centroid', 0)
+        cent_b = self.preset_b_metrics.get('centroid', 0)
+        pct_bright = self._delta_pct(cent_a, cent_b)
+        
+        def get_char(c):
+            if c < 1100: return "WARM"
+            if c < 1600: return "RHYTHM"
+            if c < 2400: return "LEAD/CUT"
+            return "PRESENCE"
+            
+        char_a, char_b = get_char(cent_a), get_char(cent_b)
+        val_bright_a = f"{cent_a:.0f}Hz ({char_a})"
+        val_bright_b = f"{cent_b:.0f}Hz ({char_b})"
+
         self.card_lufs.set_values(f"{self.preset_a_metrics['lufs']:.1f}", f"{self.preset_b_metrics['lufs']:.1f}", pct_lufs)
         self.card_plr.set_values(f"{self.preset_a_metrics['plr']:.1f}", f"{self.preset_b_metrics['plr']:.1f}", pct_plr)
-        self.card_peak.set_values(f"{self.preset_a_metrics['max_peak_db']:.1f}", f"{self.preset_b_metrics['max_peak_db']:.1f}", pct_peak)
+        self.card_peak.set_values(f"{self.preset_a_metrics['max_peak_db']:.1f}", f"{self.preset_b_metrics['max_peak_db']:.1f}", label_peak)
+        self.card_sat.set_values(f"{sat_a:.0f}%", f"{sat_b:.0f}%", pct_sat)
+        self.card_bright.set_values(val_bright_a, val_bright_b, pct_bright)
+        
+        mids_a = self.preset_a_metrics.get('energy_bands', {}).get('mid', 0)
+        mids_b = self.preset_b_metrics.get('energy_bands', {}).get('mid', 0)
+        pct_mids = f"{mids_b - mids_a:+.1f}dB"
+        self.card_mids.set_values(f"{mids_a:.1f}dB", f"{mids_b:.1f}dB", pct_mids)
+        
+        sust_a = self.preset_a_metrics.get('sustain', 0)
+        sust_b = self.preset_b_metrics.get('sustain', 0)
+        pct_sust = f"{sust_b - sust_a:+.0f}%"
+        self.card_sustain.set_values(f"{sust_a:.0f}%", f"{sust_b:.0f}%", pct_sust)
+        
         self.highlight_differences()
 
     def highlight_differences(self):
