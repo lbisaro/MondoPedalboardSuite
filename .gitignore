@@ -16,6 +16,10 @@ repos/
 # Caché local generado dinámicamente por la aplicación
 helix_config_cache.json
 
+# Scripts de mantenimiento / conversión de datos (no forman parte de la app)
+convert_modules_to_json.py
+extract_helix_catalog.py
+
 # Archivos temporales o de configuración de editores/IDE
 .vscode/
 .idea/
