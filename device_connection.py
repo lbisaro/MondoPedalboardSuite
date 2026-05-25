@@ -4,6 +4,7 @@ import json
 import sounddevice as sd
 import time
 from PySide6 import QtCore, QtWidgets, QtGui
+from helix_connection import HelixConnection
 
 class AudioDeviceDialog(QtWidgets.QDialog):
     """Diálogo para configurar el driver, dispositivo y canales de la Pedalboard."""
@@ -180,8 +181,10 @@ class ConnectionManager:
         _user_data = os.path.join(_base_dir, "user_data")
         os.makedirs(_user_data, exist_ok=True)
         self.settings_file = os.path.join(_user_data, "settings.json")
+        self.helix_conn = HelixConnection()
 
     def start_audio(self, settings):
+        print(f"[AUDIO] Iniciando stream. Parámetros: {settings.get('device_name')} | IN:{settings.get('in_channel')} OUT:{settings.get('out_channel')}...")
         self.stop_audio()
         try:
             in_id, out_id = settings["device_id"]
@@ -191,13 +194,27 @@ class ConnectionManager:
             # Configurar el analyzer
             self.analyzer.in_ch = receive_ch
             self.analyzer.out_ch = send_ch
-            self.analyzer.meas_mag_avg.fill(0)
+            
+            # Limpiar buffers de forma segura
+            if hasattr(self.analyzer, 'meas_mag_avg') and self.analyzer.meas_mag_avg is not None:
+                self.analyzer.meas_mag_avg.fill(0)
+            if hasattr(self.analyzer, 'magnitude_db') and self.analyzer.magnitude_db is not None:
+                self.analyzer.magnitude_db.fill(0)
+            if hasattr(self.analyzer, 'smoothed_magnitude_db') and self.analyzer.smoothed_magnitude_db is not None:
+                self.analyzer.smoothed_magnitude_db.fill(0)
+            if hasattr(self.analyzer, 'capture_buffer') and self.analyzer.capture_buffer is not None:
+                self.analyzer.capture_buffer.fill(0)
+            
+            # Restablecer estado de calibración
+            self.analyzer.calibration_offset = None
+            self.analyzer.manual_offset_adj = 0.0
 
             # Obtener el número REAL de canales soportados para no pedir de más
             # Si in_id o out_id son None, usamos el ID del otro lado (duplex)
             actual_in_id = in_id if in_id is not None else out_id
             actual_out_id = out_id if out_id is not None else in_id
             
+            print(f"[AUDIO] Consultando info de dispositivos (IN: {actual_in_id}, OUT: {actual_out_id})...")
             in_info = sd.query_devices(actual_in_id)
             out_info = sd.query_devices(actual_out_id)
             
@@ -209,11 +226,14 @@ class ConnectionManager:
 
             # Usar la frecuencia de muestreo por defecto del dispositivo
             device_sr = int(in_info['default_samplerate'])
+            print(f"[AUDIO] Frecuencia de muestreo detectada: {device_sr} Hz. Configurando analizador...")
             self.analyzer.set_sample_rate(device_sr)
 
             # Pequeña pausa para permitir que el driver libere recursos
+            print("[AUDIO] Esperando 200ms para estabilización del driver...")
             time.sleep(0.2)
 
+            print("[AUDIO] Abriendo Stream con sounddevice...")
             try:
                 # OPTIMIZACIÓN: Intentar primero con el blocksize nativo del driver (0)
                 # y los canales exactos.
@@ -225,8 +245,9 @@ class ConnectionManager:
                     callback=self.analyzer.audio_callback
                 )
                 self.stream.start()
+                print("[AUDIO] Stream iniciado exitosamente con parámetros ideales.")
             except Exception as e_inner:
-                print(f"Error con parámetros ideales: {e_inner}. Probando fallback absoluto...")
+                print(f"[AUDIO] Error con parámetros ideales: {e_inner}. Probando fallback absoluto...")
                 # Fallback absoluto: 44.1k o 48k, sin blocksize
                 self.stream = sd.Stream(
                     device=(actual_in_id, actual_out_id),
@@ -236,9 +257,20 @@ class ConnectionManager:
                 self.stream.start()
                 # Si esto funciona, actualizar el samplerate del analyzer al real
                 self.analyzer.set_sample_rate(int(self.stream.samplerate))
+                print(f"[AUDIO] Stream iniciado en modo fallback. Samplerate real: {self.stream.samplerate} Hz")
+
+            # Iniciar conexión USB de datos de la Helix
+            if self.helix_conn and not self.helix_conn.dev:
+                try:
+                    self.helix_conn.connect()
+                    self.helix_conn.perform_handshake()
+                    print("[AUDIO] Conexión USB Helix de datos iniciada y handshake completado.")
+                except Exception as ex_usb:
+                    print(f"[AUDIO] Advertencia: No se pudo conectar a los datos USB de Helix: {ex_usb}")
 
             return True, "Conectado"
         except Exception as e:
+            print(f"[AUDIO] Error crítico al iniciar stream: {e}")
             return False, str(e)
 
     def stop_audio(self):
@@ -248,6 +280,11 @@ class ConnectionManager:
                 self.stream.close()
             except: pass
             self.stream = None
+            
+        if self.helix_conn and self.helix_conn.dev:
+            try:
+                self.helix_conn.disconnect()
+            except: pass
 
     def load_settings(self):
         if os.path.exists(self.settings_file):
