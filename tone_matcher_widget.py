@@ -1,4 +1,5 @@
 import os
+import json
 import time
 import numpy as np
 import soundfile as sf
@@ -7,7 +8,7 @@ import mido
 from PySide6 import QtCore, QtWidgets, QtGui
 import qtawesome as qta
 from audio_comparator import AudioComparator
-from ui_utils import FrequencyPlotWidget
+from ui_utils import FrequencyPlotWidget, apply_smoothing
 
 class OptimizeCancelled(Exception):
     pass
@@ -92,6 +93,66 @@ class AmpOptimizeWorker(QtCore.QThread):
         except Exception as e:
             self.finished_sig.emit(False, f"Error en optimización: {str(e)}", None)
 
+class MetricCard(QtWidgets.QFrame):
+    def __init__(self, title, parent=None):
+        super().__init__(parent)
+        self.setObjectName("MetricCard")
+        self.setStyleSheet("""
+            QFrame#MetricCard {
+                background-color: #1A1A1A;
+                border: 1px solid #2A2A2A;
+                border-radius: 6px;
+                padding: 6px;
+            }
+            QLabel {
+                background: transparent;
+            }
+        """)
+        layout = QtWidgets.QVBoxLayout(self)
+        layout.setContentsMargins(8, 6, 8, 6)
+        layout.setSpacing(2)
+        
+        self.lbl_title = QtWidgets.QLabel(title)
+        self.lbl_title.setStyleSheet("color: #888888; font-size: 8pt; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px;")
+        
+        val_layout = QtWidgets.QHBoxLayout()
+        val_layout.setSpacing(6)
+        
+        self.lbl_target = QtWidgets.QLabel("---")
+        self.lbl_target.setStyleSheet("color: #FFAC41; font-size: 11pt; font-weight: bold;")
+        
+        self.lbl_sep = QtWidgets.QLabel("|")
+        self.lbl_sep.setStyleSheet("color: #444444; font-size: 10pt;")
+        
+        self.lbl_processed = QtWidgets.QLabel("---")
+        self.lbl_processed.setStyleSheet("color: #00ADB5; font-size: 11pt; font-weight: bold;")
+        
+        val_layout.addWidget(self.lbl_target)
+        val_layout.addWidget(self.lbl_sep)
+        val_layout.addWidget(self.lbl_processed)
+        val_layout.addStretch()
+        
+        self.lbl_delta = QtWidgets.QLabel("")
+        self.lbl_delta.setStyleSheet("color: #888888; font-size: 8pt;")
+        
+        layout.addWidget(self.lbl_title)
+        layout.addLayout(val_layout)
+        layout.addWidget(self.lbl_delta)
+        
+    def set_values(self, target_val, processed_val, delta_val=None, color_delta=None):
+        self.lbl_target.setText(str(target_val))
+        self.lbl_processed.setText(str(processed_val))
+        if delta_val:
+            self.lbl_delta.setText(f"Δ: {delta_val}")
+            if color_delta == "green":
+                self.lbl_delta.setStyleSheet("color: #00FFAB; font-size: 8pt; font-weight: bold;")
+            elif color_delta == "red":
+                self.lbl_delta.setStyleSheet("color: #FF4B2B; font-size: 8pt; font-weight: bold;")
+            else:
+                self.lbl_delta.setStyleSheet("color: #888888; font-size: 8pt;")
+        else:
+            self.lbl_delta.setText("")
+
 class ToneMatcherWidget(QtWidgets.QWidget):
     def __init__(self, analyzer, main_window):
         super().__init__()
@@ -105,11 +166,12 @@ class ToneMatcherWidget(QtWidgets.QWidget):
 
         # State machine variables for matching loop (runs on main thread)
         self.is_running = False
+        self.is_looping = False
         self.goal_type = None
         self.midi_port = None
         
         # Goal 1 state variables
-        self.g1_cc = None
+        self.g1_cc = 17
         self.g1_steps = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
         self.g1_current_idx = 0
         self.g1_best_diff = float('inf')
@@ -129,13 +191,18 @@ class ToneMatcherWidget(QtWidgets.QWidget):
         # Temporary buffers for non-blocking playrec
         self.play_array = None
         self.record_array = None
+        
+        # Audio loop QTimer
+        self.loop_timer = QtCore.QTimer(self)
+        self.loop_timer.setSingleShot(True)
+        self.loop_timer.timeout.connect(self.process_loop_iteration)
 
         self.init_ui()
 
     def init_ui(self):
         main_layout = QtWidgets.QVBoxLayout(self)
         main_layout.setContentsMargins(15, 15, 15, 15)
-        main_layout.setSpacing(15)
+        main_layout.setSpacing(12)
 
         # --- TOP HEADER ROW ---
         header_layout = QtWidgets.QHBoxLayout()
@@ -158,13 +225,33 @@ class ToneMatcherWidget(QtWidgets.QWidget):
         
         main_layout.addLayout(header_layout)
 
+        # --- METRIC CARDS GRID (6 Cards) ---
+        grid_layout = QtWidgets.QGridLayout()
+        grid_layout.setSpacing(10)
+        
+        self.card_lufs = MetricCard("Loudness (LUFS)")
+        self.card_plr = MetricCard("Dynamics (PLR)")
+        self.card_peak = MetricCard("Max Peak (dBFS)")
+        self.card_sat = MetricCard("Saturation (Gain)")
+        self.card_bright = MetricCard("Brightness (Hz)")
+        self.card_sustain = MetricCard("Sustain (%)")
+        
+        grid_layout.addWidget(self.card_lufs, 0, 0)
+        grid_layout.addWidget(self.card_plr, 0, 1)
+        grid_layout.addWidget(self.card_peak, 0, 2)
+        grid_layout.addWidget(self.card_sat, 1, 0)
+        grid_layout.addWidget(self.card_bright, 1, 1)
+        grid_layout.addWidget(self.card_sustain, 1, 2)
+        
+        main_layout.addLayout(grid_layout)
+
         # --- SPLIT LAYOUT PANEL (Left: Controls, Right: FFT Plot) ---
         split_layout = QtWidgets.QHBoxLayout()
         split_layout.setSpacing(15)
 
         # LEFT SIDE: Controls Panel
         left_panel = QtWidgets.QWidget()
-        left_panel.setFixedWidth(500)
+        left_panel.setFixedWidth(420)
         left_layout = QtWidgets.QVBoxLayout(left_panel)
         left_layout.setContentsMargins(0, 0, 0, 0)
         left_layout.setSpacing(15)
@@ -172,8 +259,15 @@ class ToneMatcherWidget(QtWidgets.QWidget):
         # File loaders card
         files_frame = QtWidgets.QFrame()
         files_frame.setObjectName("MetricCard")
+        files_frame.setStyleSheet("""
+            QFrame#MetricCard {
+                background-color: #1A1A1A;
+                border: 1px solid #2A2A2A;
+                border-radius: 6px;
+            }
+        """)
         files_layout = QtWidgets.QGridLayout(files_frame)
-        files_layout.setContentsMargins(15, 15, 15, 15)
+        files_layout.setContentsMargins(15, 12, 15, 12)
         files_layout.setSpacing(10)
 
         # Target file loader
@@ -199,21 +293,21 @@ class ToneMatcherWidget(QtWidgets.QWidget):
         # Tab Widget for Goals
         self.tabs = QtWidgets.QTabWidget()
         
-        # Tab 1: Spectral Brightness
+        # Tab 1: Ajuste Manual
         self.tab_brightness = QtWidgets.QWidget()
         self.setup_brightness_tab()
-        self.tabs.addTab(self.tab_brightness, "BRIGHTNESS (G1)")
+        self.tabs.addTab(self.tab_brightness, "Ajuste Manual")
 
         # Tab 2: Amp EQ (Initially disabled)
         self.tab_amp = QtWidgets.QWidget()
         self.setup_amp_tab()
-        self.tabs.addTab(self.tab_amp, "AMP EQ (G2)")
+        self.tabs.addTab(self.tab_amp, "Amp EQ")
         self.tabs.setTabEnabled(1, False)
 
         # Tab 3: EQ (Initially disabled)
         self.tab_eq = QtWidgets.QWidget()
         self.setup_eq_tab()
-        self.tabs.addTab(self.tab_eq, "SURGICAL EQ (G3)")
+        self.tabs.addTab(self.tab_eq, "Surgical EQ & Nivel")
         self.tabs.setTabEnabled(2, False)
 
         left_layout.addWidget(self.tabs)
@@ -245,6 +339,7 @@ class ToneMatcherWidget(QtWidgets.QWidget):
         status_layout = QtWidgets.QHBoxLayout()
         self.progress_bar = QtWidgets.QProgressBar()
         self.progress_bar.setValue(0)
+        self.progress_bar.setFixedHeight(15)
         status_layout.addWidget(self.progress_bar)
 
         self.lbl_status = QtWidgets.QLabel("Esperando carga de archivos...")
@@ -293,7 +388,8 @@ class ToneMatcherWidget(QtWidgets.QWidget):
                 self.target_curve.setData(self.target_data['freqs'], target_db)
                 
                 self.lbl_target_info.setText(f"Target: {self.target_data['lufs']:.1f} LUFS | Brillo: {self.target_data['centroid']:.1f} Hz")
-
+                
+                self.update_metrics_cards(target_only=True)
                 self.update_ui_state()
             except Exception as e:
                 QtWidgets.QMessageBox.critical(self, "Error", f"No se pudo cargar el target: {e}")
@@ -317,14 +413,23 @@ class ToneMatcherWidget(QtWidgets.QWidget):
 
     def update_ui_state(self):
         ready = (self.target_data is not None) and (self.di_audio is not None)
-        self.btn_start_brightness.setEnabled(ready)
+        self.btn_start_loop.setEnabled(ready)
         if ready:
-            self.lbl_status.setText("Listo para iniciar Spectral Brightness (GOAL 1)")
+            self.lbl_status.setText("Listo para iniciar el Ajuste Manual.")
 
     def setup_brightness_tab(self):
         layout = QtWidgets.QVBoxLayout(self.tab_brightness)
         layout.setContentsMargins(15, 15, 15, 15)
-        layout.setSpacing(15)
+        layout.setSpacing(12)
+
+        # Profile selection
+        profile_layout = QtWidgets.QHBoxLayout()
+        profile_layout.addWidget(QtWidgets.QLabel("Target Profile:"))
+        self.target_sel = QtWidgets.QComboBox()
+        self.target_sel.addItems(["None", "AMBIENT", "RHYTHM", "LEAD"])
+        self.target_sel.currentTextChanged.connect(self.on_profile_changed)
+        profile_layout.addWidget(self.target_sel)
+        layout.addLayout(profile_layout)
 
         form = QtWidgets.QFormLayout()
         self.cc_mic_pos = QtWidgets.QSpinBox()
@@ -334,17 +439,26 @@ class ToneMatcherWidget(QtWidgets.QWidget):
         layout.addLayout(form)
 
         info = QtWidgets.QLabel(
-            "El sistema probará 11 posiciones del mic de 0% a 100% de a 10% en tu Helix,\n"
-            "analizando el brillo espectral de la señal procesada para encontrar el mejor valor."
+            "Inicia el loop en tiempo real y mueve manualmente los parámetros del amplificador\n"
+            "o el micrófono en tu Helix para aproximar la respuesta espectral y métricas."
         )
         info.setStyleSheet("color: #888; font-style: italic;")
         layout.addWidget(info)
 
-        self.btn_start_brightness = QtWidgets.QPushButton("Iniciar Match de Mic Position (GOAL 1)")
-        self.btn_start_brightness.setObjectName("AccentButton")
-        self.btn_start_brightness.setEnabled(False)
-        self.btn_start_brightness.clicked.connect(self.start_goal_1)
-        layout.addWidget(self.btn_start_brightness)
+        # Buttons
+        btn_layout = QtWidgets.QHBoxLayout()
+        self.btn_start_loop = QtWidgets.QPushButton("Iniciar Loop en Tiempo Real")
+        self.btn_start_loop.setObjectName("AccentButton")
+        self.btn_start_loop.setEnabled(False)
+        self.btn_start_loop.clicked.connect(self.toggle_manual_loop)
+        
+        self.btn_fix_manual = QtWidgets.QPushButton("Fijar Ajuste y Continuar")
+        self.btn_fix_manual.setEnabled(False)
+        self.btn_fix_manual.clicked.connect(self.fix_manual_and_continue)
+        
+        btn_layout.addWidget(self.btn_start_loop)
+        btn_layout.addWidget(self.btn_fix_manual)
+        layout.addLayout(btn_layout)
         layout.addStretch()
 
     def setup_amp_tab(self):
@@ -372,7 +486,7 @@ class ToneMatcherWidget(QtWidgets.QWidget):
         form.addRow("MIDI CC Presencia:", self.cc_presence)
         layout.addLayout(form)
 
-        self.btn_start_amp = QtWidgets.QPushButton("Iniciar Match de Amp EQ (GOAL 2)")
+        self.btn_start_amp = QtWidgets.QPushButton("Iniciar Optimización de Amplificador")
         self.btn_start_amp.setObjectName("AccentButton")
         self.btn_start_amp.clicked.connect(self.start_goal_2)
         layout.addWidget(self.btn_start_amp)
@@ -399,13 +513,102 @@ class ToneMatcherWidget(QtWidgets.QWidget):
             scroll_layout.addRow(f"MIDI CC Banda {f} Hz:", spin)
             self.cc_bands.append(spin)
 
+        self.cc_eq_level = QtWidgets.QSpinBox()
+        self.cc_eq_level.setRange(0, 127)
+        self.cc_eq_level.setValue(41)
+        scroll_layout.addRow("MIDI CC Level (Gain):", self.cc_eq_level)
+
         scroll.setWidget(scroll_content)
         layout.addWidget(scroll)
 
-        self.btn_start_eq = QtWidgets.QPushButton("Iniciar Match de 10-Band EQ (GOAL 3)")
+        self.btn_start_eq = QtWidgets.QPushButton("Iniciar Match de EQ y Nivel")
         self.btn_start_eq.setObjectName("AccentButton")
         self.btn_start_eq.clicked.connect(self.start_goal_3)
         layout.addWidget(self.btn_start_eq)
+
+    def load_target_profiles(self):
+        json_path = os.path.join("utils", "target_profiles.json")
+        if os.path.exists(json_path):
+            try:
+                with open(json_path, "r", encoding="utf-8") as f:
+                    return json.load(f)
+            except Exception as e:
+                print(f"Error loading target profiles: {e}")
+        return {
+            "AMBIENT": {"brightness_min": 600.0, "brightness_max": 1500.0, "lufs_min": -22.0, "lufs_max": -16.0},
+            "RHYTHM": {"brightness_min": 1200.0, "brightness_max": 2000.0, "lufs_min": -18.0, "lufs_max": -14.0},
+            "LEAD": {"brightness_min": 1900.0, "brightness_max": 2700.0, "lufs_min": -16.0, "lufs_max": -12.0}
+        }
+
+    def on_profile_changed(self, profile_name):
+        if profile_name == "None" or not profile_name:
+            self.plot_widget.set_target_ranges([])
+            return
+            
+        profiles = self.load_target_profiles()
+        profile = profiles.get(profile_name, {})
+        
+        ranges = [
+            {'name': 'BODY', 'min_freq': 100.0, 'max_freq': 500.0, 'color': '#9370DB'},
+            {'name': 'CUT', 'min_freq': 2000.0, 'max_freq': 5000.0, 'color': '#00FA9A'}
+        ]
+        
+        b_min = profile.get("brightness_min")
+        b_max = profile.get("brightness_max")
+        if b_min is not None and b_max is not None:
+            ranges.append({
+                'name': 'BRIGHTNESS',
+                'min_freq': b_min,
+                'max_freq': b_max,
+                'color': '#FFA500'
+            })
+            
+        self.plot_widget.set_target_ranges(ranges)
+
+    def update_metrics_cards(self, target_only=False, processed_metrics=None):
+        if not self.target_data:
+            return
+            
+        # Target metrics
+        t_lufs = self.target_data['lufs']
+        t_plr = self.target_data['plr']
+        t_peak = self.target_data['max_peak_db']
+        t_sat = self.target_data.get('saturation', 0.0)
+        t_bright = self.target_data.get('centroid', 0.0)
+        t_sust = self.target_data.get('sustain', 0.0)
+        
+        if target_only or not processed_metrics:
+            self.card_lufs.set_values(f"{t_lufs:.1f}", "---")
+            self.card_plr.set_values(f"{t_plr:.1f}", "---")
+            self.card_peak.set_values(f"{t_peak:.1f}", "---")
+            self.card_sat.set_values(f"{t_sat:.0f}%", "---")
+            self.card_bright.set_values(f"{t_bright:.0f} Hz", "---")
+            self.card_sustain.set_values(f"{t_sust:.0f}%", "---")
+            return
+            
+        # Processed metrics
+        p_lufs = processed_metrics['lufs']
+        p_plr = processed_metrics['plr']
+        p_peak = processed_metrics['max_peak_db']
+        p_sat = processed_metrics.get('saturation', 0.0)
+        p_bright = processed_metrics.get('centroid', 0.0)
+        p_sust = processed_metrics.get('sustain', 0.0)
+        
+        # Calculate deltas
+        d_lufs = p_lufs - t_lufs
+        d_plr = p_plr - t_plr
+        d_peak = p_peak - t_peak
+        d_sat = p_sat - t_sat
+        d_bright = p_bright - t_bright
+        d_sust = p_sust - t_sust
+        
+        # Set card values
+        self.card_lufs.set_values(f"{t_lufs:.1f}", f"{p_lufs:.1f}", f"{d_lufs:+.1f} dB", "green" if abs(d_lufs) < 1.0 else "red")
+        self.card_plr.set_values(f"{t_plr:.1f}", f"{p_plr:.1f}", f"{d_plr:+.1f}", "green" if abs(d_plr) < 1.5 else "red")
+        self.card_peak.set_values(f"{t_peak:.1f}", f"{p_peak:.1f}", f"{d_peak:+.1f} dB", "green" if p_peak <= 0.0 else "red")
+        self.card_sat.set_values(f"{t_sat:.0f}%", f"{p_sat:.0f}%", f"{d_sat:+.0f}%", "green" if abs(d_sat) < 10 else "red")
+        self.card_bright.set_values(f"{t_bright:.0f} Hz", f"{p_bright:.0f} Hz", f"{d_bright:+.0f} Hz", "green" if abs(d_bright) < 150 else "red")
+        self.card_sustain.set_values(f"{t_sust:.0f}%", f"{p_sust:.0f}%", f"{d_sust:+.0f}%", "green" if abs(d_sust) < 10 else "red")
 
     def send_midi(self, cc, value):
         if not self.midi_port:
@@ -448,57 +651,59 @@ class ToneMatcherWidget(QtWidgets.QWidget):
         self.play_array = np.zeros((len(self.working_di_audio), self.num_out), dtype=np.float32)
         self.play_array[:, self.send_ch] = self.working_di_audio
 
-    def start_goal_1(self):
+    # --- GOAL 1 / REAL-TIME LOOP IMPLEMENTATION ---
+    def toggle_manual_loop(self):
+        if self.is_looping:
+            self.stop_manual_loop()
+        else:
+            self.start_manual_loop()
+
+    def start_manual_loop(self):
         try:
+            self.is_looping = True
             self.is_running = True
             self.goal_type = 'goal_1'
             self.midi_port = self.midi_port_combo.currentText()
-            self.g1_cc = self.cc_mic_pos.value()
-            self.g1_current_idx = 0
-            self.g1_best_diff = float('inf')
-            self.g1_best_cc_val = 0
-            self.g1_best_centroid = 0
-
+            
+            self.btn_start_loop.setText("Detener Loop")
+            self.btn_start_loop.setStyleSheet("background-color: #FF4B2B; color: white; font-weight: bold;")
+            self.btn_fix_manual.setEnabled(False)
             self.set_working_state(True)
+            
             self.lbl_status.setText("Liberando dispositivo de audio...")
             QtWidgets.QApplication.processEvents()
-            
             self.main_window.conn_mgr.stop_audio()
             
             self.prepare_audio_routing()
-
-            QtCore.QTimer.singleShot(1000, self.loop_step_goal_1)
+            
+            self.lbl_status.setText("Loop en Tiempo Real activo (Reproduciendo/Grabando)...")
+            # Iniciar primera vuelta del loop
+            QtCore.QTimer.singleShot(1000, self.trigger_loop_iteration)
         except Exception as e:
             self.on_process_error(str(e))
 
-    def loop_step_goal_1(self):
-        if not self.is_running:
-            self.on_process_finished(False, "Cancelado por el usuario")
+    def stop_manual_loop(self):
+        self.is_looping = False
+        self.is_running = False
+        self.loop_timer.stop()
+        try:
+            sd.stop()
+        except:
+            pass
+        self.btn_start_loop.setText("Iniciar Loop en Tiempo Real")
+        self.btn_start_loop.setStyleSheet("")
+        self.btn_fix_manual.setEnabled(True)
+        self.set_working_state(False)
+        self.lbl_status.setText("Loop detenido. Ajustes listos para fijar.")
+        
+        # Reactivar el monitor normal de audio
+        if self.audio_settings:
+            QtCore.QTimer.singleShot(1200, lambda: self.main_window.conn_mgr.start_audio(self.audio_settings))
+
+    def trigger_loop_iteration(self):
+        if not self.is_looping:
             return
-
-        if self.g1_current_idx >= len(self.g1_steps):
-            self.lbl_status.setText(f"Finalizado. Aplicando mejor CC {self.g1_best_cc_val}...")
-            self.progress_bar.setValue(100)
-            QtWidgets.QApplication.processEvents()
-            self.send_midi(self.g1_cc, self.g1_best_cc_val)
-            time.sleep(0.3)
-            self.on_process_finished(True, f"Mejor Mic Position encontrado en CC val {self.g1_best_cc_val} (Centroid: {self.g1_best_centroid:.1f} Hz, Target: {self.target_data['centroid']:.1f} Hz)")
-            return
-
-        pct = self.g1_steps[self.g1_current_idx]
-        cc_val = int((pct / 100.0) * 127)
-        self.progress_bar.setValue(int((self.g1_current_idx / len(self.g1_steps)) * 100))
-        self.lbl_status.setText(f"Paso {self.g1_current_idx+1}/{len(self.g1_steps)}: Mic al {pct}% (CC {cc_val})...")
-        QtWidgets.QApplication.processEvents()
-
-        self.send_midi(self.g1_cc, cc_val)
-        QtCore.QTimer.singleShot(350, lambda: self.playrec_step_goal_1(cc_val))
-
-    def playrec_step_goal_1(self, cc_val):
-        if not self.is_running:
-            self.on_process_finished(False, "Cancelado por el usuario")
-            return
-
+            
         try:
             self.record_array = np.zeros((len(self.play_array), self.num_in), dtype=np.float32)
             
@@ -511,21 +716,21 @@ class ToneMatcherWidget(QtWidgets.QWidget):
                 blocking=False
             )
             
+            # Programar el timer para procesar cuando termine la reproducción
             duration_ms = int((len(self.working_di_audio) / self.native_sr) * 1000)
-            QtCore.QTimer.singleShot(duration_ms + 250, lambda: self.process_recorded_step_goal_1(cc_val))
+            self.loop_timer.start(duration_ms + 150)
         except Exception as e:
             self.on_process_error(str(e))
 
-    def process_recorded_step_goal_1(self, cc_val):
+    def process_loop_iteration(self):
         try:
             sd.stop()
         except:
             pass
-
-        if not self.is_running:
-            self.on_process_finished(False, "Cancelado por el usuario")
+            
+        if not self.is_looping:
             return
-
+            
         try:
             recorded_mono = self.record_array[:, self.receive_ch]
             
@@ -533,26 +738,31 @@ class ToneMatcherWidget(QtWidgets.QWidget):
             metrics = comparator.calculate_metrics(recorded_mono)
             current_centroid = metrics.get('centroid', 0.0)
             
-            # Plot current processed DI FFT
+            # Plot processed DI FFT
             di_spec = metrics['avg_spectrum']
             di_db = 20 * np.log10(di_spec + 1e-12)
             self.di_curve.setData(metrics['freqs'], di_db)
             
-            self.lbl_di_info.setText(f"DI Procesada (CC {cc_val}): {metrics['lufs']:.1f} LUFS | Brillo: {current_centroid:.1f} Hz")
+            self.lbl_di_info.setText(f"DI Procesada (Ajuste Manual): {metrics['lufs']:.1f} LUFS | Brillo: {current_centroid:.1f} Hz")
             
-            target_centroid = self.target_data['centroid']
-            diff = abs(current_centroid - target_centroid)
+            # Actualizar tarjetas de métricas
+            self.update_metrics_cards(target_only=False, processed_metrics=metrics)
             
-            if diff < self.g1_best_diff:
-                self.g1_best_diff = diff
-                self.g1_best_cc_val = cc_val
-                self.g1_best_centroid = current_centroid
-
-            self.g1_current_idx += 1
-            QtCore.QTimer.singleShot(150, self.loop_step_goal_1)
+            # Guardar últimas métricas en el widget para la siguiente fase
+            self.manual_di_metrics = metrics
+            
+            # Re-disparar el loop tras un breve respiro
+            QtCore.QTimer.singleShot(150, self.trigger_loop_iteration)
         except Exception as e:
             self.on_process_error(str(e))
 
+    def fix_manual_and_continue(self):
+        # Desbloquear Amp EQ
+        self.tabs.setTabEnabled(1, True)
+        self.tabs.setCurrentIndex(1)
+        QtWidgets.QMessageBox.information(self, "Ajuste Manual Completado", "Ajuste manual fijado correctamente. Pasando a optimización de Amp EQ.")
+
+    # --- GOAL 2 (AMP EQ OPTIMIZATION) ---
     def start_goal_2(self):
         try:
             self.is_running = True
@@ -631,6 +841,8 @@ class ToneMatcherWidget(QtWidgets.QWidget):
             di_db = 20 * np.log10(di_spec + 1e-12)
             self.di_curve.setData(metrics['freqs'], di_db)
             
+            self.update_metrics_cards(target_only=False, processed_metrics=metrics)
+            
             # Calculate MSE in 80Hz - 8000Hz range
             freqs = metrics['freqs']
             mask = (freqs >= 80) & (freqs <= 8000)
@@ -658,6 +870,7 @@ class ToneMatcherWidget(QtWidgets.QWidget):
         
         self.on_process_finished(success, message)
 
+    # --- GOAL 3 (SURGICAL EQ) & GOAL 4 (LOUDNESS LEVELING) ---
     def start_goal_3(self):
         try:
             self.is_running = True
@@ -672,6 +885,10 @@ class ToneMatcherWidget(QtWidgets.QWidget):
             self.main_window.conn_mgr.stop_audio()
             
             self.prepare_audio_routing()
+
+            # Set EQ Level to 0dB (MIDI CC 41 = 64) before starting EQ correction
+            self.send_midi(self.cc_eq_level.value(), 64)
+            time.sleep(0.1)
 
             self.lbl_status.setText("Grabando estado actual (sin EQ quirúrgico) para análisis...")
             QtWidgets.QApplication.processEvents()
@@ -736,7 +953,7 @@ class ToneMatcherWidget(QtWidgets.QWidget):
             diff_db = target_interp - current_interp
             
             self.lbl_status.setText("Calculando y enviando valores de EQ de 10 bandas a la Helix...")
-            self.progress_bar.setValue(50)
+            self.progress_bar.setValue(35)
             QtWidgets.QApplication.processEvents()
             
             # Send CCs
@@ -750,9 +967,83 @@ class ToneMatcherWidget(QtWidgets.QWidget):
                 
             time.sleep(0.3)  # Wait for MIDI buffer to clean and Helix to apply
             
-            self.lbl_status.setText("Realizando grabación de verificación final...")
+            self.lbl_status.setText("Realizando grabación intermedia para ajuste de volumen...")
+            self.progress_bar.setValue(55)
             QtWidgets.QApplication.processEvents()
             
+            QtCore.QTimer.singleShot(500, self.playrec_step_lufs_calib)
+        except Exception as e:
+            self.on_process_error(str(e))
+
+    def playrec_step_lufs_calib(self):
+        if not self.is_running:
+            self.on_process_finished(False, "Cancelado por el usuario")
+            return
+
+        try:
+            self.record_array = np.zeros((len(self.play_array), self.num_in), dtype=np.float32)
+            
+            sd.playrec(
+                self.play_array,
+                samplerate=self.native_sr,
+                device=(self.actual_in_id, self.actual_out_id),
+                channels=self.num_in,
+                out=self.record_array,
+                blocking=False
+            )
+            
+            duration_ms = int((len(self.working_di_audio) / self.native_sr) * 1000)
+            QtCore.QTimer.singleShot(duration_ms + 250, self.process_recorded_step_lufs_calib)
+        except Exception as e:
+            self.on_process_error(str(e))
+
+    def process_recorded_step_lufs_calib(self):
+        try:
+            sd.stop()
+        except:
+            pass
+
+        if not self.is_running:
+            self.on_process_finished(False, "Cancelado por el usuario")
+            return
+
+        try:
+            recorded_mono = self.record_array[:, self.receive_ch]
+            comparator = AudioComparator(self.native_sr)
+            metrics = comparator.calculate_metrics(recorded_mono)
+            
+            current_lufs = metrics['lufs']
+            
+            # --- GOAL 4 LUFS Target Calculation ---
+            profile_name = self.target_sel.currentText()
+            target_lufs = self.target_data['lufs'] # Default fallback
+            
+            if profile_name != "None" and profile_name:
+                profiles = self.load_target_profiles()
+                profile = profiles.get(profile_name, {})
+                l_min = profile.get("lufs_min")
+                l_max = profile.get("lufs_max")
+                if l_min is not None and l_max is not None:
+                    target_lufs = (l_min + l_max) / 2.0
+                    print(f"LUFS Target según Perfil {profile_name}: {target_lufs:.1f} LUFS (Rango: {l_min} a {l_max})")
+
+            delta_lufs = target_lufs - current_lufs
+            print(f"Nivelación LUFS: Actual={current_lufs:.1f}, Objetivo={target_lufs:.1f}, Delta={delta_lufs:+.1f} dB")
+            
+            # EQ Level CC 41. Level parameter in Helix Graphic EQ goes from -15dB (0) to +15dB (127).
+            # Initial state was 0dB (64).
+            new_level_db = np.clip(delta_lufs, -15.0, 15.0)
+            cc_val = int(((new_level_db + 15.0) / 30.0) * 127)
+            
+            self.lbl_status.setText(f"Nivelando volumen (Level EQ CC {self.cc_eq_level.value()} = {cc_val})...")
+            self.progress_bar.setValue(75)
+            QtWidgets.QApplication.processEvents()
+            
+            self.send_midi(self.cc_eq_level.value(), cc_val)
+            time.sleep(0.3)
+            
+            self.lbl_status.setText("Realizando grabación de verificación final...")
+            QtWidgets.QApplication.processEvents()
             QtCore.QTimer.singleShot(500, self.playrec_step_2_goal_3)
         except Exception as e:
             self.on_process_error(str(e))
@@ -800,12 +1091,15 @@ class ToneMatcherWidget(QtWidgets.QWidget):
             di_db = 20 * np.log10(di_spec + 1e-12)
             self.di_curve.setData(metrics['freqs'], di_db)
             
-            self.lbl_di_info.setText(f"DI Final (EQ Quirúrgico): {metrics['lufs']:.1f} LUFS | Brillo: {metrics['centroid']:.1f} Hz")
+            self.lbl_di_info.setText(f"DI Final (EQ Quirúrgico + Nivel): {metrics['lufs']:.1f} LUFS | Brillo: {metrics['centroid']:.1f} Hz")
+            
+            # Actualizar tarjetas de métricas finales
+            self.update_metrics_cards(target_only=False, processed_metrics=metrics)
             
             self.progress_bar.setValue(100)
             QtWidgets.QApplication.processEvents()
             
-            self.on_process_finished(True, "¡Proceso de Tone Matcher finalizado con éxito tras aplicar EQ quirúrgico!")
+            self.on_process_finished(True, "¡Proceso de Tone Matcher finalizado con éxito tras aplicar EQ quirúrgico y nivelación de volumen!")
         except Exception as e:
             self.on_process_error(str(e))
 
@@ -840,18 +1134,20 @@ class ToneMatcherWidget(QtWidgets.QWidget):
             if self.goal_type == 'goal_1':
                 self.tabs.setTabEnabled(1, True)
                 self.tabs.setCurrentIndex(1)
-                QtWidgets.QMessageBox.information(self, "GOAL 1 Completado", message)
+                QtWidgets.QMessageBox.information(self, "Ajuste Manual Completado", message)
             elif self.goal_type == 'goal_2':
                 self.tabs.setTabEnabled(2, True)
                 self.tabs.setCurrentIndex(2)
-                QtWidgets.QMessageBox.information(self, "GOAL 2 Completado", message)
+                QtWidgets.QMessageBox.information(self, "Optimización de Amplificador Completada", message)
             elif self.goal_type == 'goal_3':
-                QtWidgets.QMessageBox.information(self, "GOAL 3 Completado", "Tone Matcher completado con éxito!")
+                QtWidgets.QMessageBox.information(self, "Tone Matcher Finalizado", "¡Tone Matcher completado con éxito!")
         else:
             QtWidgets.QMessageBox.warning(self, "Error", message)
 
     def cancel_matching(self):
         self.is_running = False
+        self.is_looping = False
+        self.loop_timer.stop()
         if self.goal_type == 'goal_2' and hasattr(self, 'g2_worker') and self.g2_worker:
             self.g2_worker.cancel()
         self.lbl_status.setText("Cancelando...")
@@ -860,9 +1156,8 @@ class ToneMatcherWidget(QtWidgets.QWidget):
     def set_working_state(self, is_working):
         self.btn_load_target.setEnabled(not is_working)
         self.btn_load_di.setEnabled(not is_working)
-        self.btn_start_brightness.setEnabled(not is_working and (self.target_data is not None) and (self.di_audio is not None))
+        self.btn_start_loop.setEnabled(not is_working and (self.target_data is not None) and (self.di_audio is not None))
         self.btn_start_amp.setEnabled(not is_working)
         self.btn_start_eq.setEnabled(not is_working)
         self.btn_cancel.setEnabled(is_working)
         self.tabs.setEnabled(not is_working)
-
