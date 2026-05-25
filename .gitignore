@@ -36,3 +36,5 @@ Desktop.ini
 .DS_Store
 legacy_code/
 app_terminal.log
+/archivos_wav
+*.mp4
