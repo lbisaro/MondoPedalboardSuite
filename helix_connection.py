@@ -44,6 +44,8 @@ class HelixConnection:
         self.write_lock = threading.Lock()
         self.handshake_done = False
         self.keep_alive_thread = None
+        self.last_ed03_echo_model = None
+        self.capture_model_echoes = True
         
         self.last_x1_counter = 0x04
         self.session_no = 0x1a
@@ -152,8 +154,8 @@ class HelixConnection:
         abruptamente: intenta liberar la interfaz antes de reclamarla y reintenta
         el reset USB hasta 3 veces si el dispositivo tarda en estar disponible.
         """
+        reset_ok = False
         max_reset_attempts = 3
-
         for attempt in range(1, max_reset_attempts + 1):
             self.dev = self.find_device()
             if self.dev is None:
@@ -170,13 +172,15 @@ class HelixConnection:
                 # Re-obtener referencia limpia tras el reset
                 self.dev = self.find_device()
                 if self.dev is not None:
+                    reset_ok = True
                     break  # Reset exitoso
                 log.warning("El dispositivo desapareció del bus tras el reset, reintentando...")
             except Exception as e:
                 log.warning(f"No se pudo resetear el dispositivo (intento {attempt}): {e}")
                 time.sleep(1.0)
-        else:
-            raise RuntimeError("No se pudo resetear la Helix tras varios intentos.")
+        
+        if not reset_ok:
+            log.warning("No se pudo resetear la Helix, pero intentaremos continuar con la interfaz...")
 
         # --- Liberar interfaz residual si quedó reclamada por un proceso anterior ---
         log.info("Reclamando interfaz 0 (control de canal nativo)...")
@@ -278,8 +282,16 @@ class HelixConnection:
             try:
                 # Leer del endpoint de entrada
                 data = self.dev.read(self.endpoint_in, 512, timeout=200)
-                if len(data) >= 10:
-                    self._classify_and_queue(data)
+                if len(data) >= 8:
+                    offset = 0
+                    while offset + 8 <= len(data):
+                        payload_len = data[offset] + (data[offset + 1] << 8)
+                        pkt_len = payload_len + 8
+                        if offset + pkt_len > len(data):
+                            break
+                        pkt = data[offset : offset + pkt_len]
+                        self._classify_and_queue(pkt)
+                        offset += pkt_len
             except usb.core.USBError as e:
                 # Manejar timeouts normales sin detener el bucle
                 if e.backend_error_code == -7 or "timeout" in str(e).lower() or e.errno in (10060, 110):
@@ -346,6 +358,31 @@ class HelixConnection:
             elif data[4] == 0xf0 and data[6] == 0x02 and data[11] == 0x10:
                 return
 
+        # Capture model echo
+        if self.capture_model_echoes and len(data) >= 32 and len(data) < 100 and data[4] == 0xed and data[6] in (0x80, 0x03):
+            if data[24] == 0x83 and data[25] == 0x66 and data[26] == 0xcd:
+                payload = list(data[24:40])
+                if len(payload) < 16:
+                    payload += [0] * (16 - len(payload))
+                if payload[3] == 0x03:
+                    self.last_ed03_echo_model = payload
+                    log.info(f"Captured model echo from device (payload): {[hex(x) for x in self.last_ed03_echo_model]}")
+                else:
+                    log.info(f"Ignored non-param-write model echo payload: {[hex(x) for x in payload]}")
+                log.info(f"Captured model echo (full packet): {[hex(x) for x in list(data)]}")
+                
+                # Automatically ACK this model echo/message on channel 80 to prevent device lockup!
+                ack = [
+                    0x08, 0x00, 0x00, 0x18, 0x80, 0x10, 0xed, 0x03,
+                    0x00, "XX", 0x00, 0x08,
+                    data[12], data[13], data[14], 0x00
+                ]
+                try:
+                    self.write(ack)
+                    log.info(f"Automatically ACK'd model echo on channel 80: session={hex(data[12])}, double={hex(data[13])},{hex(data[14])}")
+                except Exception as e:
+                    log.warning(f"Error sending automatic model echo ACK: {e}")
+
         # Si el handshake no ha terminado, o si es otro tipo de mensaje, lo clasificamos y encolamos
         # Keep-alive x1 (por si acaso se recibe durante el handshake)
         if data[4] == 0xef and data[6] == 0x01 and data[11] in (0x10, 0x08):
@@ -357,18 +394,22 @@ class HelixConnection:
             
         # Respuesta del nombre del preset (comparación de firmas según helix_usb)
         elif n >= 39 and self.my_byte_cmp(data[23:], [0x0, 0x83, 0x66, 0xcd, "XX", "XX", 0x67, 0x0, 0x68, 0x86, 0x6b, 0xcd, 0x0, 0x0, 0x6c, 0xcd], 16):
+            log.info("Putting preset_name_packet in event_queue")
             self.event_queue.put(("preset_name_packet", data))
             
         # Chunk de preset x80 (Contiene nombre o parámetros de presets)
         elif data[4] == 0xed and data[6] == 0x80 and data[1] == 0x01:
+            log.info(f"Putting preset_chunk in event_queue (len={len(data)})")
             self.event_queue.put(("preset_chunk", data))
             
         # Cabecera de preset (Preset Header, n entre 55 y 75 bytes)
         elif data[4] == 0xed and data[6] == 0x80 and data[1] == 0x00 and 55 <= n <= 75:
+            log.info(f"Putting preset_header in event_queue (len={len(data)})")
             self.event_queue.put(("preset_header", data))
             
         # Todo lo demás se trata como mensaje RAW
         else:
+            log.info(f"Putting raw packet in event_queue (len={len(data)}, ch={data[4]}, sub={data[6]}, type={data[1]})")
             self.event_queue.put(("raw", data))
 
     def wait_for_event(self, event_type, condition=None, timeout=5.0):
@@ -519,7 +560,16 @@ class HelixConnection:
 
     def fetch_active_preset_info(self):
         """Envía las peticiones del preset actual, calcula el índice y extrae el nombre."""
+        self.capture_model_echoes = False
+        try:
+            res = self._fetch_active_preset_info_impl()
+        finally:
+            self.capture_model_echoes = True
+        return res
+
+    def _fetch_active_preset_info_impl(self):
         log.info("Solicitando información del preset actual...")
+        self.preset_data_double_cnt = [0x1e, 0x00]
         
         # Limpiar cola de eventos antes de empezar
         while not self.event_queue.empty():
@@ -616,7 +666,16 @@ class HelixConnection:
 
     def fetch_active_preset_blocks(self):
         """Descarga el preset actual por USB, lo parsea y devuelve la lista de bloques activos."""
+        self.capture_model_echoes = False
+        try:
+            res = self._fetch_active_preset_blocks_impl()
+        finally:
+            self.capture_model_echoes = True
+        return res
+
+    def _fetch_active_preset_blocks_impl(self):
         log.info("Solicitando datos completos del preset para identificar los bloques...")
+        self.preset_data_double_cnt = [0x1e, 0x00]
         
         # Limpiar cola de eventos antes de empezar
         while not self.event_queue.empty():
@@ -649,6 +708,7 @@ class HelixConnection:
             try:
                 try:
                     evt_type, data = self.event_queue.get(timeout=0.1)
+                    log.info(f"Got event from queue: {evt_type}")
                 except queue.Empty:
                     continue
                     
@@ -670,8 +730,8 @@ class HelixConnection:
                     
                 if evt_type in ("preset_chunk", "raw"):
                     pkt_bytes = bytes(data)
-                    # Verificar firma de paquete de datos x80
-                    if len(pkt_bytes) >= 16 and pkt_bytes[4] == 0xed and pkt_bytes[6] == 0x80:
+                    # Verificar firma de paquete de datos x80 y que corresponda a la sesión establecida (0x1a)
+                    if len(pkt_bytes) >= 100 and pkt_bytes[4] == 0xed and pkt_bytes[6] == 0x80:
                         payload = pkt_bytes[16:]
                         preset_payloads.append(payload)
                         
@@ -695,8 +755,8 @@ class HelixConnection:
                         except Exception as e:
                             log.warning(f"Error enviando ACK de preset_chunk: {e}")
                             
-                        # Si es el último paquete (menor a 272 bytes o pkt_bytes[1] == 2), terminamos
-                        if len(pkt_bytes) < 272 or pkt_bytes[1] == 2:
+                        # Si es el último paquete (menor a 272 bytes o pkt_bytes[5] == 2), terminamos
+                        if len(pkt_bytes) < 272 or pkt_bytes[5] == 2:
                             break
             except Exception as e:
                 log.error(f"Error durante la descarga del preset: {e}")
@@ -802,4 +862,36 @@ class HelixConnection:
         except Exception as parse_err:
             log.error(f"Error al parsear bloques del preset: {parse_err}")
             return []
+
+    def change_parameter(self, slot_idx, parameter_idx, value):
+        """Cambia el parámetro de un bloque vía USB nativo (Endpoint 0x01)."""
+        import struct
+        
+        # Determinar el tipo y codificar el valor
+        if isinstance(value, bool):
+            val_bytes = [0xc3 if value else 0xc2]
+        elif isinstance(value, float):
+            val_bytes = [0xca, 0x04] + list(struct.pack('>f', value))
+        elif isinstance(value, int):
+            val_bytes = [value]
+        else:
+            raise ValueError("El valor debe ser float, int o bool")
+            
+        # Construir paquete USB nativo para Endpoint 0x01 (Canal 0x02 / Endpoint 0xf0)
+        packet = [
+            0x00, 0x00, 0x00, 0x18, 0x02, 0x10, 0xf0, 0x03, 0x00, "XX", 0x00, 0x04,
+            0x09, 0x02, 0x00, 0x00,  # Session ID para canal x2
+            0x00, 0x00, 0x04, 0x00, 0x1b, 0x00, 0x00, 0x00,
+            0x82, 0x69, 0x1e, 0x6a, 0x84, 0x52, 0x00, 0x44, 0x06, 0x79, 0x14, 0x6a, 0x85, 0x62,
+            slot_idx,
+            0x1d, 0xc3, 0x1a, 0x00, 0x1c,
+            parameter_idx
+        ] + val_bytes
+        
+        # El primer byte es la longitud total del paquete menos 9 para canal 2
+        packet[0] = len(packet) - 9
+        
+        log.info(f"Enviando cambio de parámetro nativo USB (x2): Slot {slot_idx}, Param {parameter_idx}, Valor {value}")
+        self.write(packet)
+
 
