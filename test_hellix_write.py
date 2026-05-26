@@ -289,10 +289,8 @@ def main():
         float_be_a = list(struct.pack('>f', norm_val))
         float_be_b = list(struct.pack('>f', target_db))
         
-        # Compute slot_bus using the kempline mapping (0‑based slot index)
-        def kempline_index_to_slot_bus(idx):
-            return idx + 1 if idx < 8 else idx + 3
-        slot_bus = kempline_index_to_slot_bus(target_slot_index)
+        # Usa directamente el índice proporcionado sin sumarle offset
+        slot_bus = target_slot_index
         pp = 3 # Graphic EQ uses default pp = 3
         param_idx = 0 # 31.25Hz EQ band
         

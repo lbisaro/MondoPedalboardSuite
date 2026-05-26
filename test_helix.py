@@ -72,9 +72,18 @@ def main():
                     if not blocks:
                         print("     (Sin bloques activos o error al leer)")
                     
+                    target_slot = None
+                    if len(sys.argv) > 1:
+                        try:
+                            target_slot = int(sys.argv[1])
+                        except ValueError:
+                            pass
+
                     # Agrupar por path
                     paths = {"1A": [], "1B": [], "2A": [], "2B": []}
                     for b in blocks:
+                        if target_slot is not None and b["slot_idx"] != target_slot:
+                            continue
                         if b["path"] in paths:
                             paths[b["path"]].append(b)
                             
