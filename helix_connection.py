@@ -41,11 +41,19 @@ class HelixConnection:
         self.x80_counter = 0x02
         self.preset_data_double_cnt = [0x1e, 0x00]
         self.request_preset_session_id = 0xf4
-        self.write_lock = threading.Lock()
+        self.write_lock = threading.RLock()
         self.handshake_done = False
         self.keep_alive_thread = None
         self.last_ed03_echo_model = None
         self.capture_model_echoes = True
+        
+        # Contadores para escritura en vivo (Live Write)
+        self.editor_ed03_double = 0x64e7
+        self.preset_dump_ack_ctr = 0x119d
+        self.ed03_cmd_type = 0x01
+        self.preset_last_ack_double = [0, 0]
+        self.live_write_ctr = 0x6cbd
+        self.live_write_yy = 0x17
         
         self.last_x1_counter = 0x04
         self.session_no = 0x1a
@@ -159,7 +167,7 @@ class HelixConnection:
         for attempt in range(1, max_reset_attempts + 1):
             self.dev = self.find_device()
             if self.dev is None:
-                raise RuntimeError("No se pudo conectar: dispositivo no encontrado.")
+                return False, "No se encontró el dispositivo Line 6 en el puerto USB."
             self.product_id = self.dev.idProduct
 
             try:
@@ -202,8 +210,14 @@ class HelixConnection:
         except Exception:
             pass  # Normal si nadie la tenía reclamada
 
-        usb.util.claim_interface(self.dev, self.interface)
-        log.info("Interfaz 0 reclamada con éxito.")
+        try:
+            usb.util.claim_interface(self.dev, self.interface)
+            log.info("Interfaz 0 reclamada con éxito.")
+        except usb.core.USBError as e:
+            msg = f"No se pudo reclamar la interfaz (¿HX Edit abierto o dispositivo en uso?): {e}"
+            log.error(msg)
+            self.dev = None
+            return False, msg
 
         # Vaciar datos residuales en el endpoint de entrada
         self.flush_endpoint()
@@ -215,6 +229,16 @@ class HelixConnection:
         )
         self.reader_thread.start()
         log.info("Hilo lector asíncrono iniciado.")
+        
+        return True, "Conectado exitosamente."
+
+    def is_connected(self):
+        """Devuelve True si la Helix parece estar conectada y el hilo de lectura está activo."""
+        if not self.dev:
+            return False
+        if not self.reader_thread or not self.reader_thread.is_alive():
+            return False
+        return True
 
 
     def disconnect(self):
@@ -664,114 +688,168 @@ class HelixConnection:
             bank_letter = chr(65 + (preset_idx_in_setlist % 3))
         return f"{bank_num:02d}{bank_letter}"
 
-    def fetch_active_preset_blocks(self):
+    def next_editor_ed03_double(self):
+        self.editor_ed03_double = (self.editor_ed03_double + 1) & 0xffff
+        return [self.editor_ed03_double & 0xff, (self.editor_ed03_double >> 8) & 0xff]
+        
+    def next_preset_dump_ack_double(self):
+        self.preset_dump_ack_ctr = (self.preset_dump_ack_ctr + 1) & 0xffff
+        return [self.preset_dump_ack_ctr & 0xff, (self.preset_dump_ack_ctr >> 8) & 0xff]
+
+    def fetch_active_preset_blocks(self, slot_idx=None):
         """Descarga el preset actual por USB, lo parsea y devuelve la lista de bloques activos."""
+        if not self.is_connected():
+            return False, "No conectado a la Helix"
+
         self.capture_model_echoes = False
         try:
             res = self._fetch_active_preset_blocks_impl()
+            if isinstance(res, list):
+                if slot_idx is not None:
+                    for b in res:
+                        if b.get("slot_idx") == slot_idx:
+                            return True, [b]
+                    return False, f"Slot {slot_idx} no encontrado o vacío"
+                return True, res
+            return False, "No se recibieron bloques válidos"
+        except Exception as e:
+            return False, f"Error al leer bloques: {e}"
         finally:
             self.capture_model_echoes = True
-        return res
 
     def _fetch_active_preset_blocks_impl(self):
-        log.info("Solicitando datos completos del preset para identificar los bloques...")
-        self.preset_data_double_cnt = [0x1e, 0x00]
-        
-        # Limpiar cola de eventos antes de empezar
+        log.info("Starting 2-phase preset download...")
         while not self.event_queue.empty():
             self.event_queue.get_nowait()
             
-        # Session ID aleatorio para la descarga de datos del preset
-        new_session_no = random.randint(4, 250)
-        self.session_no = new_session_no
+        self.session_no = random.randint(4, 250)
+        sess1 = self.session_no
+        double1 = self.preset_data_double_cnt
+        sess_id1 = 0x04
+        cmd_type = 0x04
+        phase2_session = max(4, random.randint(4, 250))
         
-        request_preset_session_id = self.request_preset_session_id
-        # Incrementar session ID para el siguiente preset request
-        self.request_preset_session_id += 2
-        if self.request_preset_session_id > 0xff:
-            self.request_preset_session_id -= 0xff
-            
-        preset_req_packet = [
-            0x19, 0x00, 0x00, 0x18, 0x80, 0x10, 0xed, 0x03, 0x00, "XX", 0x00, 0x0c,
-            new_session_no, self.preset_data_double_cnt[0], self.preset_data_double_cnt[1], 0x00,
+        # Phase 1 packet: sub=0x04
+        phase1_pkt = [
+            0x19, 0x00, 0x00, 0x18, 0x80, 0x10, 0xed, 0x03,
+            0x00, "XX",  0x00, 0x04,
+            sess1, double1[0], double1[1], 0x00,
             0x01, 0x00, 0x06, 0x00, 0x09, 0x00, 0x00, 0x00,
-            0x83, 0x66, 0xcd, 0x03, request_preset_session_id, 0x64, 0x16, 0x65, 0xc0, 0x00, 0x00, 0x00
+            0x83, 0x66, 0xcd, cmd_type,
+            sess_id1, 0x64, 0x17, 0x65,
+            0xc0, 0x00, 0x00, 0x00,
         ]
-        self.write(preset_req_packet)
         
-        # Leer paquetes
-        preset_payloads = []
+        self.write(phase1_pkt)
+        self.write([0x08, 0x00, 0x00, 0x18, 0x01, 0x10, 0xef, 0x03, 0x00, "XX", 0x00, 0x08, 0x72, 0x1e, 0x00, 0x00])
+        
+        # Wait for Phase 1 Response
         start_time = time.time()
-        timeout = 2.0  # 2 segundos máximo
-        
-        while time.time() - start_time < timeout:
+        phase1_resp = None
+        while time.time() - start_time < 3.0:
             try:
-                try:
-                    evt_type, data = self.event_queue.get(timeout=0.1)
-                    log.info(f"Got event from queue: {evt_type}")
-                except queue.Empty:
-                    continue
-                    
+                evt_type, data = self.event_queue.get(timeout=0.1)
                 if evt_type == "keep_alive_x1":
-                    counter = data
-                    ack = [
-                        0x08, 0x00, 0x00, 0x18, 0x01, 0x10, 0xef, 0x03,
-                        0x00, "XX", 0x00, 0x08,
-                        0x38, (counter + 9) & 0xff, 0x00, 0x00
-                    ]
-                    try:
-                        self.write(ack)
-                    except Exception as e:
-                        log.warning(f"Error respondiendo fallback keep_alive_x1: {e}")
                     continue
-                    
-                if evt_type == "error":
-                    raise data
-                    
-                if evt_type in ("preset_chunk", "raw"):
-                    pkt_bytes = bytes(data)
-                    # Verificar firma de paquete de datos x80 y que corresponda a la sesión establecida (0x1a)
-                    if len(pkt_bytes) >= 100 and pkt_bytes[4] == 0xed and pkt_bytes[6] == 0x80:
-                        payload = pkt_bytes[16:]
-                        preset_payloads.append(payload)
-                        
-                        # Si no es el último paquete (pkt_bytes[1] != 2), incrementamos el contador
-                        if pkt_bytes[1] != 2:
-                            self.preset_data_double_cnt[0] += 1
-                            if self.preset_data_double_cnt[0] > 0xff:
-                                self.preset_data_double_cnt[0] = 0
-                                self.preset_data_double_cnt[1] += 1
-                                if self.preset_data_double_cnt[1] > 0xff:
-                                    self.preset_data_double_cnt[1] = 0
-                                    
-                        # Enviar ACK del preset chunk recibido
-                        ack_pkt = [
-                            0x08, 0x00, 0x00, 0x18, 0x80, 0x10, 0xed, 0x03,
-                            0x00, "XX", 0x00, 0x08,
-                            new_session_no, self.preset_data_double_cnt[0], self.preset_data_double_cnt[1], 0x00
-                        ]
-                        try:
-                            self.write(ack_pkt)
-                        except Exception as e:
-                            log.warning(f"Error enviando ACK de preset_chunk: {e}")
-                            
-                        # Si es el último paquete (menor a 272 bytes o pkt_bytes[5] == 2), terminamos
-                        if len(pkt_bytes) < 272 or pkt_bytes[5] == 2:
-                            break
-            except Exception as e:
-                log.error(f"Error durante la descarga del preset: {e}")
-                break
+                log.info(f"Phase 1 Wait got event: {evt_type}, len={len(data)}, ch={data[4]}, sub={data[6]}, t11={data[11]}")
+                if evt_type in ("preset_header", "raw") and len(data) >= 36 and data[4] == 0xed and data[6] == 0x80 and data[11] == 0x04:
+                    phase1_resp = data
+                    break
+            except Exception:
+                continue
                 
-        if not preset_payloads:
-            log.warning("No se recibieron paquetes de datos del preset.")
+        if not phase1_resp:
+            log.error("Failed to receive Phase 1 response!")
             return []
             
-        # Concatenar payloads
-        full_data = bytearray()
-        for p in preset_payloads:
-            full_data.extend(p)
+        # Parse active indices from Phase 1 response
+        idx_6b = 0
+        idx_6c = 0
+        preset_name = ""
+        for i in range(len(phase1_resp) - 3):
+            if phase1_resp[i] == 0x6b and phase1_resp[i+1] == 0xcd:
+                idx_6b = phase1_resp[i+3]
+            if phase1_resp[i] == 0x6c and phase1_resp[i+1] == 0xcd:
+                idx_6c = phase1_resp[i+3]
+                if i + 4 < len(phase1_resp) and phase1_resp[i+4] == 0x6d:
+                    length_byte = phase1_resp[i+5]
+                    strlen = length_byte - 0xa0 if length_byte >= 0xa0 else length_byte
+                    if i + 6 + strlen <= len(phase1_resp):
+                        name_bytes = bytes(phase1_resp[i+6 : i+6+strlen])
+                        preset_name = name_bytes.split(b'\x00')[0].decode('ascii', errors='ignore').strip()
+                        
+        self.active_setlist_idx = idx_6b
+        self.active_preset_idx_in_setlist = idx_6c
+        self.preset_name = preset_name or "Desconocido"
+        
+        # Send Phase 2
+        double = self.next_editor_ed03_double()
+        sess_id = 0xf4
+        
+        phase2_pkt = [
+            0x19, 0x00, 0x00, 0x18, 0x80, 0x10, 0xed, 0x03,
+            0x00, "XX",  0x00, 0x0c,
+            phase2_session, double[0], double[1], 0x00,
+            0x01, 0x00, 0x06, 0x00, 0x09, 0x00, 0x00, 0x00,
+            0x83, 0x66, 0xcd, 0x03,
+            sess_id, 0x64, 0x16, 0x65,
+            0xc0, 0x00, 0x00, 0x00,
+        ]
+        
+        self.write(phase2_pkt)
+        
+        # Download loop
+        preset_data = bytearray()
+        last_ack_double = [0, 0]
+        completed = False
+        start_time = time.time()
+        
+        while time.time() - start_time < 5.0:
+            try:
+                evt_type, data = self.event_queue.get(timeout=0.1)
+                if evt_type == "keep_alive_x1":
+                    continue
+                if len(data) >= 16 and data[4] == 0xed and data[6] == 0x80 and data[11] == 0x04:
+                    if len(data) == 32 and data[16] == 0xa1:
+                        # Send FDT ACK
+                        fdt_session = (phase2_session + 0x10) & 0xff
+                        fdt_ack = [
+                            0x08, 0x00, 0x00, 0x18, 0x80, 0x10, 0xed, 0x03,
+                            0x00, "XX", 0x00, 0x08,
+                            fdt_session, last_ack_double[0], last_ack_double[1], 0x00,
+                        ]
+                        self.write(fdt_ack)
+                        completed = True
+                        break
+                    
+                    chunk_payload = data[16:]
+                    preset_data.extend(chunk_payload)
+                    
+                    # Send ACK
+                    new_double = self.next_preset_dump_ack_double()
+                    chunk_ack = [
+                        0x08, 0x00, 0x00, 0x18, 0x80, 0x10, 0xed, 0x03,
+                        0x00, "XX", 0x00, 0x08,
+                        phase2_session, new_double[0], new_double[1], 0x00,
+                    ]
+                    self.write(chunk_ack)
+                    last_ack_double = new_double
+                    
+                    if len(chunk_payload) < 256:
+                        completed = True
+                        break
+            except Exception:
+                continue
+                
+        if not completed:
+            log.warning("No se completó la descarga del preset.")
+            return []
             
-        hex_str = full_data.hex()
+        self.session_no = (phase2_session + 0x10) & 0xff
+        self.ed03_cmd_type = (self.ed03_cmd_type + 1) & 0xff
+        self.preset_last_ack_double = last_ack_double
+        
+        hex_str = preset_data.hex()
         
         # DEBUG HACK: Save to disk for split analysis
         with open("preset_hex_split.txt", "w") as f:
@@ -863,35 +941,150 @@ class HelixConnection:
             log.error(f"Error al parsear bloques del preset: {parse_err}")
             return []
 
-    def change_parameter(self, slot_idx, parameter_idx, value):
-        """Cambia el parámetro de un bloque vía USB nativo (Endpoint 0x01)."""
+    @staticmethod
+    def _assemble_27_write(seq, byte11, ctr, yy, pp, param_selector, slot_bus, float_be):
+        return [
+            0x27, 0x00, 0x00, 0x18, 0x80, 0x10, 0xed, 0x03,
+            0x00, seq, 0x00, byte11,
+            ctr & 0xff,
+            (ctr >> 8) & 0xff,
+            0x00,
+            0x00,
+            0x01, 0x00, 0x06, 0x00, 0x17, 0x00, 0x00, 0x00,
+            0x83, 0x66, 0xcd, pp, yy, 0x64, 0x1e, 0x65,
+            0x85, 0x62, slot_bus, 0x1d, 0xc3, 0x1a, 0x00, 0x1c,
+            param_selector, 0x77, 0xca, float_be[0], float_be[1], float_be[2], float_be[3], 0x00,
+        ]
+
+    def write_block_parameter(self, slot_idx, param_idx, target_db, norm_val=None):
+        """
+        Envía la secuencia completa para escribir un parámetro en tiempo real.
+        Usa el foco previo para adquirir contexto, escribe, y restaura el foco original.
+        """
+        if not self.is_connected():
+            return False, "No conectado a la Helix"
+
         import struct
         
-        # Determinar el tipo y codificar el valor
-        if isinstance(value, bool):
-            val_bytes = [0xc3 if value else 0xc2]
-        elif isinstance(value, float):
-            val_bytes = [0xca, 0x04] + list(struct.pack('>f', value))
-        elif isinstance(value, int):
-            val_bytes = [value]
-        else:
-            raise ValueError("El valor debe ser float, int o bool")
+        # Si no se provee el valor normalizado, lo calculamos asumiendo rango de EQ estándar (-15.0 a +15.0)
+        # Nota: Idealmente norm_val debe ser calculado por el parser de presets.
+        if norm_val is None:
+            norm_val = (target_db - (-15.0)) / 30.0
+
+        float_be_a = list(struct.pack('>f', norm_val))
+        float_be_b = list(struct.pack('>f', target_db))
+        
+        slot_bus = slot_idx
+        pp = 3 # Graphic EQ uses default pp = 3 (esto debería ser dinámico pero lo usamos como estándar)
+        
+        # Capturar eco de foco (usamos la misma técnica exitosa que en test_hellix_write.py)
+        focus_pkt_cd04 = [
+            0x1d, 0x00, 0x00, 0x18, 0x80, 0x10, 0xed, 0x03,
+            0x00, "XX",  0x00, 0x04,
+            self.session_no, self.preset_data_double_cnt[0], self.preset_data_double_cnt[1], 0x00,
+            0x01, 0x00, 0x06, 0x00, 0x0d, 0x00, 0x00, 0x00,
+            0x83, 0x66, 0xcd, 0x04, slot_bus, 0x64, 0x4e, 0x65,
+            0x82, 0x62, slot_bus, 0x1a, 0x00, 0x00, 0x00, 0x00,
+        ]
+        
+        focus_pkt_cd03 = [
+            0x1d, 0x00, 0x00, 0x18, 0x80, 0x10, 0xed, 0x03,
+            0x00, "XX",  0x00, 0x04,
+            self.session_no, self.preset_data_double_cnt[0], self.preset_data_double_cnt[1], 0x00,
+            0x01, 0x00, 0x06, 0x00, 0x0d, 0x00, 0x00, 0x00,
+            0x83, 0x66, 0xcd, 0x03, 0xf9, 0x64, 0x4e, 0x65,
+            0x82, 0x62, slot_bus, 0x1a, 0x00, 0x00, 0x00, 0x00,
+        ]
+
+        self.last_ed03_echo_model = None
+        log.info(f"Intentando capturar foco para slot {slot_bus}...")
+        
+        try:
+            self.write(focus_pkt_cd04)
+        except Exception as e:
+            return False, f"Error al enviar paquete de foco cd:04: {e}"
+
+        start_wait = time.time()
+        while self.last_ed03_echo_model is None and (time.time() - start_wait) < 0.25:
+            time.sleep(0.01)
             
-        # Construir paquete USB nativo para Endpoint 0x01 (Canal 0x02 / Endpoint 0xf0)
-        packet = [
-            0x00, 0x00, 0x00, 0x18, 0x02, 0x10, 0xf0, 0x03, 0x00, "XX", 0x00, 0x04,
-            0x09, 0x02, 0x00, 0x00,  # Session ID para canal x2
-            0x00, 0x00, 0x04, 0x00, 0x1b, 0x00, 0x00, 0x00,
-            0x82, 0x69, 0x1e, 0x6a, 0x84, 0x52, 0x00, 0x44, 0x06, 0x79, 0x14, 0x6a, 0x85, 0x62,
-            slot_idx,
-            0x1d, 0xc3, 0x1a, 0x00, 0x1c,
-            parameter_idx
-        ] + val_bytes
+        if self.last_ed03_echo_model is None:
+            log.info("Reintentando con foco cd:03...")
+            try:
+                self.write(focus_pkt_cd03)
+            except Exception:
+                pass
+            start_wait = time.time()
+            while self.last_ed03_echo_model is None and (time.time() - start_wait) < 0.25:
+                time.sleep(0.01)
+
+        if not self.last_ed03_echo_model:
+            return False, "La Helix no respondió al cambio de foco. Asegúrese de que no haya menús abiertos en la pedalera."
+
+        # Construir paquetes usando el modelo capturado
+        model_block_a = list(self.last_ed03_echo_model)
+        seq_a = (model_block_a[4] + 1) & 0xff
+        seq_b = (seq_a + 1) & 0xff
         
-        # El primer byte es la longitud total del paquete menos 9 para canal 2
-        packet[0] = len(packet) - 9
+        ctr_a = self.live_write_ctr
+        yy_a = self.live_write_yy
         
-        log.info(f"Enviando cambio de parámetro nativo USB (x2): Slot {slot_idx}, Param {parameter_idx}, Valor {value}")
-        self.write(packet)
+        pre_packet_x80 = [
+            0x08, 0x00, 0x00, 0x18, 0x80, 0x10, 0xed, 0x03,
+            0x00, "XX", 0x00, 0x10, self.session_no, self.preset_data_double_cnt[0], self.preset_data_double_cnt[1], 0x00
+        ]
+        
+        pre_packet_x2 = [
+            0x08, 0x00, 0x00, 0x18, 0x02, 0x10, 0xf0, 0x03,
+            0x00, "XX", 0x00, 0x10, 0x09, 0x10, 0x00, 0x00
+        ]
+        
+        pre_packet_x80_sel = [
+            0x08, 0x00, 0x00, 0x18, 0x80, 0x10, 0xed, 0x03,
+            0x00, "XX", 0x00, 0x08, ctr_a & 0xff, (ctr_a >> 8) & 0xff, 0x00, 0x00
+        ]
+        
+        packet_a = self._assemble_27_write("XX", 0x04, ctr_a, seq_a, pp, param_idx, slot_bus, float_be_a)
+        
+        ctr_b = (ctr_a + 0x1f) & 0xffff
+        seq_b = (seq_a + 1) & 0xff
+        packet_b = self._assemble_27_write("XX", 0x0c, ctr_b, seq_b, pp, param_idx, slot_bus, float_be_b)
+        
+        ctr_post = (ctr_b + 0x1f) & 0xffff
+        post_packet_x80_sel = [
+            0x08, 0x00, 0x00, 0x18, 0x80, 0x10, 0xed, 0x03,
+            0x00, "XX", 0x00, 0x08, ctr_post & 0xff, (ctr_post >> 8) & 0xff, 0x00, 0x00
+        ]
+
+        # Asegurar foco al slot actual
+        restore_focus_pkt = focus_pkt_cd04.copy()
+        restore_focus_pkt[28] = slot_bus
+        restore_focus_pkt[34] = slot_bus
+
+        # Enviar secuencia con semáforo reentrante y tiempos críticos
+        try:
+            with self.write_lock:
+                self.write(pre_packet_x80)
+                time.sleep(0.006)
+                self.write(pre_packet_x2)
+                time.sleep(0.010)
+                self.write(pre_packet_x80_sel)
+                time.sleep(0.016)
+                self.write(packet_a)
+                time.sleep(0.012)
+                self.write(packet_b)
+                time.sleep(0.012)
+                self.write(post_packet_x80_sel)
+                
+                self.write(restore_focus_pkt)
+                time.sleep(0.010)
+        except Exception as e:
+            return False, f"Error durante la escritura USB: {e}"
+
+        # Actualizar estado interno
+        self.live_write_ctr = (ctr_post + 0x1f) & 0xffff
+        self.live_write_yy = (seq_b + 1) & 0xff
+
+        return True, "Parámetro modificado exitosamente."
 
 

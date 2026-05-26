@@ -160,12 +160,63 @@ class MainWindow(QtWidgets.QMainWindow):
         layout.addWidget(self.btn_home)
         
         layout.addStretch()
+        
+        # Botón de estado USB Helix
+        self.usb_btn = QtWidgets.QPushButton(" USB ")
+        self.usb_btn.setObjectName("UsbStatusButton")
+        self.set_usb_disconnected()
+        # Puedes conectarlo a una acción si quieres reconectar manualmente
+        layout.addWidget(self.usb_btn)
+        
+        # Botón de conexión de Audio
         self.conn_btn = QtWidgets.QPushButton("")
         self.set_btn_disconnected()
         self.conn_btn.setObjectName("ConnectionButton")
         self.conn_btn.clicked.connect(self.toggle_connection)
         layout.addWidget(self.conn_btn)
         self.main_layout.addWidget(self.toolbar)
+
+    def set_usb_disconnected(self):
+        self.usb_btn.setIcon(qta.icon('fa5b.usb', color='#888888'))
+        self.usb_btn.setStyleSheet("""
+            QPushButton#UsbStatusButton {
+                background-color: #222;
+                border: 1px solid #444;
+                border-radius: 15px;
+                color: #888888;
+                font-size: 8pt;
+                font-weight: bold;
+                padding: 4px 12px;
+            }
+        """)
+
+    def set_usb_connected(self):
+        self.usb_btn.setIcon(qta.icon('fa5b.usb', color='#00ADB5'))
+        self.usb_btn.setStyleSheet("""
+            QPushButton#UsbStatusButton {
+                background-color: rgba(0, 173, 181, 0.1);
+                border: 1px solid #00ADB5;
+                border-radius: 15px;
+                color: #00ADB5;
+                font-size: 8pt;
+                font-weight: bold;
+                padding: 4px 12px;
+            }
+        """)
+
+    def set_usb_interacting(self):
+        self.usb_btn.setIcon(qta.icon('fa5s.sync-alt', color='#4CAF50', animation=qta.Spin(self.usb_btn)))
+        self.usb_btn.setStyleSheet("""
+            QPushButton#UsbStatusButton {
+                background-color: rgba(76, 175, 80, 0.1);
+                border: 1px solid #4CAF50;
+                border-radius: 15px;
+                color: #4CAF50;
+                font-size: 8pt;
+                font-weight: bold;
+                padding: 4px 12px;
+            }
+        """)
 
     def go_home(self):
         self.stop_audio()

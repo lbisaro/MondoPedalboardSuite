@@ -260,12 +260,19 @@ def get_slot_param(blocks, slot_index, param_idx=0):
 def main():
     conn = PerfectHelixConnection()
     try:
-        conn.connect()
+        success, msg = conn.connect()
+        if not success:
+            print(f" [!] Error al conectar: {msg}")
+            return
         conn.perform_handshake()
         
         # 1. Download initial preset layout
         print("\n[+] Downloading initial preset blocks...")
-        blocks = conn.fetch_active_preset_blocks()
+        success, res = conn.fetch_active_preset_blocks()
+        if not success:
+            print(f" [!] Error al leer bloques: {res}")
+            return
+        blocks = res
         print(" [+] Blocks found in preset:")
         for b in blocks:
             print(f"   - Slot {b['slot_idx']}: {b['name']}")
@@ -431,7 +438,8 @@ def main():
         # Wait longer to allow device to process write and update state
         time.sleep(2.0)  # increased from 1.0 s to 2.0 s for reliability
         print("\n[+] Downloading preset blocks again to verify change...")
-        updated_blocks = conn.fetch_active_preset_blocks()
+        success, res = conn.fetch_active_preset_blocks()
+        updated_blocks = res if success else None
         final_val = get_slot_param(updated_blocks, target_slot_index, param_idx=0)
         
         if final_val is not None and abs(final_val - target_db) < 0.1:

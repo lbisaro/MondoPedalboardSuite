@@ -51,7 +51,10 @@ def main():
     
     conn = HelixConnection()
     try:
-        conn.connect()
+        success, msg = conn.connect()
+        if not success:
+            print(f" [!] {msg}")
+            return
         conn.perform_handshake()
         
         while True:
@@ -67,64 +70,68 @@ def main():
                 
                 # Fetch and display blocks
                 try:
-                    blocks = conn.fetch_active_preset_blocks()
-                    print(" [+] BLOQUES DEL PEDALBOARD:")
-                    if not blocks:
-                        print("     (Sin bloques activos o error al leer)")
-                    
                     target_slot = None
                     if len(sys.argv) > 1:
                         try:
                             target_slot = int(sys.argv[1])
                         except ValueError:
                             pass
-
-                    # Agrupar por path
-                    paths = {"1A": [], "1B": [], "2A": [], "2B": []}
-                    for b in blocks:
-                        if target_slot is not None and b["slot_idx"] != target_slot:
-                            continue
-                        if b["path"] in paths:
-                            paths[b["path"]].append(b)
                             
-                    for path_id, path_blocks in paths.items():
-                        if not path_blocks:
-                            continue
-                        print(f"\n     [ Path {path_id} ]")
-                        for b in path_blocks:
-                            if b["type"] == "io":
-                                desc = f"[{b['name']}]"
-                                rp = b.get("routing_pos")
-                                if rp is not None:
-                                    if "Entrada" in b["name"]:
-                                        desc += f"  <-- (Split desde Path {path_id[0]}A, pos: {rp})"
-                                    elif "Salida" in b["name"]:
-                                        desc += f"  --> (Merge hacia Path {path_id[0]}A, pos: {rp})"
-                                        
-                                params_a = b.get('params_a', [])
-                                if params_a:
-                                    p_str = ", ".join(str(p) for p in params_a)
-                                    desc += f"\n         -> Params I/O: [{p_str}]"
-                                    
-                                print(f"       - Slot #{b['slot_idx']:02d}: {desc}")
-                            else:
-                                desc = f"{b['name']} ({b['category']})"
+                    success, res = conn.fetch_active_preset_blocks(slot_idx=target_slot)
+                    print(" [+] BLOQUES DEL PEDALBOARD:")
+                    if not success:
+                        print(f"     (Error: {res})")
+                    else:
+                        blocks = res
+                        if not blocks:
+                            print("     (Sin bloques activos)")
+                        
+                        # Agrupar por path
+                        paths = {"1A": [], "1B": [], "2A": [], "2B": []}
+                        for b in blocks:
+                            if target_slot is not None and b["slot_idx"] != target_slot:
+                                continue
+                            if b["path"] in paths:
+                                paths[b["path"]].append(b)
                                 
-                                params_a = b.get('params_a', [])
-                                if params_a:
-                                    # Format nicely
-                                    p_str = ", ".join(str(p) for p in params_a)
-                                    desc += f"\n         -> Params: [{p_str}]"
-                                    
-                                if b.get("dual_name"):
-                                    desc += f"\n       - Slot #{b['slot_idx']:02d} (B): {b['dual_name']} ({b['dual_category']})"
-                                    params_b = b.get('params_b', [])
-                                    if params_b:
-                                        pb_str = ", ".join(str(p) for p in params_b)
-                                        desc += f"\n         -> Params: [{pb_str}]"
+                        for path_id, path_blocks in paths.items():
+                            if not path_blocks:
+                                continue
+                            print(f"\n     [ Path {path_id} ]")
+                            for b in path_blocks:
+                                if b["type"] == "io":
+                                    desc = f"[{b['name']}]"
+                                    rp = b.get("routing_pos")
+                                    if rp is not None:
+                                        if "Entrada" in b["name"]:
+                                            desc += f"  <-- (Split desde Path {path_id[0]}A, pos: {rp})"
+                                        elif "Salida" in b["name"]:
+                                            desc += f"  --> (Merge hacia Path {path_id[0]}A, pos: {rp})"
+                                            
+                                    params_a = b.get('params_a', [])
+                                    if params_a:
+                                        p_str = ", ".join(str(p) for p in params_a)
+                                        desc += f"\n         -> Params I/O: [{p_str}]"
                                         
-                                print(f"       - Slot #{b['slot_idx']:02d}: {desc}")
-                    print("----------------------------------------------------")
+                                    print(f"       - Slot #{b['slot_idx']:02d}: {desc}")
+                                else:
+                                    desc = f"{b['name']} ({b['category']})"
+                                    
+                                    params_a = b.get('params_a', [])
+                                    if params_a:
+                                        # Format nicely
+                                        p_str = ", ".join(str(p) for p in params_a)
+                                        desc += f"\n         -> Params: [{p_str}]"
+                                        
+                                    if b.get("dual_name"):
+                                        desc += f"\n       - Slot #{b['slot_idx']:02d} (B): {b['dual_name']} ({b['dual_category']})"
+                                        params_b = b.get('params_b', [])
+                                        if params_b:
+                                            pb_str = ", ".join(str(p) for p in params_b)
+                                            desc += f"\n         -> Params: [{pb_str}]"
+                                            
+                                    print(f"       - Slot #{b['slot_idx']:02d}: {desc}")
+                        print("----------------------------------------------------")
                 except Exception as block_err:
                     print(f" [!] Error al obtener bloques: {block_err}")
             except Exception as e:
