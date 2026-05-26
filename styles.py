@@ -185,9 +185,10 @@ QListWidget#LoopList::item:hover, QListWidget#LoopList::item:selected {
 
 /* Accent Button (Target B) */
 QPushButton#AccentButton {
-    background-color: #FFAC41;
-    color: #121212;
+    background-color: #00ADB5;
+    color: white;
     font-size: 11pt;
+    border: none;
 }
 
 QPushButton#AccentButton:hover {
@@ -237,5 +238,35 @@ QPushButton#AccentButton:hover {
 }
 #AccentButton:pressed {
     background-color: #00767a;
+}
+
+/* QTabWidget Aesthetics styling */
+QTabWidget::pane {
+    border: 1px solid #2A2A2A;
+    background-color: #1A1A1A;
+    border-radius: 6px;
+    top: -1px;
+}
+
+QTabBar::tab {
+    background-color: #121212;
+    border: 1px solid #2A2A2A;
+    border-bottom-color: transparent;
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+    padding: 6px 12px;
+    color: #888888;
+    font-weight: bold;
+}
+
+QTabBar::tab:selected {
+    background-color: #1A1A1A;
+    border-color: #2A2A2A;
+    border-bottom-color: #1A1A1A;
+    color: #00ADB5;
+}
+
+QTabBar::tab:hover {
+    color: #EEEEEE;
 }
 """

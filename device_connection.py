@@ -259,15 +259,6 @@ class ConnectionManager:
                 self.analyzer.set_sample_rate(int(self.stream.samplerate))
                 print(f"[AUDIO] Stream iniciado en modo fallback. Samplerate real: {self.stream.samplerate} Hz")
 
-            # Iniciar conexión USB de datos de la Helix
-            if self.helix_conn and not self.helix_conn.dev:
-                try:
-                    self.helix_conn.connect()
-                    self.helix_conn.perform_handshake()
-                    print("[AUDIO] Conexión USB Helix de datos iniciada y handshake completado.")
-                except Exception as ex_usb:
-                    print(f"[AUDIO] Advertencia: No se pudo conectar a los datos USB de Helix: {ex_usb}")
-
             return True, "Conectado"
         except Exception as e:
             print(f"[AUDIO] Error crítico al iniciar stream: {e}")
