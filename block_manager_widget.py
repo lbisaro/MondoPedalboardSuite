@@ -373,34 +373,42 @@ class BlockManagerWidget(QtWidgets.QWidget):
         self.render_blocks([])
 
     def sync_blocks(self):
-        # Notify MainWindow we are interacting via USB
+        log.info("Sincronizando bloques...")
         main_window = self.window()
+        
         if hasattr(main_window, 'set_usb_interacting'):
             main_window.set_usb_interacting()
+            QtWidgets.QApplication.processEvents()
             
         try:
             conn = HelixConnection()
             conn_ok, conn_msg = conn.connect()
             if not conn_ok:
                 QtWidgets.QMessageBox.warning(self, "Error", f"No se detectó la Helix por USB o fallo de conexión: {conn_msg}")
+                if hasattr(main_window, 'set_usb_disconnected'):
+                    main_window.set_usb_disconnected()
                 return
                 
             conn.perform_handshake()
             
             success, data = conn.fetch_active_preset_blocks()
+            
+            # Darle un respiro a la pedalera antes de cerrar de golpe 
+            # (imita el comportamiento del time.sleep() en test_helix.py)
+            import time
+            time.sleep(3.0)
+            
             conn.disconnect()
             
             if success:
                 self.render_blocks(data)
-                if hasattr(main_window, 'set_usb_disconnected'):
-                    main_window.set_usb_disconnected()
             else:
                 QtWidgets.QMessageBox.warning(self, "Aviso", f"No se pudieron leer los bloques: {data}")
-                if hasattr(main_window, 'set_usb_disconnected'):
-                    main_window.set_usb_disconnected()
                 
         except Exception as e:
             QtWidgets.QMessageBox.critical(self, "Error", f"Fallo en la sincronización: {e}")
+            
+        finally:
             if hasattr(main_window, 'set_usb_disconnected'):
                 main_window.set_usb_disconnected()
 
