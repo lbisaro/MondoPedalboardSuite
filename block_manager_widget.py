@@ -238,38 +238,55 @@ class BlockCard(QtWidgets.QFrame):
         super().__init__(parent)
         self.block_data = block_data
         
-        self.setFixedSize(70, 75)
+        self.setFixedSize(70, 70)
         self.setCursor(QtCore.Qt.PointingHandCursor)
-        self.setObjectName("BlockCard")
-        self.setStyleSheet("""
-            QFrame#BlockCard {
-                background-color: transparent;
-                border: 2px solid #333;
-                border-radius: 8px;
-            }
-            QFrame#BlockCard:hover {
-                border: 2px solid #fff;
-            }
-        """)
+        
+        name = block_data.get("name", "")
+        slot_idx = block_data.get("slot_idx", -1)
+        
+        is_io = False
+        icon_path, color = get_icon_for_category(block_data.get("category", "Unknown"))
+        
+        if "input" in name.lower() or str(slot_idx).endswith('0'):
+            icon_path = 'assets/icons_io/input.svg'
+            is_io = True
+        elif "output" in name.lower() or str(slot_idx).endswith('9'):
+            icon_path = 'assets/icons_io/output.svg'
+            is_io = True
+            
+        if is_io:
+            self.setObjectName("BlockCardIO")
+            self.setStyleSheet("""
+                QFrame#BlockCardIO {
+                    background-color: transparent;
+                    border: 1px solid #555;
+                    border-radius: 35px;
+                }
+                QFrame#BlockCardIO:hover {
+                    border: 1px solid #fff;
+                }
+            """)
+        else:
+            self.setObjectName("BlockCard")
+            self.setStyleSheet("""
+                QFrame#BlockCard {
+                    background-color: transparent;
+                    border: 1px solid #555;
+                    border-radius: 8px;
+                }
+                QFrame#BlockCard:hover {
+                    border: 1px solid #fff;
+                }
+            """)
         
         layout = QtWidgets.QVBoxLayout(self)
         layout.setAlignment(QtCore.Qt.AlignCenter)
         layout.setContentsMargins(5, 5, 5, 5)
-        layout.setSpacing(2)
-        
-        cat = block_data.get("category", "Unknown")
-        icon_path, color = get_icon_for_category(cat)
         
         self.svg_widget = QSvgWidget(icon_path)
         self.svg_widget.setFixedSize(40, 40)
         
-        abbr = ABBREVIATIONS.get(cat, cat[:4])
-        lbl_cat = QtWidgets.QLabel(abbr)
-        lbl_cat.setAlignment(QtCore.Qt.AlignCenter)
-        lbl_cat.setStyleSheet("color: white; font-size: 8pt; font-weight: bold; background: transparent;")
-        
         layout.addWidget(self.svg_widget, alignment=QtCore.Qt.AlignCenter)
-        layout.addWidget(lbl_cat, alignment=QtCore.Qt.AlignCenter)
 
     def mousePressEvent(self, event):
         if event.button() == QtCore.Qt.LeftButton:
@@ -280,34 +297,56 @@ class BlockCard(QtWidgets.QFrame):
 class EmptyBlockCard(QtWidgets.QFrame):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setFixedSize(70, 75)
+        self.setFixedSize(70, 70)
         self.setObjectName("EmptyBlock")
         self.setStyleSheet("""
             QFrame#EmptyBlock {
                 background-color: transparent;
-                border: 2px dashed #333;
-                border-radius: 8px;
+                border: none;
             }
         """)
+        
+        layout = QtWidgets.QVBoxLayout(self)
+        layout.setAlignment(QtCore.Qt.AlignCenter)
+        layout.setContentsMargins(5, 5, 5, 5)
+        
+        svg_widget = QSvgWidget('assets/icons_category/none.svg')
+        svg_widget.setFixedSize(40, 40)
+        layout.addWidget(svg_widget, alignment=QtCore.Qt.AlignCenter)
 
 class ConnectorCard(QtWidgets.QFrame):
-    def __init__(self, parent=None):
+    def __init__(self, has_split_merge=False, parent=None):
         super().__init__(parent)
-        self.setFixedSize(15, 75)
+        self.setFixedSize(25, 70)
+        self.has_split_merge = has_split_merge
         
     def paintEvent(self, event):
+        if not self.has_split_merge:
+            return
+            
         painter = QtGui.QPainter(self)
         painter.setRenderHint(QtGui.QPainter.Antialiasing)
         
-        # Draw small circle in the vertical center
-        painter.setPen(QtCore.Qt.NoPen)
-        painter.setBrush(QtGui.QColor("#666"))
-        
+        # Draw circle if split/merge
+        painter.setPen(QtGui.QPen(QtGui.QColor("#888"), 1))
+        painter.setBrush(QtCore.Qt.transparent)
+        radius = 6
         cx = self.width() // 2
         cy = self.height() // 2
-        radius = 4
-        
         painter.drawEllipse(QtCore.QPoint(cx, cy), radius, radius)
+
+
+class IOCard(QtWidgets.QFrame):
+    def __init__(self, icon_path, parent=None):
+        super().__init__(parent)
+        self.setFixedSize(70, 70)
+        self.setStyleSheet("background: transparent; border: none;")
+        layout = QtWidgets.QVBoxLayout(self)
+        layout.setAlignment(QtCore.Qt.AlignCenter)
+        layout.setContentsMargins(0, 0, 0, 0)
+        svg_widget = QSvgWidget(icon_path)
+        svg_widget.setFixedSize(50, 50)
+        layout.addWidget(svg_widget, alignment=QtCore.Qt.AlignCenter)
 
 
 class BlockManagerWidget(QtWidgets.QWidget):
@@ -318,18 +357,26 @@ class BlockManagerWidget(QtWidgets.QWidget):
     def init_ui(self):
         main_layout = QtWidgets.QVBoxLayout(self)
         
-        # Header
+        # Preset Info Header
+        info_layout = QtWidgets.QVBoxLayout()
+        self.lbl_preset_name = QtWidgets.QLabel("")
+        self.lbl_preset_name.setStyleSheet("font-size: 24pt; font-weight: normal; color: white;")
+        
+        self.lbl_preset_details = QtWidgets.QLabel("")
+        self.lbl_preset_details.setStyleSheet("font-size: 12pt; color: #aaa;")
+        
+        info_layout.addWidget(self.lbl_preset_name)
+        info_layout.addWidget(self.lbl_preset_details)
+        
         header_layout = QtWidgets.QHBoxLayout()
-        lbl_title = QtWidgets.QLabel("BLOCK MANAGER")
-        lbl_title.setStyleSheet("font-size: 16pt; font-weight: bold; color: #00ADB5;")
+        header_layout.addLayout(info_layout)
+        header_layout.addStretch()
         
         self.btn_sync = QtWidgets.QPushButton(qta.icon('fa5s.sync'), " Sincronizar con Helix")
         self.btn_sync.setObjectName("AccentButton")
         self.btn_sync.setFixedHeight(35)
         self.btn_sync.clicked.connect(self.sync_blocks)
         
-        header_layout.addWidget(lbl_title)
-        header_layout.addStretch()
         header_layout.addWidget(self.btn_sync)
         
         main_layout.addLayout(header_layout)
@@ -373,7 +420,7 @@ class BlockManagerWidget(QtWidgets.QWidget):
         self.render_blocks([])
 
     def sync_blocks(self):
-        log.info("Sincronizando bloques...")
+        print("Sincronizando bloques...")
         main_window = self.window()
         
         if hasattr(main_window, 'set_usb_interacting'):
@@ -390,6 +437,15 @@ class BlockManagerWidget(QtWidgets.QWidget):
                 return
                 
             conn.perform_handshake()
+            
+            # Fetch info
+            info = conn.fetch_active_preset_info()
+            if info:
+                bank_name = info.get("bank_name", "??")
+                preset_name = info.get("preset_name", "Unknown Preset")
+                setlist = info.get("setlist_name", "Unknown Setlist")
+                self.lbl_preset_name.setText(f"{bank_name} <b>{preset_name}</b>")
+                self.lbl_preset_details.setText(setlist)
             
             success, data = conn.fetch_active_preset_blocks()
             
@@ -432,15 +488,15 @@ class BlockManagerWidget(QtWidgets.QWidget):
                 slot_idx = base_idx + i
                 block = blocks_by_slot.get(slot_idx)
                 
-                if block and block.get("type") == "effect":
+                if block:
                     card = BlockCard(block, self)
                     card.clicked_sig.connect(self.on_block_clicked)
                     layout.addWidget(card)
                 else:
                     layout.addWidget(EmptyBlockCard(self))
                     
-                if i < 9: # Add connector except after the last block
-                    layout.addWidget(ConnectorCard(self))
+                if i < 9:
+                    layout.addWidget(ConnectorCard(has_split_merge=False, parent=self))
 
     def on_block_clicked(self, block_data):
         dialog = BlockEditorDialog(block_data, self)

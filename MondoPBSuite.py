@@ -156,15 +156,40 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def setup_toolbar(self):
         self.toolbar = QtWidgets.QWidget()
-        self.toolbar.setFixedHeight(50)
+        self.toolbar.setFixedHeight(70)
         self.toolbar.setObjectName("TopToolbar")
         layout = QtWidgets.QHBoxLayout(self.toolbar)
-        layout.setContentsMargins(15, 0, 15, 0)
+        layout.setContentsMargins(15, 5, 15, 5)
         
-        self.btn_home = QtWidgets.QPushButton(qta.icon('fa5s.home', color='#00ADB5'), " MONDO PEDALBOARD")
+        # Left side: Nav and Titles
+        left_layout = QtWidgets.QVBoxLayout()
+        left_layout.setSpacing(2)
+        left_layout.setContentsMargins(0, 0, 0, 0)
+        
+        top_row = QtWidgets.QHBoxLayout()
+        top_row.setSpacing(5)
+        
+        self.btn_home = QtWidgets.QPushButton(qta.icon('fa5s.home', color='#00ADB5'), "")
         self.btn_home.setObjectName("HomeNavButton")
+        self.btn_home.setFixedSize(24, 24)
+        self.btn_home.setStyleSheet("border: none; background: transparent;")
+        self.btn_home.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.btn_home.clicked.connect(self.go_home)
-        layout.addWidget(self.btn_home)
+        
+        self.lbl_app_title = QtWidgets.QLabel("MONDO PEDALBOARD")
+        self.lbl_app_title.setStyleSheet("color: white; font-weight: bold; font-size: 11pt;")
+        
+        top_row.addWidget(self.btn_home)
+        top_row.addWidget(self.lbl_app_title)
+        top_row.addStretch()
+        
+        self.lbl_module_title = QtWidgets.QLabel("")
+        self.lbl_module_title.setStyleSheet("color: #00ADB5; font-weight: bold; font-size: 14pt; padding-left: 2px;")
+        
+        left_layout.addLayout(top_row)
+        left_layout.addWidget(self.lbl_module_title)
+        
+        layout.addLayout(left_layout)
         
         layout.addStretch()
         
@@ -229,12 +254,22 @@ class MainWindow(QtWidgets.QMainWindow):
         self.stop_audio()
         self.stack.setCurrentWidget(self.page_home)
         self.btn_home.setVisible(False)
+        self.lbl_module_title.setText("")
 
     def navigate_to(self, page_name):
-        if page_name == "eq": self.stack.setCurrentWidget(self.page_eq)
-        elif page_name == "preset": self.stack.setCurrentWidget(self.page_preset)
-        elif page_name == "tone_matcher": self.stack.setCurrentWidget(self.page_tone_matcher)
-        elif page_name == "block_mgr": self.stack.setCurrentWidget(self.page_block_mgr)
+        if page_name == "eq": 
+            self.stack.setCurrentWidget(self.page_eq)
+            self.lbl_module_title.setText("EQUALIZER")
+        elif page_name == "preset": 
+            self.stack.setCurrentWidget(self.page_preset)
+            self.lbl_module_title.setText("PRESET EXPLORER")
+        elif page_name == "tone_matcher": 
+            self.stack.setCurrentWidget(self.page_tone_matcher)
+            self.lbl_module_title.setText("TONE MATCHER")
+        elif page_name == "block_mgr": 
+            self.stack.setCurrentWidget(self.page_block_mgr)
+            self.lbl_module_title.setText("BLOCK MANAGER")
+            
         self.btn_home.setVisible(True)
 
     def setup_statusbar(self):
