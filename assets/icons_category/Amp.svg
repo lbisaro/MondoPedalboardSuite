@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   id="svg1917"
+   version="1.1"
+   viewBox="0 0 38 38"
+   height="38mm"
+   width="38mm">
+  <defs
+     id="defs1911" />
+  <metadata
+     id="metadata1914">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     id="layer1">
+    <g
+       transform="translate(-2.117135,-6.9285365)"
+       id="g1254">
+      <rect
+         y="23.442648"
+         x="6.570416"
+         height="9.7675591"
+         width="29.263107"
+         id="rect1059"
+         style="fill:none;stroke:#ff0000;stroke-width:1;stroke-miterlimit:4;stroke-dasharray:none" />
+      <path
+         id="path1061"
+         d="M 6.5758812,29.899973 H 35.67407"
+         style="fill:#ff0000;stroke:#ff0000;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+      <path
+         id="path1063"
+         d="m 14.635146,23.633916 v -1.696687 c 4.395138,-1.5017 8.555675,-1.375863 12.80999,0 v 1.866356"
+         style="fill:none;stroke:#ff0000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+      <path
+         d="M 9.2057469,33.232866 H 10.732766 V 34.67505 H 9.2057469 Z"
+         style="fill:#ff0000;stroke:#ff0000;stroke-width:0.799999;stroke-miterlimit:4;stroke-dasharray:none"
+         id="rect1065" />
+      <path
+         d="m 31.347517,33.232866 h 1.527019 v 1.442184 h -1.527019 z"
+         style="fill:#ff0000;stroke:#ff0000;stroke-width:0.799999;stroke-miterlimit:4;stroke-dasharray:none"
+         id="rect1067" />
+    </g>
+  </g>
+</svg>

@@ -20,6 +20,7 @@ from eq_analyzer_widget import AudioAnalyzer, EQAnalyzerWidget, SAMPLE_RATE, BLO
 from preset_compare_widget import PresetCompareWidget
 from device_connection import AudioDeviceDialog, ConnectionManager
 from tone_matcher_widget import ToneMatcherWidget
+from block_manager_widget import BlockManagerWidget
 
 def resource_path(relative):
     """Resuelve rutas de recursos tanto en desarrollo como dentro del exe de PyInstaller."""
@@ -93,11 +94,14 @@ class HomeWidget(QtWidgets.QWidget):
                                  "Gestión de reamping y comparación A/B.", "preset", self.main_window)
         self.card_tone_matcher = NavCard("TONE MATCHER", "fa5s.music",
                                         "Ajuste automático de parámetros de Helix para igualar tonos.", "tone_matcher", self.main_window)
+        self.card_block_mgr = NavCard("BLOCK MANAGER", "fa5s.cubes",
+                                        "Visualiza y administra bloques de la Helix via USB.", "block_mgr", self.main_window)
         
         cards_layout.addStretch()
         cards_layout.addWidget(self.card_eq)
         cards_layout.addWidget(self.card_preset)
         cards_layout.addWidget(self.card_tone_matcher)
+        cards_layout.addWidget(self.card_block_mgr)
         cards_layout.addStretch()
         
         layout.addLayout(cards_layout)
@@ -136,11 +140,14 @@ class MainWindow(QtWidgets.QMainWindow):
         self.page_preset = PresetCompareWidget(self.analyzer)
         print("[INIT-UI] Creando ToneMatcherWidget...")
         self.page_tone_matcher = ToneMatcherWidget(self.analyzer, self)
+        print("[INIT-UI] Creando BlockManagerWidget...")
+        self.page_block_mgr = BlockManagerWidget(self)
         
         self.stack.addWidget(self.page_home)
         self.stack.addWidget(self.page_eq)
         self.stack.addWidget(self.page_preset)
         self.stack.addWidget(self.page_tone_matcher)
+        self.stack.addWidget(self.page_block_mgr)
         
         self.stack.setCurrentWidget(self.page_home)
         self.btn_home.setVisible(False) # Ocultar en el home al inicio
@@ -227,6 +234,7 @@ class MainWindow(QtWidgets.QMainWindow):
         if page_name == "eq": self.stack.setCurrentWidget(self.page_eq)
         elif page_name == "preset": self.stack.setCurrentWidget(self.page_preset)
         elif page_name == "tone_matcher": self.stack.setCurrentWidget(self.page_tone_matcher)
+        elif page_name == "block_mgr": self.stack.setCurrentWidget(self.page_block_mgr)
         self.btn_home.setVisible(True)
 
     def setup_statusbar(self):

@@ -74,16 +74,70 @@ def get_module(hex_id: str) -> Optional[dict]:
 def reload() -> None:
     """
     Recarga la base de datos desde modules.json en tiempo de ejecución.
-    Útil cuando la interfaz gráfica modifica el JSON y se quiere
-    reflejar el cambio sin reiniciar la aplicación.
+    Actualiza los diccionarios in-place para que las referencias (from module import modules) sigan siendo válidas.
     """
-    global _db, modules, modules_full
-    _db = _load_db()
-    modules = {
+    global _db
+    _db.clear()
+    _db.update(_load_db())
+    
+    modules.clear()
+    modules.update({
         hex_id: [entry["category"], _build_legacy_name(entry)]
         for hex_id, entry in _db.items()
-    }
-    modules_full = {
+    })
+    
+    modules_full.clear()
+    modules_full.update({
         hex_id: {**entry, "id": hex_id}
         for hex_id, entry in _db.items()
-    }
+    })
+
+
+def save_module(hex_id: str, new_data: dict) -> bool:
+    """
+    Actualiza la información de un módulo y la guarda permanentemente en modules.json.
+    
+    Args:
+        hex_id (str): El ID hexadecimal del módulo (ej. 'cd032b').
+        new_data (dict): Diccionario con los datos a actualizar ('name', 'category', 'variant', etc.).
+        
+    Returns:
+        bool: True si se guardó correctamente, False en caso de error.
+    """
+    try:
+        with open(_JSON_PATH, "r", encoding="utf-8") as f:
+            full_data = json.load(f)
+            
+        if "modules" not in full_data:
+            full_data["modules"] = {}
+            
+        # Si el módulo no existe, crear la estructura básica
+        if hex_id not in full_data["modules"]:
+            full_data["modules"][hex_id] = {
+                "category": "Unknown",
+                "name": "Unknown",
+                "variant": None,
+                "based_on": None,
+                "verified": False,
+                "fw_added": None,
+                "image_url": None,
+                "description": None,
+                "tags": []
+            }
+            
+        # Actualizar los campos proporcionados
+        for key, value in new_data.items():
+            if key != "id": # no guardar la id en el dict porque es la key
+                full_data["modules"][hex_id][key] = value
+                
+        # Escribir al disco
+        with open(_JSON_PATH, "w", encoding="utf-8") as f:
+            json.dump(full_data, f, indent=2, ensure_ascii=False)
+            
+        # Recargar en memoria
+        reload()
+        return True
+    except Exception as e:
+        print(f"Error al guardar módulo en modules.json: {e}")
+        return False
+

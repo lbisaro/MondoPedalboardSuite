@@ -162,33 +162,10 @@ class HelixConnection:
         abruptamente: intenta liberar la interfaz antes de reclamarla y reintenta
         el reset USB hasta 3 veces si el dispositivo tarda en estar disponible.
         """
-        reset_ok = False
-        max_reset_attempts = 3
-        for attempt in range(1, max_reset_attempts + 1):
-            self.dev = self.find_device()
-            if self.dev is None:
-                return False, "No se encontró el dispositivo Line 6 en el puerto USB."
-            self.product_id = self.dev.idProduct
-
-            try:
-                log.info(f"Reseteando dispositivo USB (intento {attempt}/{max_reset_attempts})...")
-                self.dev.reset()
-                # Esperar a que el dispositivo se re-inicialice en el bus USB.
-                # Un intento fallido necesita más tiempo antes del siguiente reset.
-                wait = 1.0 + 0.5 * (attempt - 1)
-                time.sleep(wait)
-                # Re-obtener referencia limpia tras el reset
-                self.dev = self.find_device()
-                if self.dev is not None:
-                    reset_ok = True
-                    break  # Reset exitoso
-                log.warning("El dispositivo desapareció del bus tras el reset, reintentando...")
-            except Exception as e:
-                log.warning(f"No se pudo resetear el dispositivo (intento {attempt}): {e}")
-                time.sleep(1.0)
-        
-        if not reset_ok:
-            log.warning("No se pudo resetear la Helix, pero intentaremos continuar con la interfaz...")
+        self.dev = self.find_device()
+        if self.dev is None:
+            return False, "No se encontró el dispositivo Line 6 en el puerto USB."
+        self.product_id = self.dev.idProduct
 
         # --- Liberar interfaz residual si quedó reclamada por un proceso anterior ---
         log.info("Reclamando interfaz 0 (control de canal nativo)...")
@@ -244,6 +221,21 @@ class HelixConnection:
     def disconnect(self):
         """Detiene el lector y libera la interfaz USB."""
         log.info("Desconectando de la Helix...")
+        
+        if self.dev and self.handshake_done:
+            # Enviar mensaje de teardown para liberar el Host Mode en la Helix
+            try:
+                teardown_msg_1 = [0x08, 0x00, 0x00, 0x18, 0xf0, 0x03, 0x02, 0x10, 0x00, 0x0d, 0x00, 0x02, 0x09, 0x02, 0x00, 0x00]
+                teardown_msg_2 = [0x08, 0x00, 0x00, 0x18, 0x01, 0x10, 0xef, 0x03, 0x00, 0x1f, 0x00, 0x02, 0x07, 0x1f, 0x00, 0x00]
+                
+                self.write(teardown_msg_1)
+                self.write(teardown_msg_2)
+                import time
+                time.sleep(0.3) # Permitir que el hilo lector capture las respuestas IN
+                log.info("Mensajes de TearDown (Host Release) 1 y 2 enviados y procesados.")
+            except Exception as e:
+                log.warning(f"No se pudo enviar mensaje TearDown: {e}")
+
         self.stop_event.set()
         self.handshake_done = False
         
@@ -255,8 +247,17 @@ class HelixConnection:
             
         if self.dev:
             try:
+                # Intenta limpiar los endpoints (equivalente a abort pipe)
+                try:
+                    self.dev.clear_halt(self.endpoint_in)
+                    self.dev.clear_halt(self.endpoint_out)
+                    log.info("Endpoints liberados (clear_halt).")
+                except Exception as e:
+                    pass
+                
                 usb.util.release_interface(self.dev, self.interface)
-                log.info("Interfaz 0 liberada.")
+                usb.util.dispose_resources(self.dev)
+                log.info("Interfaz 0 liberada y recursos de USB dispuestos.")
             except Exception as e:
                 log.error(f"Error al liberar la interfaz: {e}")
                 
@@ -857,23 +858,6 @@ class HelixConnection:
         
         # Parsear con HxPreset
         try:
-            import sys
-            import os
-            current_dir = os.path.dirname(os.path.abspath(__file__))
-            repos_dir = os.path.join(current_dir, "repos", "helix_usb")
-            repos_utils_dir = os.path.join(repos_dir, "utils")
-            local_utils_dir = os.path.join(current_dir, "utils")
-
-            # El directorio local utils/ va primero en el path para que nuestro
-            # modules.py (actualizado con los modelos de fw 3.80) tenga prioridad
-            # sobre el modules.py del repo externo.
-            if local_utils_dir not in sys.path:
-                sys.path.insert(0, local_utils_dir)
-            if repos_dir not in sys.path:
-                sys.path.insert(1, repos_dir)
-            if repos_utils_dir not in sys.path:
-                sys.path.insert(2, repos_utils_dir)
-
             from utils.preset_parser import HxPreset
             
             hx_preset = HxPreset(data_in=hex_str, preset_name=self.preset_name)
@@ -923,14 +907,19 @@ class HelixConnection:
                     block_a = names[0]
                     block_b = names[1]
                     
+                    hex_a = ''.join('{:02x}'.format(x) for x in slot.amp_effect_slot_a) if getattr(slot, 'amp_effect_slot_a', b'\xff') != b'\xff' else None
+                    hex_b = ''.join('{:02x}'.format(x) for x in slot.amp_effect_slot_b) if getattr(slot, 'amp_effect_slot_b', b'\xff') != b'\xff' else None
+                    
                     if block_a != '' or block_b != '':
                         blocks.append({
                             "slot_idx": idx,
                             "type": "effect",
                             "path": path_label,
+                            "hex_id": hex_a,
                             "name": block_a[1] if block_a != '' else None,
                             "category": block_a[0] if block_a != '' else None,
                             "params_a": getattr(slot, 'parameter_a', []),
+                            "dual_hex_id": hex_b,
                             "dual_name": block_b[1] if block_b != '' else None,
                             "dual_category": block_b[0] if block_b != '' else None,
                             "params_b": getattr(slot, 'parameter_b', []) if block_b != '' else []

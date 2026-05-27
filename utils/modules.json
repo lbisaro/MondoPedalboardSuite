@@ -964,7 +964,7 @@
       "tags": []
     },
     "77": {
-      "category": "Dynamic",
+      "category": "Dynamics",
       "name": "Deluxe Comp",
       "variant": "mono",
       "based_on": null,
@@ -986,9 +986,9 @@
       "tags": []
     },
     "79": {
-      "category": "Dynamic",
+      "category": "Dynamics",
       "name": "Red Squeeze",
-      "variant": "mono",
+      "variant": null,
       "based_on": null,
       "verified": true,
       "fw_added": null,
@@ -1030,9 +1030,9 @@
       "tags": []
     },
     "cd022d": {
-      "category": "Dynamic",
+      "category": "Dynamics",
       "name": "Rochester Comp",
-      "variant": "mono",
+      "variant": null,
       "based_on": null,
       "verified": false,
       "fw_added": null,
@@ -1052,9 +1052,9 @@
       "tags": []
     },
     "78": {
-      "category": "Dynamic",
+      "category": "Dynamics",
       "name": "LA Studio Comp",
-      "variant": "mono",
+      "variant": null,
       "based_on": null,
       "verified": true,
       "fw_added": null,
@@ -1096,9 +1096,9 @@
       "tags": []
     },
     "7b": {
-      "category": "Dynamic",
+      "category": "Dynamics",
       "name": "Noise Gate",
-      "variant": "mono",
+      "variant": null,
       "based_on": null,
       "verified": true,
       "fw_added": null,
@@ -2440,7 +2440,7 @@
     "cd01e8": {
       "category": "Delay",
       "name": "Multi Pass",
-      "variant": "mono",
+      "variant": null,
       "based_on": null,
       "verified": false,
       "fw_added": null,
@@ -3582,7 +3582,7 @@
       "tags": []
     },
     "cd0105": {
-      "category": "Vol/Pan",
+      "category": "Volume/Pan",
       "name": "Volume Pedal",
       "variant": "mono",
       "based_on": null,
@@ -7047,8 +7047,8 @@
       "tags": []
     },
     "cc95": {
-      "category": "Impulse Response",
-      "name": "1024 samples",
+      "category": "IR",
+      "name": "IR 1024",
       "variant": null,
       "based_on": null,
       "verified": true,
@@ -7058,11 +7058,33 @@
       "tags": []
     },
     "cc96": {
-      "category": "Impulse Response",
-      "name": "2048 samples",
+      "category": "IR",
+      "name": "IR 1024",
       "variant": null,
       "based_on": null,
       "verified": true,
+      "fw_added": null,
+      "image_url": null,
+      "description": null,
+      "tags": []
+    },
+    "cd030a": {
+      "category": "Amp",
+      "name": "Grammatico GSG",
+      "variant": null,
+      "based_on": null,
+      "verified": false,
+      "fw_added": null,
+      "image_url": null,
+      "description": null,
+      "tags": []
+    },
+    "cd028d": {
+      "category": "Modulation",
+      "name": "Ampeg Liquifier Chorus",
+      "variant": null,
+      "based_on": null,
+      "verified": false,
       "fw_added": null,
       "image_url": null,
       "description": null,

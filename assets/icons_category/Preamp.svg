@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   id="svg1917"
+   version="1.1"
+   viewBox="0 0 38 38"
+   height="38mm"
+   width="38mm">
+  <defs
+     id="defs1911" />
+  <metadata
+     id="metadata1914">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     id="layer1">
+    <g
+       transform="translate(-44.699963,-5.4928831)"
+       id="g1247">
+      <rect
+         ry="0"
+         y="22.98473"
+         x="50.224609"
+         height="6.8642921"
+         width="28.104252"
+         id="rect1109"
+         style="fill:none;stroke:#ff0000;stroke-width:1;stroke-miterlimit:4;stroke-dasharray:none" />
+      <path
+         id="path1111"
+         d="m 55.162299,23.014645 v 6.954901"
+         style="fill:none;stroke:#ff0000;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+      <path
+         id="path1113"
+         d="M 73.110728,23.014645 V 29.90689"
+         style="fill:none;stroke:#ff0000;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+      <path
+         d="m 52.817665,17.942484 c 0.965672,-1.3597 2.010686,-2.008828 3.35248,0 v 4.892782 h -3.35248 z"
+         style="fill:#ff0000;stroke:#ff0000;stroke-width:0.438076;stroke-miterlimit:4;stroke-dasharray:none"
+         id="rect1115" />
+      <path
+         id="path1178"
+         style="fill:#ff0000;stroke:#ff0000;stroke-width:0.438076;stroke-miterlimit:4;stroke-dasharray:none"
+         d="m 58.552058,17.942484 c 0.965672,-1.3597 2.010686,-2.008828 3.35248,0 v 4.892782 h -3.35248 z" />
+    </g>
+  </g>
+</svg>
