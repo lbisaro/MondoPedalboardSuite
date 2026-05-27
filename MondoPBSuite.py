@@ -259,10 +259,10 @@ class MainWindow(QtWidgets.QMainWindow):
     def navigate_to(self, page_name):
         if page_name == "eq": 
             self.stack.setCurrentWidget(self.page_eq)
-            self.lbl_module_title.setText("EQUALIZER")
+            self.lbl_module_title.setText("EQ ANALIZER")
         elif page_name == "preset": 
             self.stack.setCurrentWidget(self.page_preset)
-            self.lbl_module_title.setText("PRESET EXPLORER")
+            self.lbl_module_title.setText("PRESET COMPARER")
         elif page_name == "tone_matcher": 
             self.stack.setCurrentWidget(self.page_tone_matcher)
             self.lbl_module_title.setText("TONE MATCHER")

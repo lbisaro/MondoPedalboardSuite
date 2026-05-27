@@ -206,9 +206,6 @@ class ToneMatcherWidget(QtWidgets.QWidget):
 
         # --- TOP HEADER ROW ---
         header_layout = QtWidgets.QHBoxLayout()
-        self.lbl_title = QtWidgets.QLabel("TONE MATCHER")
-        self.lbl_title.setStyleSheet("font-size: 16pt; font-weight: bold; color: #00ADB5; letter-spacing: 1px;")
-        header_layout.addWidget(self.lbl_title)
         
         # MIDI Device Selection
         header_layout.addStretch()
