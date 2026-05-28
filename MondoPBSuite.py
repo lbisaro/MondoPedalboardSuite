@@ -114,7 +114,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.analyzer = analyzer
         self.conn_mgr = ConnectionManager(self.analyzer)
         
-        self.setWindowTitle("Mondo PedalBoard Suite v1.0")
+        self.setWindowTitle("Mondo PedalBoard Suite")
         self.resize(1280, 800)
         print("[INIT-UI] Cargando iconos de QtAwesome...")
         self.setWindowIcon(qta.icon('fa5s.wave-square', color='#00ADB5'))
@@ -177,7 +177,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.btn_home.clicked.connect(self.go_home)
         
         self.lbl_app_title = QtWidgets.QLabel("MONDO PEDALBOARD")
-        self.lbl_app_title.setStyleSheet("color: white; font-weight: bold; font-size: 11pt;")
+        self.lbl_app_title.setStyleSheet("color: #00ADB5; font-weight: bold; font-size: 11pt;")
         
         top_row.addWidget(self.btn_home)
         top_row.addWidget(self.lbl_app_title)

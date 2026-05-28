@@ -3,6 +3,7 @@ from PySide6 import QtCore, QtWidgets, QtGui
 from PySide6.QtSvgWidgets import QSvgWidget
 import qtawesome as qta
 import json
+import os
 
 from helix_connection import HelixConnection
 from utils.modules import get_module, save_module
@@ -55,6 +56,29 @@ class ParameterBar(QtWidgets.QWidget):
         painter.setPen(QtGui.QColor(self.color))
         painter.setFont(QtGui.QFont("Arial", 8, QtGui.QFont.Bold))
         painter.drawText(10, 15, self.name)
+        
+        val_str = str(self.value).lower()
+        if val_str in ["true", "false"]:
+            is_true = (val_str == "true")
+            # Draw switch
+            switch_w = 30
+            switch_h = 14
+            switch_x = 10
+            switch_y = 18
+            
+            # background
+            painter.setPen(QtCore.Qt.NoPen)
+            bg_color = QtGui.QColor(self.color) if is_true else QtGui.QColor("#444")
+            painter.setBrush(bg_color)
+            painter.drawRoundedRect(switch_x, switch_y, switch_w, switch_h, switch_h//2, switch_h//2)
+            
+            # thumb
+            thumb_color = QtGui.QColor("#fff") if is_true else QtGui.QColor("#aaa")
+            painter.setBrush(thumb_color)
+            thumb_x = switch_x + (switch_w - switch_h) + 1 if is_true else switch_x + 1
+            painter.drawEllipse(thumb_x, switch_y + 1, switch_h - 2, switch_h - 2)
+            
+            return
         
         # Draw background track
         painter.setPen(QtCore.Qt.NoPen)
@@ -109,12 +133,12 @@ class BlockEditorDialog(QtWidgets.QDialog):
     def init_ui(self):
         layout = QtWidgets.QVBoxLayout(self)
         
+        top_layout = QtWidgets.QHBoxLayout()
         form_layout = QtWidgets.QFormLayout()
         
-        self.txt_hex = QtWidgets.QLineEdit()
-        self.txt_hex.setReadOnly(True)
-        self.txt_hex.setStyleSheet("background-color: #333; color: white; border: 1px solid #555;")
-        form_layout.addRow("ID Hex:", self.txt_hex)
+        self.lbl_hex = QtWidgets.QLabel()
+        self.lbl_hex.setStyleSheet("font-weight: bold; font-size: 14px;")
+        form_layout.addRow("ID Hex:", self.lbl_hex)
         
         self.cmb_category = QtWidgets.QComboBox()
         self.cmb_category.addItems(list(CATEGORY_COLORS.keys()))
@@ -125,12 +149,27 @@ class BlockEditorDialog(QtWidgets.QDialog):
         self.cmb_name = QtWidgets.QComboBox()
         self.cmb_name.setEditable(True)
         self.cmb_name.setStyleSheet("background-color: #333; color: white; border: 1px solid #555;")
+        
+        completer = self.cmb_name.completer()
+        if completer:
+            completer.setCompletionMode(QtWidgets.QCompleter.PopupCompletion)
+            completer.setFilterMode(QtCore.Qt.MatchContains)
+            
+        self.cmb_name.currentTextChanged.connect(self.on_name_changed)
         form_layout.addRow("Nombre:", self.cmb_name)
         
-        layout.addLayout(form_layout)
+        top_layout.addLayout(form_layout)
+        
+        self.lbl_image = QtWidgets.QLabel()
+        self.lbl_image.setFixedSize(100, 100)
+        self.lbl_image.setAlignment(QtCore.Qt.AlignCenter)
+        self.lbl_image.setStyleSheet("background-color: transparent;")
+        top_layout.addWidget(self.lbl_image)
+        
+        layout.addLayout(top_layout)
         
         # Parámetros (solo lectura)
-        lbl_params = QtWidgets.QLabel("Parámetros disponibles (solo lectura):")
+        lbl_params = QtWidgets.QLabel("Parámetros:")
         layout.addWidget(lbl_params)
         
         scroll = QtWidgets.QScrollArea()
@@ -161,18 +200,70 @@ class BlockEditorDialog(QtWidgets.QDialog):
 
     def on_category_changed(self, category):
         self.cmb_name.clear()
-        models = self.catalog.get(category, [])
-        if not models:
-            # Try matching prefixes (e.g., Pitch/Synth -> Pitch)
-            for k, v in self.catalog.items():
-                if k.lower() in category.lower() or category.lower() in k.lower():
-                    models = v
-                    break
+        models = self._get_models_for_category(category)
         names = sorted([m.get("name", "") for m in models if m.get("name")])
         self.cmb_name.addItems(names)
+        
+    def _get_models_for_category(self, category):
+        models = self.catalog.get(category, [])
+        if not models:
+            for k, v in self.catalog.items():
+                if k.lower() in category.lower() or category.lower() in k.lower():
+                    return v
+        return models
+
+    def on_name_changed(self, name):
+        cat = self.cmb_category.currentText()
+        models = self._get_models_for_category(cat)
+        model_data = next((m for m in models if m.get("name") == name), None)
+        
+        # Clear layout
+        while self.params_layout.count():
+            item = self.params_layout.takeAt(0)
+            w = item.widget()
+            if w:
+                w.setParent(None)
+                w.deleteLater()
+                
+        if model_data:
+            img_path = model_data.get("image")
+            if img_path and os.path.exists(img_path):
+                pixmap = QtGui.QPixmap(img_path).scaled(100, 100, QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation)
+                self.lbl_image.setPixmap(pixmap)
+            else:
+                self.lbl_image.clear()
+                self.lbl_image.setText("Sin Icono")
+                
+            _, color = get_icon_for_category(cat)
+            catalog_params = model_data.get("parameters", [])
+            real_params = self.block_data.get("params_a", [])
+            
+            # Match parameters by index
+            for i in range(max(len(catalog_params), len(real_params))):
+                if i < len(catalog_params):
+                    p_name = catalog_params[i].get("name", f"Prm. {i}")
+                else:
+                    p_name = f"Prm. {i}"
+                    
+                if i < len(real_params):
+                    val = real_params[i]
+                else:
+                    val = 0.0
+                    
+                if isinstance(val, float):
+                    val = val * 10.0
+                    
+                val_str = f"{val:.1f}" if isinstance(val, float) else str(val)
+                bar = ParameterBar(p_name, val_str, color, self)
+                self.params_layout.addWidget(bar)
+                
+            self.params_layout.addStretch()
+        else:
+            self.lbl_image.clear()
+            self.lbl_image.setText("N/A")
 
     def load_data(self):
-        self.txt_hex.setText(self.hex_id or "Desconocido")
+        self.lbl_hex.setText(self.hex_id or "Desconocido")
         
         if self.full_module:
             cat = self.full_module.get("category", "Unknown")
@@ -180,9 +271,14 @@ class BlockEditorDialog(QtWidgets.QDialog):
             if idx >= 0:
                 self.cmb_category.setCurrentIndex(idx)
             
-            # This triggers on_category_changed and populates cmb_name
             name = self.full_module.get("name", "")
             self.cmb_name.setCurrentText(name)
+            
+            is_verified = self.full_module.get("verified", False)
+            if is_verified:
+                self.lbl_hex.setStyleSheet("color: #4CAF50; font-weight: bold; font-size: 14px;")
+            else:
+                self.lbl_hex.setStyleSheet("color: #FF9800; font-weight: bold; font-size: 14px;")
         else:
             cat = self.block_data.get("category", "Unknown")
             idx = self.cmb_category.findText(cat)
@@ -191,19 +287,10 @@ class BlockEditorDialog(QtWidgets.QDialog):
                 
             name = self.block_data.get("name", "")
             self.cmb_name.setCurrentText(name)
-                
-        # Draw parameter bars
-        _, color = get_icon_for_category(cat)
-        
-        params = self.block_data.get("params_a", [])
-        
-        for i, p in enumerate(params):
-            val_str = f"{p:.1f}" if isinstance(p, float) else str(p)
-            name = f"Prm. {i}"
-            bar = ParameterBar(name, val_str, color, self)
-            self.params_layout.addWidget(bar)
             
-        self.params_layout.addStretch()
+            self.lbl_hex.setStyleSheet("color: #FF9800; font-weight: bold; font-size: 14px;")
+            
+        self.on_name_changed(self.cmb_name.currentText())
 
     def save_data(self):
         if not self.hex_id:
@@ -213,7 +300,8 @@ class BlockEditorDialog(QtWidgets.QDialog):
         new_data = {
             "name": self.cmb_name.currentText().strip(),
             "category": self.cmb_category.currentText(),
-            "variant": None
+            "variant": None,
+            "verified": True
         }
         
         success = save_module(self.hex_id, new_data)
@@ -391,6 +479,7 @@ class BlockManagerWidget(QtWidgets.QWidget):
         self.paths_layout.setSpacing(20)
         
         self.path_layouts = {}
+        self.path_groups = []
         for path_name in ["1A", "1B", "2A", "2B"]:
             group = QtWidgets.QGroupBox(f" PATH {path_name} ")
             group.setStyleSheet("""
@@ -410,7 +499,14 @@ class BlockManagerWidget(QtWidgets.QWidget):
             h_layout = QtWidgets.QHBoxLayout(group)
             h_layout.setAlignment(QtCore.Qt.AlignLeft)
             self.path_layouts[path_name] = h_layout
-            self.paths_layout.addWidget(group)
+            self.paths_layout.addWidget(group, 0, QtCore.Qt.AlignLeft)
+            self.path_groups.append(group)
+            
+        self.lbl_loading = QtWidgets.QLabel("Sincronizando información desde la pedalera...")
+        self.lbl_loading.setStyleSheet("font-size: 16px; color: #888;")
+        self.lbl_loading.setAlignment(QtCore.Qt.AlignCenter)
+        self.lbl_loading.setVisible(False)
+        self.paths_layout.addWidget(self.lbl_loading)
             
         self.paths_layout.addStretch()
         scroll.setWidget(container)
@@ -418,9 +514,18 @@ class BlockManagerWidget(QtWidgets.QWidget):
         
         # Draw empty slots initially
         self.render_blocks([])
+        
+        # Auto-sync when module is opened
+        QtCore.QTimer.singleShot(100, self.sync_blocks)
 
     def sync_blocks(self):
         print("Sincronizando bloques...")
+        
+        for group in self.path_groups:
+            group.setVisible(False)
+        self.lbl_loading.setVisible(True)
+        QtWidgets.QApplication.processEvents()
+        
         main_window = self.window()
         
         if hasattr(main_window, 'set_usb_interacting'):
@@ -465,6 +570,10 @@ class BlockManagerWidget(QtWidgets.QWidget):
             QtWidgets.QMessageBox.critical(self, "Error", f"Fallo en la sincronización: {e}")
             
         finally:
+            for group in self.path_groups:
+                group.setVisible(True)
+            self.lbl_loading.setVisible(False)
+            
             if hasattr(main_window, 'set_usb_disconnected'):
                 main_window.set_usb_disconnected()
 
@@ -475,6 +584,7 @@ class BlockManagerWidget(QtWidgets.QWidget):
                 item = layout.takeAt(0)
                 widget = item.widget()
                 if widget:
+                    widget.setParent(None)
                     widget.deleteLater()
                     
         # Map blocks by slot_idx
