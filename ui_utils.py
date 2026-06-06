@@ -33,6 +33,9 @@ class FrequencyPlotWidget(pg.PlotWidget):
         self.setYRange(y_range[0], y_range[1], padding=0)
         self.setXRange(np.log10(20), np.log10(20000), padding=0)
         
+        # Bloquear zoom y paneo horizontal, permitir solo el vertical (dB)
+        self.setMouseEnabled(x=False, y=True)
+        
         self.setLabel("left", "dB", color="#BBBBBB", size="11pt")
         self.setLabel("bottom", "Hz", color="#BBBBBB", size="11pt")
         
@@ -82,6 +85,20 @@ class FrequencyPlotWidget(pg.PlotWidget):
         self.target_labels = []
         self.band_labels = []
         self.plotItem.vb.sigRangeChanged.connect(self.update_band_labels)
+        
+        # Sweep indicator line for Stepped Sine mode
+        # Using a softer, semi-transparent yellow
+        soft_yellow = QtGui.QColor(255, 215, 0, 140)
+        self.sweep_line = pg.InfiniteLine(angle=90, movable=False, pen=pg.mkPen(color=soft_yellow, width=1.5, style=QtCore.Qt.SolidLine))
+        self.sweep_line.hide()
+        self.addItem(self.sweep_line, ignoreBounds=True)
+
+    def set_sweep_frequency(self, freq):
+        if freq is not None and freq > 0:
+            self.sweep_line.setPos(np.log10(freq))
+            self.sweep_line.show()
+        else:
+            self.sweep_line.hide()
 
     def resizeEvent(self, event):
         super().resizeEvent(event)

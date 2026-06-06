@@ -43,10 +43,59 @@ class AudioAnalyzer:
         
         self.result_ready = False
         
+        # Modo de análisis
+        self.mode = "Stepped Sine Sweep" # "Stepped Sine Sweep" o "Exponential Sine Sweep"
+        self.send_level_db = -8.0 # Nivel por defecto
+        
         # Ajuste manual en dBs (SpinBox)
         self.manual_offset_adj = 0.0
         
+        # Variables para Stepped Sine
+        self.stepped_fraction = SMOOTHING_FRACTION
+        self.stepped_freqs = np.array([])
+        self.stepped_mags = np.array([])
+        self.current_step_idx = 0
+        self.stepped_sample_count = 0
+        self.stepped_accum_sq = 0.0
+        self.current_stepped_freq = 0.0
+        
         self.build_sweep_and_inverse_filter()
+        self.build_stepped_frequencies(self.stepped_fraction)
+
+    def build_stepped_frequencies(self, fraction):
+        if fraction <= 0:
+            fraction = 6 # Default fallback
+            
+        self.stepped_fraction = fraction
+        # Calculamos frecuencias de 1/fraction de octava
+        num_octaves = np.log2(self.f2 / self.f1)
+        num_steps = int(num_octaves * fraction) + 1
+        self.stepped_freqs = self.f1 * (2 ** (np.arange(num_steps) / fraction))
+        
+        # Inicializar array de magnitudes a un valor bajo
+        self.stepped_mags = np.full(len(self.stepped_freqs), -64.0, dtype=np.float32)
+        
+        # Configurar tiempos: 50ms para asentar, 50ms para medir
+        self.stepped_settle_samples = int(0.05 * self.fs)
+        self.stepped_measure_samples = int(0.05 * self.fs)
+        self.stepped_total_samples_per_step = self.stepped_settle_samples + self.stepped_measure_samples
+        
+        self.current_step_idx = 0
+        self.stepped_sample_count = 0
+        self.stepped_accum_sq = 0.0
+        if len(self.stepped_freqs) > 0:
+            self.current_stepped_freq = self.stepped_freqs[0]
+            
+    def update_stepped_calibrated_mag(self):
+        # Interpolar los puntos del barrido escalonado a los 512 bins para mantener compatibilidad
+        if len(self.stepped_freqs) > 0:
+            interp_mag = np.interp(self.freqs, self.stepped_freqs, self.stepped_mags).astype(np.float32)
+            self.magnitude_db = interp_mag
+            
+            # Matemáticamente: Ganancia = Nivel_Recibido - Nivel_Enviado + Calibración_Manual
+            self.calibrated_mag = np.clip(self.magnitude_db - self.send_level_db + self.manual_offset_adj, -100.0, 24.0)
+            self.result_ready = True
+
 
     def build_sweep_and_inverse_filter(self):
         T = self.block_size / self.fs
@@ -90,6 +139,7 @@ class AudioAnalyzer:
             self.result_ready = False
             self.manual_offset_adj = 0.0
             self.build_sweep_and_inverse_filter()
+            self.build_stepped_frequencies(self.stepped_fraction)
 
     def audio_callback(self, indata, outdata, frames, time, status):
         outdata.fill(0)
@@ -100,30 +150,71 @@ class AudioAnalyzer:
         if outdata.shape[1] > self.out_ch and indata.shape[1] > self.in_ch:
             in_data = indata[:, self.in_ch]
             
-            offset = 0
-            remaining = frames
+            # Amplitud de salida basada en send_level_db
+            amplitude = 10.0 ** (self.send_level_db / 20.0)
             
-            while remaining > 0:
-                chunk = min(remaining, self.block_size - self.sweep_write_pos)
+            if self.mode == "Exponential Sine Sweep":
+                offset = 0
+                remaining = frames
                 
-                # Cargar barrido (atenuado a -12dBFS como indica el doc)
-                outdata[offset:offset+chunk, self.out_ch] = self.sweep_buffer[self.sweep_write_pos:self.sweep_write_pos+chunk] * 0.25
-                
-                # Capturar
-                self.capture_buffer[self.capture_pos:self.capture_pos+chunk] = in_data[offset:offset+chunk]
-                
-                self.sweep_write_pos += chunk
-                self.capture_pos += chunk
-                
-                offset += chunk
-                remaining -= chunk
-                
-                if self.sweep_write_pos >= self.block_size:
-                    self.sweep_write_pos = 0
+                while remaining > 0:
+                    chunk = min(remaining, self.block_size - self.sweep_write_pos)
                     
-                if self.capture_pos >= self.block_size:
-                    self.compute_transfer_function()
-                    self.capture_pos = 0
+                    # Cargar barrido (atenuado según send_level)
+                    outdata[offset:offset+chunk, self.out_ch] = self.sweep_buffer[self.sweep_write_pos:self.sweep_write_pos+chunk] * amplitude
+                    
+                    # Capturar
+                    self.capture_buffer[self.capture_pos:self.capture_pos+chunk] = in_data[offset:offset+chunk]
+                    
+                    self.sweep_write_pos += chunk
+                    self.capture_pos += chunk
+                    
+                    offset += chunk
+                    remaining -= chunk
+                    
+                    if self.sweep_write_pos >= self.block_size:
+                        self.sweep_write_pos = 0
+                        
+                    if self.capture_pos >= self.block_size:
+                        self.compute_transfer_function()
+                        self.capture_pos = 0
+            
+            elif self.mode == "Stepped Sine Sweep":
+                if len(self.stepped_freqs) == 0:
+                    return
+                    
+                freq = self.stepped_freqs[self.current_step_idx]
+                self.current_stepped_freq = freq
+                
+                # Generar señal de salida
+                t = (self.stepped_sample_count + np.arange(frames)) / self.fs
+                outdata[:, self.out_ch] = np.sin(2 * np.pi * freq * t) * amplitude
+                
+                # Medir entrada
+                start_meas = max(0, self.stepped_settle_samples - self.stepped_sample_count)
+                end_meas = min(frames, self.stepped_total_samples_per_step - self.stepped_sample_count)
+                
+                if start_meas < end_meas:
+                    self.stepped_accum_sq += np.sum(in_data[start_meas:end_meas]**2)
+                    
+                self.stepped_sample_count += frames
+                
+                if self.stepped_sample_count >= self.stepped_total_samples_per_step:
+                    # Finalizó la medición de este paso
+                    rms = np.sqrt(self.stepped_accum_sq / self.stepped_measure_samples)
+                    db = 20.0 * np.log10(max(rms, 1e-6))
+                    self.stepped_mags[self.current_step_idx] = db
+                    
+                    self.current_step_idx += 1
+                    if self.current_step_idx >= len(self.stepped_freqs):
+                        self.current_step_idx = 0
+                        
+                    self.update_stepped_calibrated_mag()
+                        
+                    # Los samples sobrantes se cuentan para el próximo paso
+                    leftover = self.stepped_sample_count - self.stepped_total_samples_per_step
+                    self.stepped_sample_count = leftover
+                    self.stepped_accum_sq = 0.0
 
     def compute_transfer_function(self):
         # Compuerta de ruido (evitar computar FFT si no hay señal)
@@ -172,7 +263,10 @@ class AudioAnalyzer:
         k_indices = (target_freqs / nyq * half_bins).astype(np.int32)
         k_indices = np.clip(k_indices, 1, half_bins - 1)
         
-        mags = np.abs(gated_fft[k_indices]) / self.block_size
+        # Para que el nivel de ESS coincida con el Stepped Sine (que mide RMS),
+        # necesitamos dividir la amplitud pico por sqrt(2). El / block_size original
+        # estaba hundiendo la gráfica en -66dB.
+        mags = np.abs(gated_fft[k_indices]) / np.sqrt(2.0)
         new_mag = 20.0 * np.log10(np.maximum(mags, 1e-6))
         
         # 8. Suavizado espectral fijo 1/12 octava (vectorizado)
@@ -189,10 +283,8 @@ class AudioAnalyzer:
             self.magnitude_db = new_mag
             self.result_ready = True
             
-        # 10. Autocalibración pura y dinámica sobre curva estable
-        auto_offset = np.percentile(self.magnitude_db, 45)
-        total_offset = auto_offset + self.manual_offset_adj
-        self.calibrated_mag = np.clip(self.magnitude_db - total_offset, -64.0, 24.0)
+        # 10. Ganancia Relativa con calibración manual
+        self.calibrated_mag = np.clip(self.magnitude_db - self.send_level_db + self.manual_offset_adj, -100.0, 24.0)
 
     def get_smoothed_curve(self, fraction=SMOOTHING_FRACTION):
         ui_ema = 0.70
@@ -361,6 +453,15 @@ class EQAnalyzerWidget(QtWidgets.QWidget):
         right_layout.addWidget(self.plot_widget)
         
         controls = QtWidgets.QHBoxLayout()
+        
+        # Modo de barrido
+        controls.addWidget(QtWidgets.QLabel("Mode:"))
+        self.mode_sel = QtWidgets.QComboBox()
+        self.mode_sel.addItems(["Stepped Sine Sweep", "Exponential Sine Sweep"])
+        self.mode_sel.currentTextChanged.connect(self.on_mode_changed)
+        controls.addWidget(self.mode_sel)
+        controls.addSpacing(10)
+        
         controls.addWidget(QtWidgets.QLabel("Smoothing:"))
         self.smooth_sel = QtWidgets.QComboBox()
         self.smooth_sel.addItems(["None", "1/3 Octave", "1/6 Octave", "1/12 Octave"])
@@ -372,39 +473,42 @@ class EQAnalyzerWidget(QtWidgets.QWidget):
         self.smooth_sel.currentTextChanged.connect(self.save_smoothing_preference)
         
         controls.addWidget(self.smooth_sel)
+        controls.addSpacing(10)
+        
+        # Nivel de Señal
+        controls.addWidget(QtWidgets.QLabel("Send Level:"))
+        self.send_level_spin = QtWidgets.QDoubleSpinBox()
+        self.send_level_spin.setObjectName("SendLevelSpin")
+        self.send_level_spin.setRange(-25.0, -6.0)
+        self.send_level_spin.setSingleStep(1.0)
+        self.send_level_spin.setValue(-8.0)
+        self.send_level_spin.setSuffix(" dB")
+        self.send_level_spin.setDecimals(1)
+        self.send_level_spin.setFixedWidth(100)
+        self.send_level_spin.valueChanged.connect(self.on_send_level_changed)
+        controls.addWidget(self.send_level_spin)
         
         # Separador / Espacio
         controls.addSpacing(15)
         
-        # Etiqueta para calibración
-        lbl_calib = QtWidgets.QLabel("Calib:")
-        lbl_calib.setStyleSheet("color: #888; font-weight: bold;")
-        controls.addWidget(lbl_calib)
-        
-        # Selector numérico para ajuste fino de offset (dB)
-        self.offset_spin = QtWidgets.QDoubleSpinBox()
-        self.offset_spin.setObjectName("OffsetSpin")
-        self.offset_spin.setRange(-40.0, 40.0)
-        self.offset_spin.setSingleStep(1.0)
-        self.offset_spin.setValue(0.0)
-        self.offset_spin.setSuffix(" dB")
-        self.offset_spin.setDecimals(1)
-        self.offset_spin.setFixedWidth(80)
-        self.offset_spin.setStyleSheet("""
-            QDoubleSpinBox#OffsetSpin {
-                background-color: #222;
-                border: 1px solid #444;
-                border-radius: 4px;
-                color: #00ADB5;
+        # Botón para Auto-Calibrar a 0dB
+        self.btn_auto_zero = QtWidgets.QPushButton("Set 0dB")
+        self.btn_auto_zero.setToolTip("Alinea la curva actual exactamente al 0dB compensando la pérdida del hardware.")
+        self.btn_auto_zero.setFixedWidth(80)
+        self.btn_auto_zero.setStyleSheet("""
+            QPushButton {
+                background-color: #00ADB5;
+                color: #111;
                 font-weight: bold;
-                padding: 3px;
+                border-radius: 4px;
+                padding: 4px;
             }
-            QDoubleSpinBox#OffsetSpin:hover {
-                border-color: #00ADB5;
+            QPushButton:hover {
+                background-color: #008C94;
             }
         """)
-        self.offset_spin.valueChanged.connect(self.on_manual_offset_changed)
-        controls.addWidget(self.offset_spin)
+        self.btn_auto_zero.clicked.connect(self.on_auto_zero)
+        controls.addWidget(self.btn_auto_zero)
         
         controls.addStretch()
         right_layout.addLayout(controls)
@@ -417,11 +521,9 @@ class EQAnalyzerWidget(QtWidgets.QWidget):
         """Activar el ruido y recargar preferencias cuando el widget se muestra."""
         self.load_smoothing_preference()
         self.load_target_preference()
-        
-        # Sincronizar el spinbox con el estado de calibración
-        self.offset_spin.blockSignals(True)
-        self.offset_spin.setValue(self.analyzer.manual_offset_adj)
-        self.offset_spin.blockSignals(False)
+        self.load_mode_preference()
+        self.load_send_level_preference()
+        self.load_calib_preference()
         
         self.analyzer.analyzer_active = True
         super().showEvent(event)
@@ -444,8 +546,74 @@ class EQAnalyzerWidget(QtWidgets.QWidget):
         settings["user_preferences"]["smoothing"] = text
         self.main_window.save_settings(settings)
         
-    def on_manual_offset_changed(self, value):
-        self.analyzer.manual_offset_adj = value
+        # Si estamos en Stepped Sine, hay que reconstruir las frecuencias
+        fraction = 0
+        if "1/3" in text: fraction = 3
+        elif "1/6" in text: fraction = 6
+        elif "1/12" in text: fraction = 12
+        if fraction > 0:
+            self.analyzer.build_stepped_frequencies(fraction)
+            
+    def load_mode_preference(self):
+        settings = self.main_window.load_settings()
+        pref_mode = settings.get("user_preferences", {}).get("analyzer_mode", "Stepped Sine Sweep")
+        self.mode_sel.blockSignals(True)
+        self.mode_sel.setCurrentText(pref_mode)
+        self.mode_sel.blockSignals(False)
+        self.on_mode_changed(pref_mode)
+        
+    def on_mode_changed(self, mode_text):
+        self.analyzer.mode = mode_text
+        if mode_text == "Stepped Sine Sweep":
+            self.lbl_title.setText("EQ TRANSFER FUNCTION  |  Stepped Sine Sweep")
+            self.plot_widget.set_sweep_frequency(self.analyzer.current_stepped_freq)
+        else:
+            self.lbl_title.setText("EQ TRANSFER FUNCTION  |  Exponential Sine Sweep (Farina Method)")
+            self.plot_widget.set_sweep_frequency(0) # Hide
+            
+        settings = self.main_window.load_settings()
+        if "user_preferences" not in settings: settings["user_preferences"] = {}
+        settings["user_preferences"]["analyzer_mode"] = mode_text
+        self.main_window.save_settings(settings)
+        
+    def load_send_level_preference(self):
+        settings = self.main_window.load_settings()
+        pref_level = settings.get("user_preferences", {}).get("send_level_db", -8.0)
+        self.send_level_spin.blockSignals(True)
+        self.send_level_spin.setValue(pref_level)
+        self.send_level_spin.blockSignals(False)
+        self.analyzer.send_level_db = pref_level
+
+    def on_send_level_changed(self, value):
+        self.analyzer.send_level_db = value
+        settings = self.main_window.load_settings()
+        if "user_preferences" not in settings: settings["user_preferences"] = {}
+        settings["user_preferences"]["send_level_db"] = value
+        self.main_window.save_settings(settings)
+
+    def load_calib_preference(self):
+        settings = self.main_window.load_settings()
+        pref_calib = settings.get("user_preferences", {}).get("calib_db", 0.0)
+        self.analyzer.manual_offset_adj = pref_calib
+
+    def on_auto_zero(self):
+        """Calcula el offset necesario para que la curva actual promedie 0dB y lo guarda."""
+        if not self.analyzer.result_ready:
+            return
+            
+        # Tomamos la mediana de la magnitud bruta para ignorar picos locos
+        current_median = np.median(self.analyzer.magnitude_db)
+        
+        # Queremos que: current_median - send_level_db + new_offset = 0
+        new_offset = self.analyzer.send_level_db - current_median
+        
+        self.analyzer.manual_offset_adj = new_offset
+        
+        settings = self.main_window.load_settings()
+        if "user_preferences" not in settings: settings["user_preferences"] = {}
+        settings["user_preferences"]["calib_db"] = float(new_offset)
+        self.main_window.save_settings(settings)
+
         
     def update_plot(self):
         settings = self.main_window.load_settings()
@@ -467,6 +635,11 @@ class EQAnalyzerWidget(QtWidgets.QWidget):
         smoothed = self.analyzer.get_smoothed_curve(fraction)
         if smoothed is not None:
             self.curve.setData(self.analyzer.freqs, smoothed)
+            
+        if self.analyzer.mode == "Stepped Sine Sweep":
+            self.plot_widget.set_sweep_frequency(self.analyzer.current_stepped_freq)
+        else:
+            self.plot_widget.set_sweep_frequency(0)
             
         # Actualizar todas las curvas de referencia activas
         for name, curve_obj in self.active_ref_curves.items():
