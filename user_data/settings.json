@@ -12,6 +12,6 @@
     },
     "user_preferences": {
         "target_profile": "AMBIENT",
-        "smoothing": "1/3 Octave"
+        "smoothing": "1/12 Octave"
     }
 }

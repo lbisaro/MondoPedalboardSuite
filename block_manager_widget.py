@@ -6,7 +6,7 @@ import json
 import os
 
 from helix_connection import HelixConnection
-from utils.modules import get_module, save_module
+from utils.modules import get_module, save_module, get_categories
 
 # Icon mapping for different block categories (SVG paths and Colors)
 CATEGORY_COLORS = {
@@ -107,12 +107,168 @@ class ParameterBar(QtWidgets.QWidget):
         painter.setPen(QtGui.QColor("#ccc"))
         painter.drawText(track_w + 20, 15, str(self.value))
 
+class ParameterEditorDialog(QtWidgets.QDialog):
+    def __init__(self, param_data, raw_val, parent=None):
+        super().__init__(parent)
+        self.param_data = param_data.copy()
+        self.raw_val = float(raw_val) if raw_val != "" else 0.0
+        
+        self.setWindowTitle(f"Editar Parámetro: {self.param_data.get('name', '')}")
+        self.setMinimumWidth(450)
+        self.setStyleSheet("background-color: #1a1a1a; color: white;")
+        
+        layout = QtWidgets.QVBoxLayout(self)
+        form_layout = QtWidgets.QFormLayout()
+        
+        self.txt_name = QtWidgets.QLineEdit(self.param_data.get("name", ""))
+        self.txt_name.setStyleSheet("background-color: #333; color: white; border: 1px solid #555; padding: 4px;")
+        self.txt_name.textChanged.connect(self.update_preview)
+        form_layout.addRow("Nombre:", self.txt_name)
+        
+        self.cmb_type = QtWidgets.QComboBox()
+        self.cmb_type.addItems(["continuous", "bool", "enum"])
+        self.cmb_type.setStyleSheet("background-color: #333; color: white; border: 1px solid #555; padding: 4px;")
+        
+        curr_type = self.param_data.get("type", "continuous")
+        if curr_type == "switch": curr_type = "bool"
+        if curr_type == "dropdown": curr_type = "enum"
+        self.cmb_type.setCurrentText(curr_type)
+        self.cmb_type.currentTextChanged.connect(self.on_type_changed)
+        form_layout.addRow("Tipo:", self.cmb_type)
+        
+        self.dynamic_widget = QtWidgets.QWidget()
+        self.dynamic_layout = QtWidgets.QFormLayout(self.dynamic_widget)
+        self.dynamic_layout.setContentsMargins(0, 0, 0, 0)
+        
+        self.w_min = QtWidgets.QLineEdit(str(self.param_data.get("min", 0.0)))
+        self.w_max = QtWidgets.QLineEdit(str(self.param_data.get("max", 10.0)))
+        self.w_mult = QtWidgets.QLineEdit(str(self.param_data.get("multiplier", 1.0)))
+        self.w_dec = QtWidgets.QLineEdit(str(self.param_data.get("decimals", 0)))
+        self.w_unit = QtWidgets.QLineEdit(self.param_data.get("unit", ""))
+        
+        for w in [self.w_min, self.w_max, self.w_mult, self.w_dec, self.w_unit]:
+            w.setStyleSheet("background-color: #333; color: white; border: 1px solid #555; padding: 4px;")
+            w.textChanged.connect(self.update_preview)
+            
+        opts_str = ""
+        opts_data = self.param_data.get("options", [])
+        if isinstance(opts_data, list):
+            opts_str = ", ".join(f"{o.get('value', i)}:{o.get('name', '')}" for i, o in enumerate(opts_data))
+        self.w_options = QtWidgets.QLineEdit(opts_str)
+        self.w_options.setPlaceholderText("Ej: 0:Off, 1:Rojo, 2:Verde")
+        self.w_options.setStyleSheet("background-color: #333; color: white; border: 1px solid #555; padding: 4px;")
+        self.w_options.textChanged.connect(self.update_preview)
+        
+        form_layout.addRow(self.dynamic_widget)
+        layout.addLayout(form_layout)
+        
+        preview_group = QtWidgets.QGroupBox(" Vista Previa ")
+        preview_group.setStyleSheet("QGroupBox { border: 1px solid #555; margin-top: 10px; } QGroupBox::title { subcontrol-origin: margin; left: 10px; padding: 0 3px; color: #888; }")
+        p_layout = QtWidgets.QVBoxLayout(preview_group)
+        self.lbl_preview = QtWidgets.QLabel("")
+        self.lbl_preview.setAlignment(QtCore.Qt.AlignCenter)
+        self.lbl_preview.setStyleSheet("font-size: 18px; font-weight: bold; color: #4CAF50; padding: 10px;")
+        p_layout.addWidget(self.lbl_preview)
+        layout.addWidget(preview_group)
+        
+        # Buttons
+        btn_layout = QtWidgets.QHBoxLayout()
+        btn_layout.addStretch()
+        
+        btn_cancel = QtWidgets.QPushButton("Cancelar")
+        btn_cancel.clicked.connect(self.reject)
+        
+        btn_save = QtWidgets.QPushButton("Guardar")
+        btn_save.setObjectName("AccentButton")
+        btn_save.clicked.connect(self.accept)
+        
+        btn_layout.addWidget(btn_cancel)
+        btn_layout.addWidget(btn_save)
+        
+        layout.addLayout(btn_layout)
+        
+        self.on_type_changed(self.cmb_type.currentText())
+        
+    def on_type_changed(self, p_type):
+        while self.dynamic_layout.rowCount() > 0:
+            self.dynamic_layout.removeRow(0)
+            
+        if p_type == "continuous":
+            self.dynamic_layout.addRow("Mínimo:", self.w_min)
+            self.dynamic_layout.addRow("Máximo:", self.w_max)
+            self.dynamic_layout.addRow("Multiplicador:", self.w_mult)
+            self.dynamic_layout.addRow("Decimales:", self.w_dec)
+            self.dynamic_layout.addRow("Unidad:", self.w_unit)
+        elif p_type == "enum":
+            self.dynamic_layout.addRow("Opciones:", self.w_options)
+            
+        self.update_preview()
+        
+    def update_preview(self):
+        p_type = self.cmb_type.currentText()
+        fmt_val = str(self.raw_val)
+        
+        try:
+            if p_type == "continuous":
+                mult = float(self.w_mult.text() or 1.0)
+                dec = int(self.w_dec.text() or 0)
+                unit = self.w_unit.text()
+                calc = self.raw_val * mult
+                fmt_val = f"{calc:.{dec}f}{unit}"
+            elif p_type == "bool":
+                fmt_val = "On" if self.raw_val >= 0.5 else "Off"
+            elif p_type == "enum":
+                opts_str = self.w_options.text()
+                match_txt = str(self.raw_val)
+                for opt in opts_str.split(","):
+                    if ":" in opt:
+                        k, v = opt.split(":", 1)
+                        if k.strip().isdigit() and int(k.strip()) == int(self.raw_val):
+                            match_txt = v.strip()
+                            break
+                fmt_val = match_txt
+        except Exception:
+            fmt_val = "Error de formato"
+            
+        self.lbl_preview.setText(f"{fmt_val}   <span style='color:#888; font-size:12px;'>(RAW: {self.raw_val})</span>")
+        
+    def get_data(self):
+        p_type = self.cmb_type.currentText()
+        data = {
+            "index": self.param_data.get("index", 0),
+            "name": self.txt_name.text().strip(),
+            "type": p_type
+        }
+        if p_type == "continuous":
+            try:
+                data["min"] = float(self.w_min.text() or 0.0)
+                data["max"] = float(self.w_max.text() or 10.0)
+                data["multiplier"] = float(self.w_mult.text() or 1.0)
+                data["decimals"] = int(self.w_dec.text() or 0)
+                data["unit"] = self.w_unit.text().strip()
+            except ValueError:
+                pass
+        elif p_type == "enum":
+            opts_parsed = []
+            for opt in self.w_options.text().split(","):
+                if ":" in opt:
+                    k, v = opt.split(":", 1)
+                    try:
+                        opts_parsed.append({"value": int(k.strip()), "name": v.strip()})
+                    except ValueError:
+                        pass
+            if opts_parsed:
+                data["options"] = opts_parsed
+                
+        return data
+
 class BlockEditorDialog(QtWidgets.QDialog):
     def __init__(self, block_data, parent=None):
         super().__init__(parent)
         self.block_data = block_data
         self.hex_id = block_data.get('hex_id')
         self.full_module = get_module(self.hex_id) if self.hex_id else None
+        self.categories_db = get_categories()
         
         self.catalog = {}
         try:
@@ -123,7 +279,7 @@ class BlockEditorDialog(QtWidgets.QDialog):
             print("Error loading catalog:", e)
             
         self.setWindowTitle("Editar Módulo")
-        self.setMinimumWidth(500)
+        self.setMinimumWidth(1000)
         self.setMinimumHeight(600)
         self.setStyleSheet("background-color: #1a1a1a; color: white;")
         
@@ -136,16 +292,24 @@ class BlockEditorDialog(QtWidgets.QDialog):
         top_layout = QtWidgets.QHBoxLayout()
         form_layout = QtWidgets.QFormLayout()
         
+        # Hex ID
         self.lbl_hex = QtWidgets.QLabel()
         self.lbl_hex.setStyleSheet("font-weight: bold; font-size: 14px;")
         form_layout.addRow("ID Hex:", self.lbl_hex)
         
+        # Category
         self.cmb_category = QtWidgets.QComboBox()
-        self.cmb_category.addItems(list(CATEGORY_COLORS.keys()))
+        self.cmb_category.addItems(list(self.categories_db.keys()))
         self.cmb_category.setStyleSheet("background-color: #333; color: white; border: 1px solid #555;")
         self.cmb_category.currentTextChanged.connect(self.on_category_changed)
         form_layout.addRow("Categoría:", self.cmb_category)
         
+        # Subcategory
+        self.cmb_subcategory = QtWidgets.QComboBox()
+        self.cmb_subcategory.setStyleSheet("background-color: #333; color: white; border: 1px solid #555;")
+        form_layout.addRow("Subcategoría:", self.cmb_subcategory)
+        
+        # Name
         self.cmb_name = QtWidgets.QComboBox()
         self.cmb_name.setEditable(True)
         self.cmb_name.setStyleSheet("background-color: #333; color: white; border: 1px solid #555;")
@@ -158,38 +322,64 @@ class BlockEditorDialog(QtWidgets.QDialog):
         self.cmb_name.currentTextChanged.connect(self.on_name_changed)
         form_layout.addRow("Nombre:", self.cmb_name)
         
+        # Model ID
+        self.lbl_model_id = QtWidgets.QLabel()
+        self.lbl_model_id.setStyleSheet("color: #888; font-style: italic;")
+        form_layout.addRow("Model ID:", self.lbl_model_id)
+        
+        # Based On
+        self.lbl_based_on = QtWidgets.QLabel("")
+        self.lbl_based_on.setStyleSheet("color: #aaa; font-style: italic; font-size: 14px;")
+        form_layout.addRow("Basado en:", self.lbl_based_on)
+        
+        # Link existing
+        self.chk_link = QtWidgets.QCheckBox()
+        self.chk_link.setToolTip("Enlazar a modelo existente (ignorar parámetros)")
+        self.chk_link.toggled.connect(self.on_link_toggled)
+        form_layout.addRow("", self.chk_link)
+        
         top_layout.addLayout(form_layout)
         
-        self.lbl_image = QtWidgets.QLabel()
-        self.lbl_image.setFixedSize(100, 100)
+        self.lbl_image = QtWidgets.QLabel("Sin Icono")
+        self.lbl_image.setFixedSize(200, 160)
         self.lbl_image.setAlignment(QtCore.Qt.AlignCenter)
-        self.lbl_image.setStyleSheet("background-color: transparent;")
+        self.lbl_image.setStyleSheet("background-color: transparent; border: none;")
         top_layout.addWidget(self.lbl_image)
         
         layout.addLayout(top_layout)
         
-        # Parámetros (solo lectura)
-        lbl_params = QtWidgets.QLabel("Parámetros:")
-        layout.addWidget(lbl_params)
+        # Parameters Section
+        self.params_container = QtWidgets.QWidget()
+        params_layout = QtWidgets.QVBoxLayout(self.params_container)
+        params_layout.setContentsMargins(0, 10, 0, 0)
         
-        scroll = QtWidgets.QScrollArea()
-        scroll.setWidgetResizable(True)
-        scroll.setStyleSheet("QScrollArea { border: none; background: transparent; }")
+        self.table_params = QtWidgets.QTableWidget()
+        self.table_params.setColumnCount(3)
+        self.table_params.setHorizontalHeaderLabels(["Parámetro", "Valor", "RAW"])
+        self.table_params.horizontalHeader().setDefaultAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
+        self.table_params.setColumnWidth(0, 200)
+        self.table_params.setColumnWidth(1, 150)
+        self.table_params.horizontalHeader().setStretchLastSection(True)
+        self.table_params.verticalHeader().setVisible(False)
+        self.table_params.setShowGrid(False)
+        self.table_params.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
+        self.table_params.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
+        self.table_params.itemDoubleClicked.connect(self.on_param_double_clicked)
+        self.table_params.setStyleSheet("""
+            QTableWidget { background-color: #222; color: white; border: none; }
+            QHeaderView::section { background-color: #333; color: white; border: none; padding: 4px; font-weight: bold; text-align: left; }
+        """)
+        params_layout.addWidget(self.table_params)
         
-        container = QtWidgets.QWidget()
-        self.params_layout = QtWidgets.QVBoxLayout(container)
-        self.params_layout.setSpacing(5)
-        
-        scroll.setWidget(container)
-        layout.addWidget(scroll)
+        layout.addWidget(self.params_container)
         
         btn_layout = QtWidgets.QHBoxLayout()
         self.btn_save = QtWidgets.QPushButton("Guardar")
-        self.btn_save.setStyleSheet("background-color: #E53935; color: white; font-weight: bold; padding: 5px;")
+        self.btn_save.setStyleSheet("background-color: #E53935; color: white; font-weight: bold; padding: 5px; min-width: 100px;")
         self.btn_save.clicked.connect(self.save_data)
         
         self.btn_cancel = QtWidgets.QPushButton("Cancelar")
-        self.btn_cancel.setStyleSheet("background-color: #555; color: white; padding: 5px;")
+        self.btn_cancel.setStyleSheet("background-color: #555; color: white; padding: 5px; min-width: 100px;")
         self.btn_cancel.clicked.connect(self.reject)
         
         btn_layout.addStretch()
@@ -197,13 +387,9 @@ class BlockEditorDialog(QtWidgets.QDialog):
         btn_layout.addWidget(self.btn_save)
         
         layout.addLayout(btn_layout)
-
-    def on_category_changed(self, category):
-        self.cmb_name.clear()
-        models = self._get_models_for_category(category)
-        names = sorted([m.get("name", "") for m in models if m.get("name")])
-        self.cmb_name.addItems(names)
         
+        self.on_category_changed(self.cmb_category.currentText())
+
     def _get_models_for_category(self, category):
         models = self.catalog.get(category, [])
         if not models:
@@ -212,101 +398,235 @@ class BlockEditorDialog(QtWidgets.QDialog):
                     return v
         return models
 
-    def on_name_changed(self, name):
+    def on_category_changed(self, category):
+        self.cmb_subcategory.clear()
+        subcats = self.categories_db.get(category, [])
+        self.cmb_subcategory.addItems(subcats)
+        
+        # Populate Name suggestions
+        self.cmb_name.clear()
+        models = self._get_models_for_category(category)
+        names = sorted([m.get("name", "") for m in models if m.get("name")])
+        self.cmb_name.addItems(names)
+        
+        self.update_model_id()
+        
+    def on_name_changed(self, text):
+        self.update_model_id()
+        
+        # Pull data from catalog
         cat = self.cmb_category.currentText()
         models = self._get_models_for_category(cat)
-        model_data = next((m for m in models if m.get("name") == name), None)
+        model_data = next((m for m in models if m.get("name") == text), None)
         
-        # Clear layout
-        while self.params_layout.count():
-            item = self.params_layout.takeAt(0)
-            w = item.widget()
-            if w:
-                w.setParent(None)
-                w.deleteLater()
-                
         if model_data:
-            img_path = model_data.get("image")
-            if img_path and os.path.exists(img_path):
-                pixmap = QtGui.QPixmap(img_path).scaled(100, 100, QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation)
-                self.lbl_image.setPixmap(pixmap)
-            else:
-                self.lbl_image.clear()
-                self.lbl_image.setText("Sin Icono")
-                
-            _, color = get_icon_for_category(cat)
-            catalog_params = model_data.get("parameters", [])
-            real_params = self.block_data.get("params_a", [])
+            self.lbl_based_on.setText(model_data.get("based_on", ""))
+            self.current_image_path = model_data.get("image", "")
             
-            # Match parameters by index
-            for i in range(max(len(catalog_params), len(real_params))):
-                if i < len(catalog_params):
-                    p_name = catalog_params[i].get("name", f"Prm. {i}")
-                else:
-                    p_name = f"Prm. {i}"
-                    
-                if i < len(real_params):
-                    val = real_params[i]
-                else:
-                    val = 0.0
-                    
-                if isinstance(val, float):
-                    val = val * 10.0
-                    
-                val_str = f"{val:.1f}" if isinstance(val, float) else str(val)
-                bar = ParameterBar(p_name, val_str, color, self)
-                self.params_layout.addWidget(bar)
-                
-            self.params_layout.addStretch()
+            # If it's a new module, auto-populate the table automatically
+            if not self.full_module:
+                self.create_params_profile()
+            else:
+                self.current_parameters = self.full_module.get("parameters", [])
+                self.populate_table()
+        if hasattr(self, 'current_image_path') and self.current_image_path and os.path.exists(self.current_image_path):
+            pixmap = QtGui.QPixmap(self.current_image_path).scaled(200, 160, QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation)
+            self.lbl_image.setPixmap(pixmap)
         else:
             self.lbl_image.clear()
-            self.lbl_image.setText("N/A")
+            self.lbl_image.setText("Sin Icono")
+            
+    def on_param_double_clicked(self, item):
+        row = item.row()
+        if not hasattr(self, 'current_parameters') or row < 0 or row >= len(self.current_parameters): 
+            return
+            
+        p_data = self.current_parameters[row]
+        idx = p_data.get("index", row)
+        real_params = self.block_data.get("params_a", [])
+        raw_val = real_params[idx] if idx < len(real_params) else 0.0
+        
+        dialog = ParameterEditorDialog(p_data, raw_val, self)
+        if dialog.exec_():
+            self.current_parameters[row] = dialog.get_data()
+            self.populate_table()
+        
+    def update_model_id(self):
+        cat = self.cmb_category.currentText().lower().strip().replace(" ", "_").replace("/", "_")
+        name = self.cmb_name.currentText().lower().strip().replace(" ", "_")
+        if name:
+            self.lbl_model_id.setText(f"{cat}_{name}")
+        else:
+            self.lbl_model_id.setText("")
+            
+    def on_link_toggled(self, checked):
+        self.params_container.setVisible(not checked)
 
     def load_data(self):
         self.lbl_hex.setText(self.hex_id or "Desconocido")
         
         if self.full_module:
+            # Es un módulo ya mapeado
+            self.lbl_hex.setStyleSheet("color: #4CAF50; font-weight: bold; font-size: 14px;") # Verde
+            
             cat = self.full_module.get("category", "Unknown")
-            idx = self.cmb_category.findText(cat)
-            if idx >= 0:
-                self.cmb_category.setCurrentIndex(idx)
+            self.cmb_category.setCurrentText(cat)
             
-            name = self.full_module.get("name", "")
-            self.cmb_name.setCurrentText(name)
+            self.cmb_subcategory.setCurrentText(self.full_module.get("variant", ""))
+            self.cmb_name.setCurrentText(self.full_module.get("name", ""))
+            self.lbl_based_on.setText(self.full_module.get("based_on", ""))
+            img_path = self.full_module.get("image", "")
             
-            is_verified = self.full_module.get("verified", False)
-            if is_verified:
-                self.lbl_hex.setStyleSheet("color: #4CAF50; font-weight: bold; font-size: 14px;")
-            else:
-                self.lbl_hex.setStyleSheet("color: #FF9800; font-weight: bold; font-size: 14px;")
-        else:
-            cat = self.block_data.get("category", "Unknown")
-            idx = self.cmb_category.findText(cat)
-            if idx >= 0:
-                self.cmb_category.setCurrentIndex(idx)
+            if img_path and os.path.exists(img_path):
+                pixmap = QtGui.QPixmap(img_path).scaled(200, 160, QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation)
+                self.lbl_image.setPixmap(pixmap)
                 
-            name = self.block_data.get("name", "")
-            self.cmb_name.setCurrentText(name)
+            self.current_parameters = self.full_module.get("parameters", [])
+            self.populate_table()
             
-            self.lbl_hex.setStyleSheet("color: #FF9800; font-weight: bold; font-size: 14px;")
+        else:
+            # Nuevo módulo
+            self.lbl_hex.setStyleSheet("color: #FF9800; font-weight: bold; font-size: 14px;") # Naranja
+            cat = self.block_data.get("category", "Unknown")
+            if cat in self.categories_db:
+                self.cmb_category.setCurrentText(cat)
+                
+            self.cmb_name.setCurrentText(self.block_data.get("name", ""))
             
-        self.on_name_changed(self.cmb_name.currentText())
+            self.table_params.setRowCount(0)
+            
+            # Si el bloque ya tenía un nombre (ej. detectado de params_a), cargar perfil automáticamente
+            if self.block_data.get("name", ""):
+                self.create_params_profile()
+
+    def create_params_profile(self):
+        real_params = self.block_data.get("params_a", [])
+        
+        cat = self.cmb_category.currentText()
+        models = self._get_models_for_category(cat)
+        model_data = next((m for m in models if m.get("name") == self.cmb_name.currentText().strip()), None)
+        catalog_params = model_data.get("parameters", []) if model_data else []
+        
+        params = []
+        for i, val in enumerate(real_params):
+            p_name = f"Prm. {i}"
+            if i < len(catalog_params) and "name" in catalog_params[i]:
+                p_name = catalog_params[i]["name"]
+                
+            params.append({
+                "index": i,
+                "name": p_name,
+                "type": "continuous",
+                "min": 0.0,
+                "max": 10.0,
+                "multiplier": 10.0 if isinstance(val, float) else 1.0,
+                "decimals": 1 if isinstance(val, float) else 0,
+                "unit": ""
+            })
+        self.current_parameters = params
+        self.populate_table()
+
+    def populate_table(self):
+        if not hasattr(self, 'current_parameters'):
+            return
+            
+        parameters = self.current_parameters
+        self.table_params.setRowCount(len(parameters))
+        
+        real_params = self.block_data.get("params_a", [])
+        
+        cat = self.cmb_category.currentText()
+        _, cat_color = get_icon_for_category(cat)
+        
+        for row, p in enumerate(parameters):
+            idx = p.get("index", row)
+            
+            raw_val = real_params[idx] if idx < len(real_params) else 0.0
+            
+            p_type = p.get("type", "continuous")
+            if p_type == "switch": p_type = "bool"
+            if p_type == "dropdown": p_type = "enum"
+            
+            fmt_val = str(raw_val)
+            if p_type == "continuous":
+                mult = p.get("multiplier", 1.0)
+                dec = p.get("decimals", 0)
+                unit = p.get("unit", "")
+                calc = float(raw_val) * mult
+                fmt_val = f"{calc:.{dec}f}{unit}"
+            elif p_type == "bool":
+                fmt_val = "On" if float(raw_val) >= 0.5 else "Off"
+            elif p_type == "enum":
+                opts = p.get("options", [])
+                match_txt = str(raw_val)
+                for opt in opts:
+                    if opt.get("value") == int(float(raw_val)):
+                        match_txt = opt.get("name")
+                        break
+                fmt_val = match_txt
+                
+            item_param = QtWidgets.QTableWidgetItem(p.get("name", f"Prm. {idx}"))
+            item_param.setForeground(QtGui.QBrush(QtGui.QColor(cat_color)))
+            item_param.setTextAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
+            self.table_params.setItem(row, 0, item_param)
+            
+            item_val = QtWidgets.QTableWidgetItem(str(fmt_val))
+            item_val.setForeground(QtGui.QBrush(QtGui.QColor(cat_color)))
+            item_val.setTextAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
+            self.table_params.setItem(row, 1, item_val)
+            
+            item_raw = QtWidgets.QTableWidgetItem(str(raw_val))
+            item_raw.setForeground(QtGui.QBrush(QtGui.QColor("#888888")))
+            item_raw.setTextAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
+            self.table_params.setItem(row, 2, item_raw)
 
     def save_data(self):
         if not self.hex_id:
             QtWidgets.QMessageBox.warning(self, "Error", "No se puede guardar un módulo sin ID hexadecimal.")
             return
             
-        new_data = {
-            "name": self.cmb_name.currentText().strip(),
-            "category": self.cmb_category.currentText(),
-            "variant": None,
-            "verified": True
-        }
+        model_id = self.lbl_model_id.text()
+        if not model_id:
+            QtWidgets.QMessageBox.warning(self, "Error", "El nombre está vacío.")
+            return
+            
+        # Validación: El nombre debe existir en helix_catalog.json
+        cat = self.cmb_category.currentText()
+        models = self._get_models_for_category(cat)
+        valid_names = [m.get("name") for m in models]
         
-        success = save_module(self.hex_id, new_data)
+        name = self.cmb_name.currentText().strip()
+        if name not in valid_names:
+            QtWidgets.QMessageBox.warning(self, "Error", "El módulo no existe en el catálogo maestro.\nPor favor, añade la información en 'helix_catalog.json' primero.")
+            return
+            
+        model_data = {
+            "name": name,
+            "category": self.cmb_category.currentText(),
+            "based_on": self.lbl_based_on.text().strip(),
+            "image": getattr(self, 'current_image_path', ''),
+            "parameters": []
+        }
+
+        if not self.chk_link.isChecked():
+            model_data["parameters"] = getattr(self, 'current_parameters', [])
+        else:
+            # Si estamos enlazando, en realidad no sobreescribimos los parámetros, 
+            # confiamos en que el save_module simplemente actualizará el mapping si no pasamos parameters.
+            # En la implementación de save_module sobreescribe model_data, así que necesitamos leer el existente.
+            
+            # Hay que buscar el modelo crudo real en _models_db de utils.modules
+            from utils.modules import _models_db
+            existing = _models_db.get(model_id)
+            if existing:
+                model_data["parameters"] = existing.get("parameters", [])
+            else:
+                # Si no existía, pero quiere enlazar...
+                QtWidgets.QMessageBox.information(self, "Info", "Si enlazas a un modelo existente, asegúrate de que el modelo base (Mismo Categoría y Nombre) haya sido grabado primero.")
+        
+        success = save_module(self.hex_id, self.cmb_subcategory.currentText(), model_id, model_data)
         if success:
-            QtWidgets.QMessageBox.information(self, "Éxito", "Módulo actualizado correctamente en modules.json")
+            QtWidgets.QMessageBox.information(self, "Éxito", "Módulo guardado correctamente en modules.json")
             self.accept()
         else:
             QtWidgets.QMessageBox.critical(self, "Error", "Hubo un error al guardar los datos.")
@@ -329,11 +649,20 @@ class BlockCard(QtWidgets.QFrame):
         self.setFixedSize(70, 70)
         self.setCursor(QtCore.Qt.PointingHandCursor)
         
+        hex_id = block_data.get("hex_id")
+        db_module = get_module(hex_id) if hex_id else None
+        
+        cat = block_data.get("category", "Unknown")
         name = block_data.get("name", "")
+        
+        if db_module:
+            cat = db_module.get("category", cat)
+            name = db_module.get("name", name)
+            
         slot_idx = block_data.get("slot_idx", -1)
         
         is_io = False
-        icon_path, color = get_icon_for_category(block_data.get("category", "Unknown"))
+        icon_path, color = get_icon_for_category(cat)
         
         if "input" in name.lower() or str(slot_idx).endswith('0'):
             icon_path = 'assets/icons_io/input.svg'
@@ -514,12 +843,17 @@ class BlockManagerWidget(QtWidgets.QWidget):
         
         # Draw empty slots initially
         self.render_blocks([])
-        
-        # Auto-sync when module is opened
-        QtCore.QTimer.singleShot(100, self.sync_blocks)
+
+    def showEvent(self, event):
+        super().showEvent(event)
+        if not hasattr(self, '_has_synced'):
+            self._has_synced = True
+            QtCore.QTimer.singleShot(100, self.sync_blocks)
 
     def sync_blocks(self):
         print("Sincronizando bloques...")
+        self.btn_sync.setEnabled(False)
+        self.btn_sync.setText(" Sincronizando...")
         
         for group in self.path_groups:
             group.setVisible(False)
@@ -559,23 +893,27 @@ class BlockManagerWidget(QtWidgets.QWidget):
             import time
             time.sleep(3.0)
             
-            conn.disconnect()
-            
             if success:
+                self.last_fetched_blocks = data
                 self.render_blocks(data)
             else:
                 QtWidgets.QMessageBox.warning(self, "Aviso", f"No se pudieron leer los bloques: {data}")
                 
         except Exception as e:
-            QtWidgets.QMessageBox.critical(self, "Error", f"Fallo en la sincronización: {e}")
-            
+            QtWidgets.QMessageBox.critical(self, "Error", f"Fallo al cargar información: {str(e)}")
+            if hasattr(main_window, 'set_usb_disconnected'):
+                main_window.set_usb_disconnected()
         finally:
             for group in self.path_groups:
                 group.setVisible(True)
             self.lbl_loading.setVisible(False)
+            self.btn_sync.setEnabled(True)
+            self.btn_sync.setText(" Sincronizar con Helix")
             
             if hasattr(main_window, 'set_usb_disconnected'):
                 main_window.set_usb_disconnected()
+            if 'conn' in locals() and conn:
+                conn.disconnect()
 
     def render_blocks(self, blocks):
         # Clear existing blocks
@@ -611,6 +949,7 @@ class BlockManagerWidget(QtWidgets.QWidget):
     def on_block_clicked(self, block_data):
         dialog = BlockEditorDialog(block_data, self)
         if dialog.exec():
-            # Refresh visualization to show updated name/category
-            self.sync_blocks()
-
+            # Evitamos reconectar al USB; los datos se guardaron en modules.json localmente.
+            # Re-renderizamos para actualizar la UI del bloque (imagen, nombre, color)
+            if hasattr(self, 'last_fetched_blocks'):
+                self.render_blocks(self.last_fetched_blocks)

@@ -108,8 +108,9 @@ class HomeWidget(QtWidgets.QWidget):
         layout.addStretch()
 
 class MainWindow(QtWidgets.QMainWindow):
-    def __init__(self, analyzer):
+    def __init__(self, analyzer, splash=None):
         print("[INIT-UI] Constructor de MainWindow iniciado...")
+        if splash: splash.showMessage("Constructor de MainWindow iniciado...", QtCore.Qt.AlignBottom | QtCore.Qt.AlignCenter, QtCore.Qt.white); QtWidgets.QApplication.processEvents()
         super().__init__()
         self.analyzer = analyzer
         self.conn_mgr = ConnectionManager(self.analyzer)
@@ -127,20 +128,26 @@ class MainWindow(QtWidgets.QMainWindow):
         self.main_layout.setSpacing(0)
         
         print("[INIT-UI] Configurando barra de herramientas...")
+        if splash: splash.showMessage("Configurando barra de herramientas...", QtCore.Qt.AlignBottom | QtCore.Qt.AlignCenter, QtCore.Qt.white); QtWidgets.QApplication.processEvents()
         self.setup_toolbar()
         
         self.stack = QtWidgets.QStackedWidget()
         self.main_layout.addWidget(self.stack)
         
         print("[INIT-UI] Creando HomeWidget...")
+        if splash: splash.showMessage("Creando HomeWidget...", QtCore.Qt.AlignBottom | QtCore.Qt.AlignCenter, QtCore.Qt.white); QtWidgets.QApplication.processEvents()
         self.page_home = HomeWidget(self)
         print("[INIT-UI] Creando EQAnalyzerWidget...")
+        if splash: splash.showMessage("Creando EQAnalyzer...", QtCore.Qt.AlignBottom | QtCore.Qt.AlignCenter, QtCore.Qt.white); QtWidgets.QApplication.processEvents()
         self.page_eq = EQAnalyzerWidget(self.analyzer, self)
         print("[INIT-UI] Creando PresetCompareWidget...")
+        if splash: splash.showMessage("Creando PresetCompare...", QtCore.Qt.AlignBottom | QtCore.Qt.AlignCenter, QtCore.Qt.white); QtWidgets.QApplication.processEvents()
         self.page_preset = PresetCompareWidget(self.analyzer)
         print("[INIT-UI] Creando ToneMatcherWidget...")
+        if splash: splash.showMessage("Creando ToneMatcher...", QtCore.Qt.AlignBottom | QtCore.Qt.AlignCenter, QtCore.Qt.white); QtWidgets.QApplication.processEvents()
         self.page_tone_matcher = ToneMatcherWidget(self.analyzer, self)
         print("[INIT-UI] Creando BlockManagerWidget...")
+        if splash: splash.showMessage("Creando BlockManager...", QtCore.Qt.AlignBottom | QtCore.Qt.AlignCenter, QtCore.Qt.white); QtWidgets.QApplication.processEvents()
         self.page_block_mgr = BlockManagerWidget(self)
         
         self.stack.addWidget(self.page_home)
@@ -152,7 +159,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.stack.setCurrentWidget(self.page_home)
         self.btn_home.setVisible(False) # Ocultar en el home al inicio
         self.setup_statusbar()
-        self.auto_connect()
+        self.auto_connect(splash)
 
     def setup_toolbar(self):
         self.toolbar = QtWidgets.QWidget()
@@ -373,15 +380,17 @@ class MainWindow(QtWidgets.QMainWindow):
         else:
             print(f"[AUDIO] Error al iniciar stream de audio: {message}")
             self.set_btn_disconnected()
-            QtWidgets.QMessageBox.critical(self, "Error de Audio", f"No se pudo iniciar el audio:\n{message}")
+            QtWidgets.QMessageBox.critical(self, "Error de Conexión", f"Hay un error de conexión con la pedalera.\nDetalle: {message}\n\nLa aplicación se cerrará.")
+            QtWidgets.QApplication.quit()
 
     def stop_audio(self):
         self.conn_mgr.stop_audio()
         self.set_btn_disconnected()
         self.statusBar().showMessage("Audio detenido")
 
-    def auto_connect(self):
+    def auto_connect(self, splash=None):
         print("[INIT] Comprobando conexión guardada para auto-connect...")
+        if splash: splash.showMessage("Comprobando conexión con la pedalera...", QtCore.Qt.AlignBottom | QtCore.Qt.AlignCenter, QtCore.Qt.white); QtWidgets.QApplication.processEvents()
         settings = self.conn_mgr.load_settings()
         if "connection" in settings:
             print(f"[INIT] Conexión guardada detectada: {settings['connection'].get('device_name')}. Conectando...")
@@ -434,14 +443,18 @@ def main():
     if os.path.exists(logo_path):
         print("[INIT] Mostrando Splash Screen...")
         splash_pix = QtGui.QPixmap(logo_path)
+        splash_pix = splash_pix.scaled(splash_pix.width() * 0.5, splash_pix.height() * 0.5, QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation)
         splash = QtWidgets.QSplashScreen(splash_pix, QtCore.Qt.WindowStaysOnTopHint)
         splash.show()
+        splash.showMessage("Iniciando aplicación...", QtCore.Qt.AlignBottom | QtCore.Qt.AlignCenter, QtCore.Qt.white)
         app.processEvents()
     # -------------------------------------------------------------------------
     print("[INIT] Creando instancia de AudioAnalyzer...")
+    if splash: splash.showMessage("Creando instancia de AudioAnalyzer...", QtCore.Qt.AlignBottom | QtCore.Qt.AlignCenter, QtCore.Qt.white); app.processEvents()
     analyzer = AudioAnalyzer()
     print("[INIT] Creando MainWindow...")
-    window = MainWindow(analyzer)
+    if splash: splash.showMessage("Creando MainWindow...", QtCore.Qt.AlignBottom | QtCore.Qt.AlignCenter, QtCore.Qt.white); app.processEvents()
+    window = MainWindow(analyzer, splash)
 
     # --- Capa 1: cierre limpio al salir normalmente ---
     app.aboutToQuit.connect(window.conn_mgr.stop_audio)

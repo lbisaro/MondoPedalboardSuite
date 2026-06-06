@@ -23,113 +23,109 @@ from typing import Optional
 # ── Ruta al archivo JSON (mismo directorio que este módulo) ──────────────────
 _JSON_PATH = os.path.join(os.path.dirname(__file__), "modules.json")
 
+# Diccionarios de datos principales
+_models_db: dict[str, dict] = {}
+_usb_mapping: dict[str, dict] = {}
 
-def _load_db() -> dict:
-    """Carga modules.json y devuelve el dict 'modules'."""
-    with open(_JSON_PATH, encoding="utf-8") as f:
-        data = json.load(f)
-    return data.get("modules", {})
+def _load_db() -> None:
+    """Carga modules.json y puebla las bases de datos."""
+    global _models_db, _usb_mapping
+    try:
+        with open(_JSON_PATH, encoding="utf-8") as f:
+            data = json.load(f)
+        _models_db = data.get("models", {})
+        _usb_mapping = data.get("usb_mapping", {})
+    except (FileNotFoundError, json.JSONDecodeError):
+        _models_db = {}
+        _usb_mapping = {}
 
-
-def _build_legacy_name(entry: dict) -> str:
-    """Reconstruye 'Name (variant)' desde los campos separados del JSON."""
-    name    = entry.get("name", "Unknown")
-    variant = entry.get("variant")
+def _build_legacy_name(model: dict, variant: Optional[str]) -> str:
+    """Reconstruye 'Name (variant)' desde el modelo genérico."""
+    name = model.get("name", "Unknown")
     if variant:
         return f"{name} ({variant})"
     return name
 
-
 # ── Carga inicial ────────────────────────────────────────────────────────────
-_db: dict[str, dict] = _load_db()
+_load_db()
 
 # Interfaz legada: {hex_id: [category, 'Name (variant)']}
-modules: dict[str, list] = {
-    hex_id: [entry["category"], _build_legacy_name(entry)]
-    for hex_id, entry in _db.items()
-}
+# Mantenido para compatibilidad con preset_parser.py
+modules: dict[str, list] = {}
+modules_full: dict[str, dict] = {}
 
-# Interfaz enriquecida: {hex_id: {todos los campos}}
-modules_full: dict[str, dict] = {
-    hex_id: {**entry, "id": hex_id}
-    for hex_id, entry in _db.items()
-}
+def _rebuild_interfaces() -> None:
+    """Reconstruye los diccionarios legados modules y modules_full a partir del mapeo USB."""
+    global modules, modules_full
+    modules.clear()
+    modules_full.clear()
+    
+    for hex_id, mapping in _usb_mapping.items():
+        model_id = mapping.get("model_id")
+        variant = mapping.get("variant")
+        model = _models_db.get(model_id)
+        
+        if model:
+            # Diccionario legado (usado por preset_parser)
+            category = model.get("category", "Unknown")
+            name_with_variant = _build_legacy_name(model, variant)
+            modules[hex_id] = [category, name_with_variant]
+            
+            # Diccionario completo
+            modules_full[hex_id] = {
+                **model,
+                "variant": variant,
+                "model_id": model_id,
+                "hex_id": hex_id
+            }
+
+# Construir interfaces al inicio
+_rebuild_interfaces()
 
 
 def get_module(hex_id: str) -> Optional[dict]:
     """
     Devuelve el registro completo de un módulo dado su ID hexadecimal.
-    Retorna None si el ID no existe en la base de datos.
+    Retorna None si el ID no existe en la base de datos de mapeo USB.
 
     Ejemplo:
-        >>> get_module('cd032b')
-        {'id': 'cd032b', 'category': 'Cab', 'name': '4x10 US Super', ...}
+        >>> get_module('cd0200')
+        {'name': 'Grammatico GSG', 'category': 'Amp', 'variant': 'mono', 'hex_id': 'cd0200', ...}
     """
-    entry = _db.get(hex_id)
-    if entry is None:
-        return None
-    return {**entry, "id": hex_id}
+    return modules_full.get(hex_id)
 
 
 def reload() -> None:
     """
     Recarga la base de datos desde modules.json en tiempo de ejecución.
-    Actualiza los diccionarios in-place para que las referencias (from module import modules) sigan siendo válidas.
+    Actualiza los diccionarios in-place para que las referencias sigan siendo válidas.
     """
-    global _db
-    _db.clear()
-    _db.update(_load_db())
-    
-    modules.clear()
-    modules.update({
-        hex_id: [entry["category"], _build_legacy_name(entry)]
-        for hex_id, entry in _db.items()
-    })
-    
-    modules_full.clear()
-    modules_full.update({
-        hex_id: {**entry, "id": hex_id}
-        for hex_id, entry in _db.items()
-    })
+    _load_db()
+    _rebuild_interfaces()
 
 
-def save_module(hex_id: str, new_data: dict) -> bool:
+def save_module(hex_id: str, subcategory: str, model_id: str, model_data: dict) -> bool:
     """
-    Actualiza la información de un módulo y la guarda permanentemente en modules.json.
-    
-    Args:
-        hex_id (str): El ID hexadecimal del módulo (ej. 'cd032b').
-        new_data (dict): Diccionario con los datos a actualizar ('name', 'category', 'variant', etc.).
-        
-    Returns:
-        bool: True si se guardó correctamente, False en caso de error.
+    Actualiza o crea un módulo en la nueva base de datos relacional.
     """
     try:
         with open(_JSON_PATH, "r", encoding="utf-8") as f:
             full_data = json.load(f)
             
-        if "modules" not in full_data:
-            full_data["modules"] = {}
+        if "models" not in full_data:
+            full_data["models"] = {}
+        if "usb_mapping" not in full_data:
+            full_data["usb_mapping"] = {}
             
-        # Si el módulo no existe, crear la estructura básica
-        if hex_id not in full_data["modules"]:
-            full_data["modules"][hex_id] = {
-                "category": "Unknown",
-                "name": "Unknown",
-                "variant": None,
-                "based_on": None,
-                "verified": False,
-                "fw_added": None,
-                "image_url": None,
-                "description": None,
-                "tags": []
-            }
-            
-        # Actualizar los campos proporcionados
-        for key, value in new_data.items():
-            if key != "id": # no guardar la id en el dict porque es la key
-                full_data["modules"][hex_id][key] = value
-                
+        # Actualizar/Crear el modelo genérico
+        full_data["models"][model_id] = model_data
+        
+        # Crear/Actualizar el mapeo USB
+        full_data["usb_mapping"][hex_id] = {
+            "model_id": model_id,
+            "variant": subcategory
+        }
+        
         # Escribir al disco
         with open(_JSON_PATH, "w", encoding="utf-8") as f:
             json.dump(full_data, f, indent=2, ensure_ascii=False)
@@ -140,4 +136,13 @@ def save_module(hex_id: str, new_data: dict) -> bool:
     except Exception as e:
         print(f"Error al guardar módulo en modules.json: {e}")
         return False
+
+def get_categories() -> dict:
+    """Devuelve el diccionario de categorías y subcategorías."""
+    try:
+        with open(_JSON_PATH, encoding="utf-8") as f:
+            data = json.load(f)
+        return data.get("categories", {})
+    except:
+        return {}
 
