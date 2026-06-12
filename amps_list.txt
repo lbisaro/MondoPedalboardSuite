@@ -1,0 +1,112 @@
+WhoWatt 100 | Hiwatt DR-103 Brill
+Soup Pro | Supro S6616
+Stone Age 185 | Gibson EH-185
+Voltage Queen | Victoria Vintage Queen
+Tweed Blues Nrm | Fender Bassman (normal channel)
+Tweed Blues Brt | Fender Bassman (bright channel)
+Fullerton Nrm | Fender 5C3 Tweed Deluxe (normal channel)
+Fullerton Brt | Fender 5C3 Tweed Deluxe (bright channel)
+Fullerton Jump | Fender 5C3 Tweed Deluxe (jumped channels)
+GrammaticoLG Nrm | Grammatico LaGrange (normal channel)
+GrammaticoLG Brt | Grammatico LaGrange (bright channel)
+GrammaticoLG Jmp | Grammatico LaGrange (jumped channels)
+US Small Tweed | Fender Champ
+US Princess | Fender Princeton Reverb
+US Super Nrm | Fender Super Reverb (normal channel)
+US Super Vib | Fender Super Reverb (vibrato channel)
+US Deluxe Nrm | Fender Deluxe Reverb (normal channel)
+US Deluxe Vib | Fender Deluxe Reverb (vibrato channel)
+US Double Nrm | Fender Twin Reverb (normal channel)
+US Double Vib | Fender Twin Reverb (vibrato channel)
+Mail Order Twin | Silvertone 1484
+Divided Duo | ÷13 JRT 9/15
+Interstate Zed | Dr Z Route 66
+Derailed Ingrid | Trainwreck Circuits Express
+Grammatico GSG | Grammatico GSG100
+Jazz Rivet 120 | Roland JC-120 Jazz Chorus
+Essex A15 | Vox AC-15
+Essex A30 | Vox AC-30 with top boost
+A30 Fawn Nrm | Vox AC-30 Fawn (normal channel)
+A30 Fawn Brt | Vox AC-30 Fawn (bright channel)
+Matchstick Ch1 | Matchless DC30 (channel 1)
+Matchstick Ch2 | Matchless DC30 (channel 2)
+Matchstick Jump | Matchless DC30 (jumped)
+Mandarin 80 | Orange OR80
+Mandarin Rocker | Orange Rockerverb 100 MkIII (dirty channel)
+MOO)))N T Nrm | Sunn Model T (normal channel)
+MOO)))N T Brt | Sunn Model T (brite channel)
+MOO)))N T Jump | Sunn Model T (jumped channels)
+Brit J45 Nrm | Marshall JTM-45 (normal channel)
+Brit J45 Brt | Marshall JTM-45 (bright channel)
+Brit Trem Nrm | Marshall JTM-50 (normal channel)
+Brit Trem Brt | Marshall JTM-50 (bright channel)
+Brit Trem Jump | Marshall JTM-50 (jumped)
+Brit Plexi Nrm | Marshall Super Lead 100 (normal channel)
+Brit Plexi Brt | Marshall Super Lead 100 (bright channel)
+Brit Plexi Jump | Marshall Super Lead 100 (jumped)
+Brit P75 Nrm | Park 75 (normal channel)
+Brit P75 Brt | Park 75 (bright channel)
+Brit 2203 | Marshall JCM-800, 100W, 2203
+Brit 2204 | Marshall JCM-800, 50W, 2204
+Placater Clean | Friedman BE-100 (clean channel)
+Placater Dirty | Friedman BE-100 (BE/HBE channel)
+Cartographer | Ben Adrian Cartographer
+German Xtra Blue | Bogner Ecstacy 101B, EL34 (blue channel)
+German Xtra Red | Bogner Ecstacy 101B, EL34 (red channel)
+German Mahadeva | Bogner Shiva
+German Ubersonic | Bogner Überschall
+Cali Texas Ch1 | MESA/Boogie Lone Star (clean channel)
+Cali Texas Ch2 | MESA/Boogie Lone Star (drive channel)
+Cali IV Rhythm 1 | MESA/Boogie Mark IV (channel I)
+Cali IV Rhythm 2 | MESA/Boogie Mark IV (channel II)
+Cali IV Lead | MESA/Boogie Mark IV (lead channel)
+Cali Rectifire | MESA/Boogie Dual Rectifier
+Archetype Clean | Paul Reed Smith Archon (clean channel)
+Archetype Lead | Paul Reed Smith Archon (lead channel)
+ANGL Meteor | ENGL Fireball 100
+Solo Lead Clean | Soldano SLO-100 (clean channel)
+Solo Lead Crunch | Soldano SLO-100 (crunch channel)
+Solo Lead OD | Soldano SLO-100 (overdrive channel)
+EV Panama Blue | EVH 5150III 100, 6L6 (blue channel)
+EV Panama Red | EVH 5150III 100, 6L6 (red channel)
+PV Panama | Peavey 5150
+PV Vitriol Clean | Peavey Invective (clean channel)
+PV Vitriol Crunch | Peavey Invective (crunch channel)
+PV Vitriol Lead | Peavey Invective (lead channel)
+Revv Gen Purple | Revv Generator 120 (purple/gain ch. 3)
+Revv Gen Red | Revv Generator 120 (red/high gain ch. 4)
+Das Benzin Mega | Diezel VH4 (mega channel)
+Das Benzin Lead | Diezel VH4 (lead channel)
+Line 6 Clarity | Line 6 Original
+Line 6 Aristocrat | Line 6 Original
+Line 6 Carillon | Line 6 Original
+Line 6 Voltage | Line 6 Original
+Line 6 Kinetic | Line 6 Original
+Line 6 Oblivion | Line 6 Original
+Line 6 Ventoux | Line 6 Original
+Line 6 Elmsley | Line 6 Original
+Line 6 Elektrik | Line 6 Original
+Line 6 Doom | Line 6 Original
+Line 6 Epic | Line 6 Original
+Line 6 2204 Mod | Line 6 Original
+Line 6 Fatality | Line 6 Original
+Line 6 Litigator | Line 6 Original
+Line 6 Badonk | Line 6 Original
+Ampeg B-15NF | Ampeg B-15NF Portaflex
+Ampeg SVT Nrm | Ampeg SVT (normal channel)
+Ampeg SVT Brt | Ampeg SVT (bright channel)
+Ampeg SVT -4 PRO | Ampeg SVT--4 PRO
+US Dripman Nrm | Fender Bassman (Silverface)
+Woody Blue | Acoustic 360
+Agua Sledge | Aguilar Tone Hammer
+Agua 51 | Aguilar DB51
+Mandarin | 200 Bass Orange AD200 MkIII
+Cali | Bass MESA/Boogie M9 Carbine
+Cali 400 Ch1 | MESA/Boogie Bass 400+ (channel 1)
+Cali 400 Ch2 | MESA/Boogie Bass 400+ (channel 2)
+G Cougar 800 | Gallien-Krueger GK 800RB
+Del Sol 300 | Sunn Coliseum 300
+Busy One Ch1 | Pearce BC-1 preamp (channel 1)
+Busy One Ch2 | Pearce BC-1 preamp (channel 2)
+Busy One Jump | Pearce BC-1 preamp (jumped)
+Studio Tube Pre | > Mic Requisite Y7 mic preamp

@@ -1,0 +1,346 @@
+{
+  "Distortion": {
+    "Boost": {
+      "type": "Efecto Principal",
+      "description": "Pedales diseñados principalmente para subir el volumen o empujar el amplificador sin agregar mucha ganancia propia."
+    },
+    "Overdrive": {
+      "type": "Efecto Principal",
+      "description": "Saturación suave a media, emula un amplificador valvular rompiendo de forma natural."
+    },
+    "Distortion": {
+      "type": "Efecto Principal",
+      "description": "Saturación dura, agresiva y comprimida. Genera su propia textura sin depender tanto del amplificador."
+    },
+    "Fuzz": {
+      "type": "Efecto Principal",
+      "description": "Saturación extrema, de onda cuadrada y rota. Sonido sintético muy particular y clásico."
+    },
+    "Transparent": {
+      "type": "Característica Tonal",
+      "description": "No altera significativamente la ecualización original de la guitarra o el amplificador, solo agrega ganancia y armónicos."
+    },
+    "MidHump": {
+      "type": "Característica Tonal",
+      "description": "Realza fuertemente las frecuencias medias. Ideal para cortar en la mezcla de una banda o empujar amplificadores valvulares."
+    },
+    "Scooped": {
+      "type": "Característica Tonal",
+      "description": "Recorte de frecuencias medias y realce de graves/agudos. Sonido clásico del metal de los 80s/90s."
+    },
+    "LowGain": {
+      "type": "Característica Tonal",
+      "description": "Pensado para estar siempre encendido o dar un tono sutil al borde de la ruptura (edge of breakup)."
+    },
+    "HighGain": {
+      "type": "Característica Tonal",
+      "description": "Diseñado con múltiples etapas de ganancia para géneros como rock pesado y metal moderno."
+    },
+    "Vintage": {
+      "type": "Circuito / Era",
+      "description": "Basado en diseños y topologías de circuitos clásicos de los años 60s, 70s y principios de los 80s."
+    },
+    "Modern": {
+      "type": "Circuito / Era",
+      "description": "Diseños contemporáneos, suelen tener una respuesta de graves más ajustada ('tight') y mayor definición."
+    },
+    "Germanium": {
+      "type": "Circuito / Era",
+      "description": "Utiliza transistores de germanio. Suelen limpiar muy bien con el control de volumen de la guitarra y tienen un tono más cálido y oscuro."
+    },
+    "Silicon": {
+      "type": "Circuito / Era",
+      "description": "Utiliza transistores de silicio. Ofrecen un sonido más agresivo, brillante, con mayor ganancia y son inmunes a los cambios de temperatura."
+    },
+    "Octave": {
+      "type": "Característica Tonal",
+      "description": "Añade una octava sintética hacia arriba o hacia abajo a la señal saturada original."
+    },
+    "Preamp": {
+      "type": "Circuito / Era",
+      "description": "Emula el comportamiento de un preamplificador de consola de mezcla clásica o un pre de estudio, coloreando la señal de manera particular."
+    }
+  },
+  "Instrument": {
+    "Guitar": {
+      "type": "Instrumento Recomendado",
+      "description": "Optimizado o diseñado clásicamente para Guitarra Eléctrica."
+    },
+    "Bass": {
+      "type": "Instrumento Recomendado",
+      "description": "Optimizado o diseñado clásicamente para Bajo Eléctrico, preservando frecuencias graves."
+    },
+    "Universal": {
+      "type": "Instrumento Recomendado",
+      "description": "Efecto de rango completo, funciona excelente con cualquier instrumento, voces o sintes."
+    }
+  },
+  "Amp": {
+    "Clean": {
+      "type": "Nivel de Ganancia",
+      "description": "Diseñados para mantenerse limpios a altos volúmenes, con mucho techo limpio (headroom)."
+    },
+    "Crunch": {
+      "type": "Nivel de Ganancia",
+      "description": "Rompen fácilmente o están en el famoso 'edge of breakup'. Ideales para blues y rock clásico."
+    },
+    "HighGain": {
+      "type": "Nivel de Ganancia",
+      "description": "Múltiples etapas de ganancia, diseñados para metal, hard rock moderno o tonos solistas."
+    },
+    "American": {
+      "type": "Origen / Carácter Tonal",
+      "description": "Sonido clásico de EE.UU. Agudos cristalinos, graves profundos y medios ligeramente recortados."
+    },
+    "British": {
+      "type": "Origen / Carácter Tonal",
+      "description": "Sonido clásico del Reino Unido. Fuerte presencia en medios, sonido más ronco o con 'chime'."
+    },
+    "Boutique": {
+      "type": "Origen / Carácter Tonal",
+      "description": "Diseño artesanal o de altísima gama, gran respuesta táctil y armónicos complejos."
+    },
+    "6L6": {
+      "type": "Etapa de Potencia",
+      "description": "Válvulas clásicas americanas. Mucho volumen, graves grandes y agudos redondos."
+    },
+    "EL34": {
+      "type": "Etapa de Potencia",
+      "description": "Válvulas clásicas británicas. Gran compresión al saturar y medios agresivos."
+    },
+    "EL84": {
+      "type": "Etapa de Potencia",
+      "description": "Menor potencia, saturan rápido y tienen el famoso brillo/chime en agudos."
+    },
+    "6V6": {
+      "type": "Etapa de Potencia",
+      "description": "Válvulas americanas de menor potencia. Graves más sueltos y agudos dulces."
+    },
+    "SolidState": {
+      "type": "Etapa de Potencia",
+      "description": "Amplificadores a transistores, sin válvulas. Extremadamente limpios o muy particulares."
+    }
+  },
+  "Cab": {
+    "1x8": {
+      "type": "Configuración",
+      "description": "Caja con un parlante de 8 pulgadas. Tono enfocado, menos graves, ideal para guitarras rítmicas cortantes o lo-fi."
+    },
+    "1x10": {
+      "type": "Configuración",
+      "description": "Caja con un parlante de 10 pulgadas. Respuesta rápida y percusiva con medios notorios."
+    },
+    "1x12": {
+      "type": "Configuración",
+      "description": "Caja con un parlante de 12 pulgadas. Estándar súper versátil de amplificadores combo."
+    },
+    "2x12": {
+      "type": "Configuración",
+      "description": "Caja con dos parlantes de 12 pulgadas. Gran dispersión sonora y graves amplios."
+    },
+    "4x10": {
+      "type": "Configuración",
+      "description": "Caja con cuatro parlantes de 10 pulgadas. Mucho punch y graves rápidos."
+    },
+    "4x12": {
+      "type": "Configuración",
+      "description": "Caja con cuatro parlantes de 12 pulgadas. Muralla de sonido direccional clásica del rock y metal."
+    },
+    "1x15": {
+      "type": "Configuración",
+      "description": "Caja con un parlante de 15 pulgadas. Gran respuesta en frecuencias muy graves."
+    },
+    "1x18": {
+      "type": "Configuración",
+      "description": "Caja con un parlante de 18 pulgadas. Frecuencias sub-graves masivas."
+    },
+    "8x10": {
+      "type": "Configuración",
+      "description": "Caja con ocho parlantes de 10 pulgadas. La mítica heladera para bajo, volumen y patada insuperables."
+    },
+    "OpenBack": {
+      "type": "Construcción",
+      "description": "Parte trasera abierta. Sonido tridimensional y aireado, llena el cuarto y sus graves son más sueltos."
+    },
+    "ClosedBack": {
+      "type": "Construcción",
+      "description": "Parte trasera cerrada. Sonido muy direccional, enfocado al frente con graves sumamente ajustados (tight)."
+    },
+    "American": {
+      "type": "Origen del Parlante",
+      "description": "Parlantes estilo Jensen, Eminence o EV. Limpios brillantes, graves profundos y agudos vidriosos."
+    },
+    "British": {
+      "type": "Origen del Parlante",
+      "description": "Parlantes estilo Celestion o Fane. Compresión natural, cálidos y fuerte realce en medios."
+    }
+  },
+  "Dynamic": {
+    "Compressor": {
+      "type": "Efecto",
+      "description": "Reduce el rango dinámico, nivela picos y sube señales débiles."
+    },
+    "NoiseGate": {
+      "type": "Efecto",
+      "description": "Cierra el paso de audio cuando no se toca, eliminando ruido."
+    },
+    "Limiter": {
+      "type": "Efecto",
+      "description": "Compresor extremo, evita que la señal pase de cierto límite."
+    },
+    "Sustainer": {
+      "type": "Efecto",
+      "description": "Optimizado para prolongar las notas al máximo sin perder el ataque inicial."
+    },
+    "Stompbox": {
+      "type": "Formato",
+      "description": "Emula pedales de piso clásicos. Suelen agregar color y frecuencias medias."
+    },
+    "Studio": {
+      "type": "Formato",
+      "description": "Emula procesadores de rack de estudio. Más limpios, precisos y con alta fidelidad."
+    },
+    "Optical": {
+      "type": "Circuito",
+      "description": "Circuito óptico. Suave, extremadamente musical y con un ataque más redondeado."
+    },
+    "FET": {
+      "type": "Circuito",
+      "description": "Transistores de Efecto de Campo. Ataque híper rápido, agresivo y percusivo."
+    },
+    "VCA": {
+      "type": "Circuito",
+      "description": "Controlado por Voltaje. El estándar moderno: rápido, punchy y transparente."
+    },
+    "OTA": {
+      "type": "Circuito",
+      "description": "Circuito clásico de pedales antiguos. Tono aplastado ('squishy') que suele colorear bastante."
+    }
+  },
+  "EQ": {
+    "GraphicEQ": {
+      "type": "Tipo de Ecualizador",
+      "description": "Frecuencias fijas controladas por deslizadores. Fáciles de visualizar y rápidos de ajustar."
+    },
+    "ParametricEQ": {
+      "type": "Tipo de Ecualizador",
+      "description": "Permite elegir la frecuencia exacta, el ancho de banda (Q) y la ganancia. Súper quirúrgicos."
+    },
+    "StudioEQ": {
+      "type": "Tipo de Ecualizador",
+      "description": "Emulaciones de hardware de estudio de alta gama. Aportan color y carácter analógico ('magia')."
+    }
+  },
+  "Wah": {
+    "Inductor": {
+      "type": "Circuito de Wah",
+      "description": "El circuito clásico tipo Fasel. Tono muy vocal, rasposo y expresivo. El sonido del rock clásico."
+    },
+    "Optical": {
+      "type": "Circuito de Wah",
+      "description": "Diseño óptico moderno sin potenciómetro. Barrido más amplio, limpios claros, muy usado en Metal."
+    },
+    "Custom": {
+      "type": "Circuito de Wah",
+      "description": "Diseños originales altamente modificables donde puedes alterar las frecuencias base y resonancias."
+    }
+  },
+  "Filter": {
+    "Envelope": {
+      "type": "Tipo de Filtro",
+      "description": "Filtros de envolvente (Auto-wahs). El filtro reacciona a la fuerza con la que golpees las cuerdas."
+    },
+    "LFOFilter": {
+      "type": "Tipo de Filtro",
+      "description": "Barrido automatizado por un oscilador (LFO), generando movimiento constante independiente de tu técnica."
+    },
+    "Synth": {
+      "type": "Tipo de Filtro",
+      "description": "Filtros basados en sintetizadores. Altamente resonantes y gruesos, logran tonos láser y sintetizados."
+    }
+  },
+  "Modulation": {
+    "Chorus": {
+      "type": "Efecto",
+      "description": "Duplica la señal, la retrasa y la desafina levemente para crear amplitud y riqueza."
+    },
+    "Flanger": {
+      "type": "Efecto",
+      "description": "Retrasos ultracortos con feedback que generan un barrido intenso tipo 'avión jet'."
+    },
+    "Phaser": {
+      "type": "Efecto",
+      "description": "Filtros de fase que crean picos de ecualización en movimiento (efecto vocal y burbujeante)."
+    },
+    "Tremolo": {
+      "type": "Efecto",
+      "description": "Tremolo altera el volumen rítmicamente. Vibrato altera la afinación rítmicamente."
+    },
+    "Rotary": {
+      "type": "Efecto",
+      "description": "Emulación mecánica de un parlante giratorio Leslie (clásico de órganos y blues)."
+    },
+    "Digital": {
+      "type": "Circuito",
+      "description": "Procesamiento digital. Alta fidelidad, transparente y ultrapreciso."
+    },
+    "Analog": {
+      "type": "Circuito",
+      "description": "Chips analógicos 'Bucket Brigade'. Tono cálido, orgánico y un poco oscuro."
+    }
+  },
+  "Pitch/Synth": {
+    "Octaver": {
+      "type": "Efecto",
+      "description": "Añade notas una o dos octavas exactas por encima o por debajo de lo que tocás."
+    },
+    "Harmonizer": {
+      "type": "Efecto",
+      "description": "Permite sumar intervalos musicales (3ras, 5tas). Muchos son inteligentes y siguen la escala."
+    },
+    "Whammy": {
+      "type": "Efecto",
+      "description": "Alteración extrema de la afinación controlada en tiempo real por un pedal de expresión."
+    },
+    "Synth": {
+      "type": "Efecto",
+      "description": "Generadores de sintetizador puro (ondas cuadradas/sierra) disparados por la guitarra."
+    }
+  },
+  "Delay": {
+    "Analog": {
+      "type": "Tipo de Delay",
+      "description": "Delays construidos con chips BBD. Repeticiones oscuras, cálidas y orgánicas."
+    },
+    "Tape": {
+      "type": "Tipo de Delay",
+      "description": "Emulaciones de retardo en cinta o tambor magnético. Saturación y leve modulación natural."
+    },
+    "Digital": {
+      "type": "Tipo de Delay",
+      "description": "Delays cristalinos y limpios. Las repeticiones son copias exactas de la señal."
+    },
+    "Modulated": {
+      "type": "Tipo de Delay",
+      "description": "Delays que añaden efecto de chorus o vibrato a sus colas de repetición."
+    }
+  },
+  "Reverb": {
+    "Spring": {
+      "type": "Tipo de Reverb",
+      "description": "Reverb física de resortes. El clásico sonido 'boing' de los amplificadores de los 60s."
+    },
+    "Plate": {
+      "type": "Tipo de Reverb",
+      "description": "Reverb de placa de metal de estudio. Muy densa y brillante, ideal para leads."
+    },
+    "Ambient": {
+      "type": "Tipo de Reverb",
+      "description": "Recreación de espacios acústicos reales como cuartos, iglesias o grandes salas de concierto."
+    },
+    "Synth": {
+      "type": "Tipo de Reverb",
+      "description": "Reverbs modernas que incluyen octavas o pitch-shifting en la cola para crear colchones espaciales."
+    }
+  }
+}

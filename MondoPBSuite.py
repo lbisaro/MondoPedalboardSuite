@@ -22,6 +22,7 @@ from device_connection import AudioDeviceDialog, ConnectionManager
 from tone_matcher_widget import ToneMatcherWidget
 from block_manager_widget import BlockManagerWidget
 from drive_analyzer_widget import DriveAnalyzer, DriveAnalyzerWidget
+from helix_catalog_widget import HelixCatalogWidget
 
 def resource_path(relative):
     """Resuelve rutas de recursos tanto en desarrollo como dentro del exe de PyInstaller."""
@@ -104,12 +105,15 @@ class HomeWidget(QtWidgets.QWidget):
                                         "Ajuste automático de parámetros de Helix para igualar tonos.", "tone_matcher", self.main_window)
         self.card_block_mgr = NavCard("BLOCK MANAGER", "fa5s.cubes",
                                         "Visualiza y administra bloques de la Helix via USB.", "block_mgr", self.main_window)
+        self.card_catalog = NavCard("HELIX CATALOG", "fa5s.book-open",
+                                        "Explora la base de datos de modelos, amplificadores y cajas.", "catalog", self.main_window)
         
         grid_layout.addWidget(self.card_eq, 0, 0)
         grid_layout.addWidget(self.card_drive, 0, 1)
         grid_layout.addWidget(self.card_preset, 0, 2)
         grid_layout.addWidget(self.card_tone_matcher, 1, 0)
         grid_layout.addWidget(self.card_block_mgr, 1, 1)
+        grid_layout.addWidget(self.card_catalog, 1, 2)
         
         layout.addLayout(grid_layout)
         layout.addStretch()
@@ -160,6 +164,9 @@ class MainWindow(QtWidgets.QMainWindow):
         print("[INIT-UI] Creando BlockManagerWidget...")
         if splash: splash.showMessage("Creando BlockManager...", QtCore.Qt.AlignBottom | QtCore.Qt.AlignCenter, QtCore.Qt.white); QtWidgets.QApplication.processEvents()
         self.page_block_mgr = BlockManagerWidget(self)
+        print("[INIT-UI] Creando HelixCatalogWidget...")
+        if splash: splash.showMessage("Creando Helix Catalog...", QtCore.Qt.AlignBottom | QtCore.Qt.AlignCenter, QtCore.Qt.white); QtWidgets.QApplication.processEvents()
+        self.page_catalog = HelixCatalogWidget(self)
         
         self.stack.addWidget(self.page_home)
         self.stack.addWidget(self.page_eq)
@@ -167,6 +174,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.stack.addWidget(self.page_preset)
         self.stack.addWidget(self.page_tone_matcher)
         self.stack.addWidget(self.page_block_mgr)
+        self.stack.addWidget(self.page_catalog)
         
         self.stack.setCurrentWidget(self.page_home)
         self.conn_mgr.active_analyzer = None # Home
@@ -297,6 +305,10 @@ class MainWindow(QtWidgets.QMainWindow):
         elif page_name == "block_mgr": 
             self.stack.setCurrentWidget(self.page_block_mgr)
             self.lbl_module_title.setText("BLOCK MANAGER")
+            self.conn_mgr.active_analyzer = None
+        elif page_name == "catalog": 
+            self.stack.setCurrentWidget(self.page_catalog)
+            self.lbl_module_title.setText("HELIX CATALOG")
             self.conn_mgr.active_analyzer = None
             
         self.btn_home.setVisible(True)
