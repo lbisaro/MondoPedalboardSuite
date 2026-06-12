@@ -21,6 +21,7 @@ from preset_compare_widget import PresetCompareWidget
 from device_connection import AudioDeviceDialog, ConnectionManager
 from tone_matcher_widget import ToneMatcherWidget
 from block_manager_widget import BlockManagerWidget
+from drive_analyzer_widget import DriveAnalyzer, DriveAnalyzerWidget
 
 def resource_path(relative):
     """Resuelve rutas de recursos tanto en desarrollo como dentro del exe de PyInstaller."""
@@ -34,32 +35,36 @@ class NavCard(QtWidgets.QFrame):
         super().__init__()
         self.target = target
         self.main_window = main_window
-        self.setFixedSize(300, 250)
+        self.setFixedSize(300, 150)
         self.setObjectName("HomeCard")
         self.setCursor(QtCore.Qt.PointingHandCursor)
         
-        layout = QtWidgets.QVBoxLayout(self)
-        layout.setContentsMargins(20, 30, 20, 30)
-        layout.setAlignment(QtCore.Qt.AlignCenter)
+        layout = QtWidgets.QHBoxLayout(self)
+        layout.setContentsMargins(15, 15, 15, 15)
+        layout.setSpacing(15)
         
         icon_lbl = QtWidgets.QLabel()
-        icon_lbl.setPixmap(qta.icon(icon_name, color='#00ADB5').pixmap(64, 64))
+        icon_lbl.setPixmap(qta.icon(icon_name, color='#00ADB5').pixmap(48, 48))
         icon_lbl.setAlignment(QtCore.Qt.AlignCenter)
         icon_lbl.setStyleSheet("background: transparent;")
+        icon_lbl.setFixedWidth(70) # roughly 1/3
+        
+        text_layout = QtWidgets.QVBoxLayout()
         
         title_lbl = QtWidgets.QLabel(title)
-        title_lbl.setStyleSheet("font-size: 16pt; font-weight: bold; color: white; margin-top: 10px; background: transparent;")
-        title_lbl.setAlignment(QtCore.Qt.AlignCenter)
+        title_lbl.setStyleSheet("font-size: 14pt; font-weight: bold; color: white; background: transparent;")
+        title_lbl.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignBottom)
         
         desc_lbl = QtWidgets.QLabel(desc)
-        desc_lbl.setStyleSheet("color: #888; font-size: 10pt; background: transparent;")
+        desc_lbl.setStyleSheet("color: #888; font-size: 9pt; background: transparent;")
         desc_lbl.setWordWrap(True)
-        desc_lbl.setAlignment(QtCore.Qt.AlignCenter)
+        desc_lbl.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignTop)
+        
+        text_layout.addWidget(title_lbl)
+        text_layout.addWidget(desc_lbl)
         
         layout.addWidget(icon_lbl)
-        layout.addWidget(title_lbl)
-        layout.addWidget(desc_lbl)
-        layout.addStretch()
+        layout.addLayout(text_layout)
 
     def mousePressEvent(self, event):
         if event.button() == QtCore.Qt.LeftButton:
@@ -85,11 +90,14 @@ class HomeWidget(QtWidgets.QWidget):
         layout.addWidget(subtitle, 0, QtCore.Qt.AlignCenter)
         
         # Grid de Tarjetas
-        cards_layout = QtWidgets.QHBoxLayout()
-        cards_layout.setSpacing(30)
+        grid_layout = QtWidgets.QGridLayout()
+        grid_layout.setSpacing(30)
+        grid_layout.setAlignment(QtCore.Qt.AlignCenter)
         
         self.card_eq = NavCard("EQ ANALYZER", "fa5s.wave-square", 
-                                "Análisis en tiempo real y Match EQ.", "eq", self.main_window)
+                                "Análisis espectral y transferencia EQ.", "eq", self.main_window)
+        self.card_drive = NavCard("DRIVE ANALYZER", "fa5s.chart-bar", 
+                                "Ingeniería inversa de distorsión y armónicos (THD/IMD).", "drive", self.main_window)
         self.card_preset = NavCard("PRESET COMPARE", "fa6s.code-compare", 
                                  "Gestión de reamping y comparación A/B.", "preset", self.main_window)
         self.card_tone_matcher = NavCard("TONE MATCHER", "fa5s.music",
@@ -97,23 +105,23 @@ class HomeWidget(QtWidgets.QWidget):
         self.card_block_mgr = NavCard("BLOCK MANAGER", "fa5s.cubes",
                                         "Visualiza y administra bloques de la Helix via USB.", "block_mgr", self.main_window)
         
-        cards_layout.addStretch()
-        cards_layout.addWidget(self.card_eq)
-        cards_layout.addWidget(self.card_preset)
-        cards_layout.addWidget(self.card_tone_matcher)
-        cards_layout.addWidget(self.card_block_mgr)
-        cards_layout.addStretch()
+        grid_layout.addWidget(self.card_eq, 0, 0)
+        grid_layout.addWidget(self.card_drive, 0, 1)
+        grid_layout.addWidget(self.card_preset, 0, 2)
+        grid_layout.addWidget(self.card_tone_matcher, 1, 0)
+        grid_layout.addWidget(self.card_block_mgr, 1, 1)
         
-        layout.addLayout(cards_layout)
+        layout.addLayout(grid_layout)
         layout.addStretch()
 
 class MainWindow(QtWidgets.QMainWindow):
-    def __init__(self, analyzer, splash=None):
+    def __init__(self, analyzer, drive_analyzer, splash=None):
         print("[INIT-UI] Constructor de MainWindow iniciado...")
         if splash: splash.showMessage("Constructor de MainWindow iniciado...", QtCore.Qt.AlignBottom | QtCore.Qt.AlignCenter, QtCore.Qt.white); QtWidgets.QApplication.processEvents()
         super().__init__()
         self.analyzer = analyzer
-        self.conn_mgr = ConnectionManager(self.analyzer)
+        self.drive_analyzer = drive_analyzer
+        self.conn_mgr = ConnectionManager()
         
         self.setWindowTitle("Mondo PedalBoard Suite")
         self.resize(1280, 800)
@@ -140,6 +148,9 @@ class MainWindow(QtWidgets.QMainWindow):
         print("[INIT-UI] Creando EQAnalyzerWidget...")
         if splash: splash.showMessage("Creando EQAnalyzer...", QtCore.Qt.AlignBottom | QtCore.Qt.AlignCenter, QtCore.Qt.white); QtWidgets.QApplication.processEvents()
         self.page_eq = EQAnalyzerWidget(self.analyzer, self)
+        print("[INIT-UI] Creando DriveAnalyzerWidget...")
+        if splash: splash.showMessage("Creando DriveAnalyzer...", QtCore.Qt.AlignBottom | QtCore.Qt.AlignCenter, QtCore.Qt.white); QtWidgets.QApplication.processEvents()
+        self.page_drive = DriveAnalyzerWidget(self.drive_analyzer, self)
         print("[INIT-UI] Creando PresetCompareWidget...")
         if splash: splash.showMessage("Creando PresetCompare...", QtCore.Qt.AlignBottom | QtCore.Qt.AlignCenter, QtCore.Qt.white); QtWidgets.QApplication.processEvents()
         self.page_preset = PresetCompareWidget(self.analyzer)
@@ -152,11 +163,13 @@ class MainWindow(QtWidgets.QMainWindow):
         
         self.stack.addWidget(self.page_home)
         self.stack.addWidget(self.page_eq)
+        self.stack.addWidget(self.page_drive)
         self.stack.addWidget(self.page_preset)
         self.stack.addWidget(self.page_tone_matcher)
         self.stack.addWidget(self.page_block_mgr)
         
         self.stack.setCurrentWidget(self.page_home)
+        self.conn_mgr.active_analyzer = None # Home
         self.btn_home.setVisible(False) # Ocultar en el home al inicio
         self.setup_statusbar()
         self.auto_connect(splash)
@@ -260,6 +273,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def go_home(self):
         self.stop_audio()
         self.stack.setCurrentWidget(self.page_home)
+        self.conn_mgr.active_analyzer = None
         self.btn_home.setVisible(False)
         self.lbl_module_title.setText("")
 
@@ -267,15 +281,23 @@ class MainWindow(QtWidgets.QMainWindow):
         if page_name == "eq": 
             self.stack.setCurrentWidget(self.page_eq)
             self.lbl_module_title.setText("EQ ANALIZER")
+            self.conn_mgr.active_analyzer = self.analyzer
+        elif page_name == "drive":
+            self.stack.setCurrentWidget(self.page_drive)
+            self.lbl_module_title.setText("DRIVE ANALYZER")
+            self.conn_mgr.active_analyzer = self.drive_analyzer
         elif page_name == "preset": 
             self.stack.setCurrentWidget(self.page_preset)
             self.lbl_module_title.setText("PRESET COMPARER")
+            self.conn_mgr.active_analyzer = self.analyzer
         elif page_name == "tone_matcher": 
             self.stack.setCurrentWidget(self.page_tone_matcher)
             self.lbl_module_title.setText("TONE MATCHER")
+            self.conn_mgr.active_analyzer = self.analyzer
         elif page_name == "block_mgr": 
             self.stack.setCurrentWidget(self.page_block_mgr)
             self.lbl_module_title.setText("BLOCK MANAGER")
+            self.conn_mgr.active_analyzer = None
             
         self.btn_home.setVisible(True)
 
@@ -452,9 +474,13 @@ def main():
     print("[INIT] Creando instancia de AudioAnalyzer...")
     if splash: splash.showMessage("Creando instancia de AudioAnalyzer...", QtCore.Qt.AlignBottom | QtCore.Qt.AlignCenter, QtCore.Qt.white); app.processEvents()
     analyzer = AudioAnalyzer()
+    print("[INIT] Creando instancia de DriveAnalyzer...")
+    if splash: splash.showMessage("Creando instancia de DriveAnalyzer...", QtCore.Qt.AlignBottom | QtCore.Qt.AlignCenter, QtCore.Qt.white); app.processEvents()
+    drive_analyzer = DriveAnalyzer()
+    
     print("[INIT] Creando MainWindow...")
     if splash: splash.showMessage("Creando MainWindow...", QtCore.Qt.AlignBottom | QtCore.Qt.AlignCenter, QtCore.Qt.white); app.processEvents()
-    window = MainWindow(analyzer, splash)
+    window = MainWindow(analyzer, drive_analyzer, splash)
 
     # --- Capa 1: cierre limpio al salir normalmente ---
     app.aboutToQuit.connect(window.conn_mgr.stop_audio)

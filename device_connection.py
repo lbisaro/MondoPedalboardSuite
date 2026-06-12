@@ -173,8 +173,8 @@ class AudioDeviceDialog(QtWidgets.QDialog):
 
 class ConnectionManager:
     """Gestiona el ciclo de vida del stream de audio."""
-    def __init__(self, analyzer):
-        self.analyzer = analyzer
+    def __init__(self):
+        self.active_analyzer = None
         self.stream = None
         # Ruta base: directorio del ejecutable (o del script en desarrollo)
         _base_dir = os.path.dirname(sys.executable if getattr(sys, 'frozen', False) else os.path.abspath(__file__))
@@ -182,6 +182,12 @@ class ConnectionManager:
         os.makedirs(_user_data, exist_ok=True)
         self.settings_file = os.path.join(_user_data, "settings.json")
         self.helix_conn = HelixConnection()
+
+    def audio_callback(self, indata, outdata, frames, time, status):
+        if self.active_analyzer and hasattr(self.active_analyzer, 'audio_callback'):
+            self.active_analyzer.audio_callback(indata, outdata, frames, time, status)
+        else:
+            outdata.fill(0)
 
     def start_audio(self, settings):
         print(f"[AUDIO] Iniciando stream. Parámetros: {settings.get('device_name')} | IN:{settings.get('in_channel')} OUT:{settings.get('out_channel')}...")
@@ -191,23 +197,24 @@ class ConnectionManager:
             send_ch = settings["out_channel"] - 1
             receive_ch = settings["in_channel"] - 1
             
-            # Configurar el analyzer
-            self.analyzer.in_ch = receive_ch
-            self.analyzer.out_ch = send_ch
-            
-            # Limpiar buffers de forma segura
-            if hasattr(self.analyzer, 'meas_mag_avg') and self.analyzer.meas_mag_avg is not None:
-                self.analyzer.meas_mag_avg.fill(0)
-            if hasattr(self.analyzer, 'magnitude_db') and self.analyzer.magnitude_db is not None:
-                self.analyzer.magnitude_db.fill(0)
-            if hasattr(self.analyzer, 'smoothed_magnitude_db') and self.analyzer.smoothed_magnitude_db is not None:
-                self.analyzer.smoothed_magnitude_db.fill(0)
-            if hasattr(self.analyzer, 'capture_buffer') and self.analyzer.capture_buffer is not None:
-                self.analyzer.capture_buffer.fill(0)
-            
-            # Restablecer estado de calibración
-            self.analyzer.calibration_offset = None
-            self.analyzer.manual_offset_adj = 0.0
+            # Configurar el analyzer activo
+            if self.active_analyzer:
+                self.active_analyzer.in_ch = receive_ch
+                self.active_analyzer.out_ch = send_ch
+                
+                # Limpiar buffers de forma segura
+                if hasattr(self.active_analyzer, 'meas_mag_avg') and self.active_analyzer.meas_mag_avg is not None:
+                    self.active_analyzer.meas_mag_avg.fill(0)
+                if hasattr(self.active_analyzer, 'magnitude_db') and self.active_analyzer.magnitude_db is not None:
+                    self.active_analyzer.magnitude_db.fill(0)
+                if hasattr(self.active_analyzer, 'smoothed_magnitude_db') and self.active_analyzer.smoothed_magnitude_db is not None:
+                    self.active_analyzer.smoothed_magnitude_db.fill(0)
+                if hasattr(self.active_analyzer, 'capture_buffer') and self.active_analyzer.capture_buffer is not None:
+                    self.active_analyzer.capture_buffer.fill(0)
+                
+                # Restablecer estado de calibración
+                self.active_analyzer.calibration_offset = None
+                self.active_analyzer.manual_offset_adj = 0.0
 
             # Obtener el número REAL de canales soportados para no pedir de más
             # Si in_id o out_id son None, usamos el ID del otro lado (duplex)
@@ -227,7 +234,8 @@ class ConnectionManager:
             # Usar la frecuencia de muestreo por defecto del dispositivo
             device_sr = int(in_info['default_samplerate'])
             print(f"[AUDIO] Frecuencia de muestreo detectada: {device_sr} Hz. Configurando analizador...")
-            self.analyzer.set_sample_rate(device_sr)
+            if self.active_analyzer and hasattr(self.active_analyzer, 'set_sample_rate'):
+                self.active_analyzer.set_sample_rate(device_sr)
 
             # Pequeña pausa para permitir que el driver libere recursos
             print("[AUDIO] Esperando 200ms para estabilización del driver...")
@@ -242,7 +250,7 @@ class ConnectionManager:
                     channels=(num_in, num_out),
                     samplerate=device_sr,
                     blocksize=0, # Dejar que el driver decida (más estable en ASIO)
-                    callback=self.analyzer.audio_callback
+                    callback=self.audio_callback
                 )
                 self.stream.start()
                 print("[AUDIO] Stream iniciado exitosamente con parámetros ideales.")
@@ -252,11 +260,12 @@ class ConnectionManager:
                 self.stream = sd.Stream(
                     device=(actual_in_id, actual_out_id),
                     channels=(num_in, num_out),
-                    callback=self.analyzer.audio_callback
+                    callback=self.audio_callback
                 )
                 self.stream.start()
                 # Si esto funciona, actualizar el samplerate del analyzer al real
-                self.analyzer.set_sample_rate(int(self.stream.samplerate))
+                if self.active_analyzer and hasattr(self.active_analyzer, 'set_sample_rate'):
+                    self.active_analyzer.set_sample_rate(int(self.stream.samplerate))
                 print(f"[AUDIO] Stream iniciado en modo fallback. Samplerate real: {self.stream.samplerate} Hz")
 
             return True, "Conectado"
