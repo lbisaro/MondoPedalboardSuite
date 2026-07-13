@@ -16985,9 +16985,9 @@
         "based_on": "1x6×9\" Supro, S6616",
         "parameters": [
           {
-            "name": "@mic",
-            "type": "knob",
-            "default": 5.0
+            "name": "Mic",
+            "type": "mic",
+            "default": 1.0
           },
           {
             "name": "Position",
@@ -17040,9 +17040,9 @@
         "based_on": "1×8\" Fender Champ",
         "parameters": [
           {
-            "name": "@mic",
-            "type": "knob",
-            "default": 5.0
+            "name": "Mic",
+            "type": "mic",
+            "default": 1.0
           },
           {
             "name": "Position",
@@ -17096,9 +17096,9 @@
         "based_on": "1x10\" Fender Princeton Reverb",
         "parameters": [
           {
-            "name": "@mic",
-            "type": "knob",
-            "default": 5.0
+            "name": "Mic",
+            "type": "mic",
+            "default": 1.0
           },
           {
             "name": "Position",
@@ -17152,9 +17152,9 @@
         "based_on": "1×12\" Fender 5C3 Tweed Deluxe",
         "parameters": [
           {
-            "name": "@mic",
-            "type": "knob",
-            "default": 5.0
+            "name": "Mic",
+            "type": "mic",
+            "default": 1.0
           },
           {
             "name": "Position",
@@ -17208,9 +17208,9 @@
         "based_on": "1x12\" Grammatico LaGrange",
         "parameters": [
           {
-            "name": "@mic",
-            "type": "knob",
-            "default": 5.0
+            "name": "Mic",
+            "type": "mic",
+            "default": 1.0
           },
           {
             "name": "Position",
@@ -17262,9 +17262,9 @@
         "based_on": "1x12\" Fender Deluxe, Oxford",
         "parameters": [
           {
-            "name": "@mic",
-            "type": "knob",
-            "default": 5.0
+            "name": "Mic",
+            "type": "mic",
+            "default": 1.0
           },
           {
             "name": "Position",
@@ -17318,9 +17318,9 @@
         "based_on": "1x12\" Custom open-back, EVM12L",
         "parameters": [
           {
-            "name": "@mic",
-            "type": "knob",
-            "default": 5.0
+            "name": "Mic",
+            "type": "mic",
+            "default": 1.0
           },
           {
             "name": "Position",
@@ -17372,9 +17372,9 @@
         "based_on": "1x12\" Custom open-back, G12M-65",
         "parameters": [
           {
-            "name": "@mic",
-            "type": "knob",
-            "default": 5.0
+            "name": "Mic",
+            "type": "mic",
+            "default": 1.0
           },
           {
             "name": "Position",
@@ -17426,9 +17426,9 @@
         "based_on": "Legacy 1x12\" MESA/Boogie EVM12L",
         "parameters": [
           {
-            "name": "@mic",
-            "type": "knob",
-            "default": 5.0
+            "name": "Mic",
+            "type": "mic",
+            "default": 1.0
           },
           {
             "name": "Position",
@@ -17481,9 +17481,9 @@
         "based_on": "1x12\" MESA/Boogie MkIV Combo",
         "parameters": [
           {
-            "name": "@mic",
-            "type": "knob",
-            "default": 5.0
+            "name": "Mic",
+            "type": "mic",
+            "default": 1.0
           },
           {
             "name": "Position",
@@ -17536,9 +17536,9 @@
         "based_on": "1x12\" Vox AC-15, Blue Alnico",
         "parameters": [
           {
-            "name": "@mic",
-            "type": "knob",
-            "default": 5.0
+            "name": "Mic",
+            "type": "mic",
+            "default": 1.0
           },
           {
             "name": "Position",
@@ -17592,9 +17592,9 @@
         "based_on": "2x12\" Vox AC-30 Fawn, Blue Alnico",
         "parameters": [
           {
-            "name": "@mic",
-            "type": "knob",
-            "default": 5.0
+            "name": "Mic",
+            "type": "mic",
+            "default": 1.0
           },
           {
             "name": "Position",
@@ -17648,9 +17648,9 @@
         "based_on": "2x12\" Vox AC-30TB, Silver Alnico",
         "parameters": [
           {
-            "name": "@mic",
-            "type": "knob",
-            "default": 5.0
+            "name": "Mic",
+            "type": "mic",
+            "default": 1.0
           },
           {
             "name": "Position",
@@ -17704,9 +17704,9 @@
         "based_on": "2x12\" Matchless DC30, Custom G12H-30",
         "parameters": [
           {
-            "name": "@mic",
-            "type": "knob",
-            "default": 5.0
+            "name": "Mic",
+            "type": "mic",
+            "default": 1.0
           },
           {
             "name": "Position",
@@ -17760,9 +17760,9 @@
         "based_on": "2x12\" Matchless DC30, Custom G12M-35",
         "parameters": [
           {
-            "name": "@mic",
-            "type": "knob",
-            "default": 5.0
+            "name": "Mic",
+            "type": "mic",
+            "default": 1.0
           },
           {
             "name": "Position",
@@ -17816,9 +17816,9 @@
         "based_on": "2x12\" Fender Twin, C12N",
         "parameters": [
           {
-            "name": "@mic",
-            "type": "knob",
-            "default": 5.0
+            "name": "Mic",
+            "type": "mic",
+            "default": 1.0
           },
           {
             "name": "Position",
@@ -17872,9 +17872,9 @@
         "based_on": "2x12\" Dr. Z Z Best, V30",
         "parameters": [
           {
-            "name": "@mic",
-            "type": "knob",
-            "default": 5.0
+            "name": "Mic",
+            "type": "mic",
+            "default": 1.0
           },
           {
             "name": "Position",
@@ -17926,9 +17926,9 @@
         "based_on": "2x12\" Roland JC-120",
         "parameters": [
           {
-            "name": "@mic",
-            "type": "knob",
-            "default": 5.0
+            "name": "Mic",
+            "type": "mic",
+            "default": 1.0
           },
           {
             "name": "Position",
@@ -17981,9 +17981,9 @@
         "based_on": "2x12\" Silvertone 1484, Jensen C12Q",
         "parameters": [
           {
-            "name": "@mic",
-            "type": "knob",
-            "default": 5.0
+            "name": "Mic",
+            "type": "mic",
+            "default": 1.0
           },
           {
             "name": "Position",
@@ -18046,9 +18046,9 @@
         "description": "Simulación de la caja 2x12\" Orange, V30.",
         "parameters": [
           {
-            "name": "@mic",
-            "type": "knob",
-            "default": 5.0
+            "name": "Mic",
+            "type": "mic",
+            "default": 1.0
           },
           {
             "name": "Position",
@@ -18092,9 +18092,9 @@
         "based_on": "4x10\" Fender Bassman, P10R",
         "parameters": [
           {
-            "name": "@mic",
-            "type": "knob",
-            "default": 5.0
+            "name": "Mic",
+            "type": "mic",
+            "default": 1.0
           },
           {
             "name": "Position",
@@ -18148,9 +18148,9 @@
         "based_on": "4x10\" Fender Super Reverb, CTS alnico",
         "parameters": [
           {
-            "name": "@mic",
-            "type": "knob",
-            "default": 5.0
+            "name": "Mic",
+            "type": "mic",
+            "default": 1.0
           },
           {
             "name": "Position",
@@ -18204,9 +18204,9 @@
         "based_on": "4x12\" Hiwatt AP Fane",
         "parameters": [
           {
-            "name": "@mic",
-            "type": "knob",
-            "default": 5.0
+            "name": "Mic",
+            "type": "mic",
+            "default": 1.0
           },
           {
             "name": "Position",
@@ -18269,9 +18269,9 @@
         "description": "Simulación de la caja 4x12\" Marshall Basketweave G12M-20. Pared de sonido masiva y direccional, graves muy controlados.",
         "parameters": [
           {
-            "name": "@mic",
-            "type": "knob",
-            "default": 5.0
+            "name": "Mic",
+            "type": "mic",
+            "default": 1.0
           },
           {
             "name": "Position",
@@ -18324,9 +18324,9 @@
         "description": "Simulación de la caja 4x12\" Marshall Basketweave G12M-25. Pared de sonido masiva y direccional, graves muy controlados.",
         "parameters": [
           {
-            "name": "@mic",
-            "type": "knob",
-            "default": 5.0
+            "name": "Mic",
+            "type": "mic",
+            "default": 1.0
           },
           {
             "name": "Position",
@@ -18379,9 +18379,9 @@
         "description": "Simulación de la caja 4x12\" Marshall Basketweave G12H-30. Pared de sonido masiva y direccional, graves muy controlados.",
         "parameters": [
           {
-            "name": "@mic",
-            "type": "knob",
-            "default": 5.0
+            "name": "Mic",
+            "type": "mic",
+            "default": 1.0
           },
           {
             "name": "Position",
@@ -18425,9 +18425,9 @@
         "based_on": "4x12\" Marshall 1960A, G12T-75",
         "parameters": [
           {
-            "name": "@mic",
-            "type": "knob",
-            "default": 5.0
+            "name": "Mic",
+            "type": "mic",
+            "default": 1.0
           },
           {
             "name": "Position",
@@ -18489,9 +18489,9 @@
         "description": "Simulación de la caja 4x12\" Park 75, G12H-30. Pared de sonido masiva y direccional, graves muy controlados.",
         "parameters": [
           {
-            "name": "@mic",
-            "type": "knob",
-            "default": 5.0
+            "name": "Mic",
+            "type": "mic",
+            "default": 1.0
           },
           {
             "name": "Position",
@@ -18535,9 +18535,9 @@
         "based_on": "4x12\" Marshall 1960AV, V30",
         "parameters": [
           {
-            "name": "@mic",
-            "type": "knob",
-            "default": 5.0
+            "name": "Mic",
+            "type": "mic",
+            "default": 1.0
           },
           {
             "name": "Position",
@@ -18591,9 +18591,9 @@
         "based_on": "4x12\" MESA/Boogie 4FB, V30",
         "parameters": [
           {
-            "name": "@mic",
-            "type": "knob",
-            "default": 5.0
+            "name": "Mic",
+            "type": "mic",
+            "default": 1.0
           },
           {
             "name": "Position",
@@ -18647,9 +18647,9 @@
         "based_on": "4x12\" Orange, Eminence",
         "parameters": [
           {
-            "name": "@mic",
-            "type": "knob",
-            "default": 5.0
+            "name": "Mic",
+            "type": "mic",
+            "default": 1.0
           },
           {
             "name": "Position",
@@ -18703,9 +18703,9 @@
         "based_on": "4x12\" Sunn, G12T-75",
         "parameters": [
           {
-            "name": "@mic",
-            "type": "knob",
-            "default": 5.0
+            "name": "Mic",
+            "type": "mic",
+            "default": 1.0
           },
           {
             "name": "Position",
@@ -18758,9 +18758,9 @@
         "based_on": "4x12\" Modified Lee Jackson, Eminence",
         "parameters": [
           {
-            "name": "@mic",
-            "type": "knob",
-            "default": 5.0
+            "name": "Mic",
+            "type": "mic",
+            "default": 1.0
           },
           {
             "name": "Position",
@@ -18814,9 +18814,9 @@
         "based_on": "4x12\" Modified Lee Jackson, Mesa C90",
         "parameters": [
           {
-            "name": "@mic",
-            "type": "knob",
-            "default": 5.0
+            "name": "Mic",
+            "type": "mic",
+            "default": 1.0
           },
           {
             "name": "Position",
@@ -18869,9 +18869,9 @@
         "based_on": "4x12\" Bogner Uberkab, G12T-75",
         "parameters": [
           {
-            "name": "@mic",
-            "type": "knob",
-            "default": 5.0
+            "name": "Mic",
+            "type": "mic",
+            "default": 1.0
           },
           {
             "name": "Position",
@@ -18925,9 +18925,9 @@
         "based_on": "4x12\" Bogner Uberkab, V30",
         "parameters": [
           {
-            "name": "@mic",
-            "type": "knob",
-            "default": 5.0
+            "name": "Mic",
+            "type": "mic",
+            "default": 1.0
           },
           {
             "name": "Position",
@@ -18981,9 +18981,9 @@
         "based_on": "4x12\" ENGL XXL, V30",
         "parameters": [
           {
-            "name": "@mic",
-            "type": "knob",
-            "default": 5.0
+            "name": "Mic",
+            "type": "mic",
+            "default": 1.0
           },
           {
             "name": "Position",
@@ -19037,9 +19037,9 @@
         "based_on": "4x12\" Soldano, Eminence 12-5875",
         "parameters": [
           {
-            "name": "@mic",
-            "type": "knob",
-            "default": 5.0
+            "name": "Mic",
+            "type": "mic",
+            "default": 1.0
           },
           {
             "name": "Position",
@@ -19093,9 +19093,9 @@
         "based_on": "1x12\" Epifani Ultralight",
         "parameters": [
           {
-            "name": "@mic",
-            "type": "knob",
-            "default": 5.0
+            "name": "Mic",
+            "type": "mic",
+            "default": 1.0
           },
           {
             "name": "Position",
@@ -19147,9 +19147,9 @@
         "based_on": "1x15\" Ampeg B-15",
         "parameters": [
           {
-            "name": "@mic",
-            "type": "knob",
-            "default": 5.0
+            "name": "Mic",
+            "type": "mic",
+            "default": 1.0
           },
           {
             "name": "Position",
@@ -19202,9 +19202,9 @@
         "based_on": "2x15\" MESA/Boogie, EV",
         "parameters": [
           {
-            "name": "@mic",
-            "type": "knob",
-            "default": 5.0
+            "name": "Mic",
+            "type": "mic",
+            "default": 1.0
           },
           {
             "name": "Position",
@@ -19257,9 +19257,9 @@
         "based_on": "2x15” Fender Bassman, JBL D130",
         "parameters": [
           {
-            "name": "@mic",
-            "type": "knob",
-            "default": 5.0
+            "name": "Mic",
+            "type": "mic",
+            "default": 1.0
           },
           {
             "name": "Position",
@@ -19312,9 +19312,9 @@
         "based_on": "4x10\" Eden D410XL T",
         "parameters": [
           {
-            "name": "@mic",
-            "type": "knob",
-            "default": 5.0
+            "name": "Mic",
+            "type": "mic",
+            "default": 1.0
           },
           {
             "name": "Position",
@@ -19366,9 +19366,9 @@
         "based_on": "4x10\" Ampeg PR-410HLF",
         "parameters": [
           {
-            "name": "@mic",
-            "type": "knob",
-            "default": 5.0
+            "name": "Mic",
+            "type": "mic",
+            "default": 1.0
           },
           {
             "name": "Position",
@@ -19421,9 +19421,9 @@
         "based_on": "6x10” MESA/Boogie PowerHouse",
         "parameters": [
           {
-            "name": "@mic",
-            "type": "knob",
-            "default": 5.0
+            "name": "Mic",
+            "type": "mic",
+            "default": 1.0
           },
           {
             "name": "Position",
@@ -19476,9 +19476,9 @@
         "based_on": "8x10\" Ampeg SVT-810AV",
         "parameters": [
           {
-            "name": "@mic",
-            "type": "knob",
-            "default": 5.0
+            "name": "Mic",
+            "type": "mic",
+            "default": 1.0
           },
           {
             "name": "Position",
@@ -19531,11 +19531,6 @@
         "based_on": "1x6×9\" Supro, S6616",
         "parameters": [
           {
-            "name": "@mic",
-            "type": "knob",
-            "default": 5.0
-          },
-          {
             "name": "Distance",
             "type": "knob",
             "default": 5.0
@@ -19559,6 +19554,11 @@
             "name": "Level",
             "type": "knob",
             "default": 5.0
+          },
+          {
+            "name": "Mic",
+            "type": "mic",
+            "default": 1.0
           }
         ],
         "image": "assets/icons_models/CAB_HX_1x6_SoupProEllipse.png",
@@ -19580,11 +19580,6 @@
         ],
         "based_on": "1×8\" Fender Champ",
         "parameters": [
-          {
-            "name": "@mic",
-            "type": "knob",
-            "default": 5.0
-          },
           {
             "name": "Distance",
             "type": "knob",
@@ -19609,6 +19604,11 @@
             "name": "Level",
             "type": "knob",
             "default": 5.0
+          },
+          {
+            "name": "Mic",
+            "type": "mic",
+            "default": 1.0
           }
         ],
         "image": "assets/icons_models/CAB_HX_1x8_SmallTweed.png",
@@ -19632,11 +19632,6 @@
         "based_on": "1x10\" Fender Princeton Reverb",
         "parameters": [
           {
-            "name": "@mic",
-            "type": "knob",
-            "default": 5.0
-          },
-          {
             "name": "Distance",
             "type": "knob",
             "default": 5.0
@@ -19660,6 +19655,11 @@
             "name": "Level",
             "type": "knob",
             "default": 5.0
+          },
+          {
+            "name": "Mic",
+            "type": "mic",
+            "default": 1.0
           }
         ],
         "image": "assets/icons_models/CAB_HX_1x10_USPrincess.png",
@@ -19683,11 +19683,6 @@
         "based_on": "Legacy 1x12\" Gibson EH185",
         "parameters": [
           {
-            "name": "@mic",
-            "type": "knob",
-            "default": 5.0
-          },
-          {
             "name": "Distance",
             "type": "knob",
             "default": 5.0
@@ -19711,6 +19706,11 @@
             "name": "Level",
             "type": "knob",
             "default": 5.0
+          },
+          {
+            "name": "Mic",
+            "type": "mic",
+            "default": 1.0
           }
         ],
         "image": "assets/icons_models/CAB_HX_1x12_FieldCoil.png",
@@ -19732,11 +19732,6 @@
         "based_on": "1×12\" Fender 5C3 Tweed Deluxe",
         "parameters": [
           {
-            "name": "@mic",
-            "type": "knob",
-            "default": 5.0
-          },
-          {
             "name": "Distance",
             "type": "knob",
             "default": 5.0
@@ -19760,6 +19755,11 @@
             "name": "Level",
             "type": "knob",
             "default": 5.0
+          },
+          {
+            "name": "Mic",
+            "type": "mic",
+            "default": 1.0
           }
         ],
         "image": "assets/icons_models/CAB_HX_1x12_Fullerton.png",
@@ -19783,11 +19783,6 @@
         "based_on": "1x12\" Grammatico LaGrange",
         "parameters": [
           {
-            "name": "@mic",
-            "type": "knob",
-            "default": 5.0
-          },
-          {
             "name": "Distance",
             "type": "knob",
             "default": 5.0
@@ -19811,6 +19806,11 @@
             "name": "Level",
             "type": "knob",
             "default": 5.0
+          },
+          {
+            "name": "Mic",
+            "type": "mic",
+            "default": 1.0
           }
         ],
         "image": "assets/icons_models/CAB_HX_1x12_Grammatico.png",
@@ -19832,11 +19832,6 @@
         "based_on": "1x12\" Fender Deluxe, Oxford",
         "parameters": [
           {
-            "name": "@mic",
-            "type": "knob",
-            "default": 5.0
-          },
-          {
             "name": "Distance",
             "type": "knob",
             "default": 5.0
@@ -19860,6 +19855,11 @@
             "name": "Level",
             "type": "knob",
             "default": 5.0
+          },
+          {
+            "name": "Mic",
+            "type": "mic",
+            "default": 1.0
           }
         ],
         "image": "assets/icons_models/CAB_HX_1x12_USDeluxe.png",
@@ -19882,11 +19882,6 @@
         ],
         "based_on": "Legacy 1x12\" Fender Princeton Reverb",
         "parameters": [
-          {
-            "name": "@mic",
-            "type": "knob",
-            "default": 5.0
-          },
           {
             "name": "Distance",
             "type": "knob",
@@ -19911,6 +19906,11 @@
             "name": "Level",
             "type": "knob",
             "default": 5.0
+          },
+          {
+            "name": "Mic",
+            "type": "mic",
+            "default": 1.0
           }
         ],
         "image": "assets/icons_models/CAB_HX_1x12_USPrincess.png",
@@ -19934,11 +19934,6 @@
         "based_on": "Legacy 1x12\" ÷13 JRT 9/15 G12 H30",
         "parameters": [
           {
-            "name": "@mic",
-            "type": "knob",
-            "default": 5.0
-          },
-          {
             "name": "Distance",
             "type": "knob",
             "default": 5.0
@@ -19962,6 +19957,11 @@
             "name": "Level",
             "type": "knob",
             "default": 5.0
+          },
+          {
+            "name": "Mic",
+            "type": "mic",
+            "default": 1.0
           }
         ],
         "image": "assets/icons_models/CAB_HX_1x12_Celest12H.png",
@@ -19983,11 +19983,6 @@
         "based_on": "1x12\" Vox AC-15, Blue Alnico",
         "parameters": [
           {
-            "name": "@mic",
-            "type": "knob",
-            "default": 5.0
-          },
-          {
             "name": "Distance",
             "type": "knob",
             "default": 5.0
@@ -20011,6 +20006,11 @@
             "name": "Level",
             "type": "knob",
             "default": 5.0
+          },
+          {
+            "name": "Mic",
+            "type": "mic",
+            "default": 1.0
           }
         ],
         "image": "assets/icons_models/CAB_HX_1x12_BlueBell.png",
@@ -20034,11 +20034,6 @@
         "based_on": "Legacy 1x12\" Bogner Shiva CL80",
         "parameters": [
           {
-            "name": "@mic",
-            "type": "knob",
-            "default": 5.0
-          },
-          {
             "name": "Distance",
             "type": "knob",
             "default": 5.0
@@ -20062,6 +20057,11 @@
             "name": "Level",
             "type": "knob",
             "default": 5.0
+          },
+          {
+            "name": "Mic",
+            "type": "mic",
+            "default": 1.0
           }
         ],
         "image": "assets/icons_models/CAB_HX_1x12_Lead80.png",
@@ -20085,11 +20085,6 @@
         "based_on": "1x12\" MESA/Boogie MkIV Combo",
         "parameters": [
           {
-            "name": "@mic",
-            "type": "knob",
-            "default": 5.0
-          },
-          {
             "name": "Distance",
             "type": "knob",
             "default": 5.0
@@ -20113,6 +20108,11 @@
             "name": "Level",
             "type": "knob",
             "default": 5.0
+          },
+          {
+            "name": "Mic",
+            "type": "mic",
+            "default": 1.0
           }
         ],
         "image": "assets/icons_models/CAB_HX_1x12_Cali_IV.png",
@@ -20140,7 +20140,8 @@
         "instruments": [
           "Guitar"
         ],
-        "description": "Simulación de la caja Legacy 1x12\" MESA/Boogie EVM12L."
+        "description": "Simulación de la caja Legacy 1x12\" MESA/Boogie EVM12L.",
+        "parameters": []
       },
       {
         "name": "2x12 Double C12N",
@@ -20151,11 +20152,6 @@
         ],
         "based_on": "2x12\" Fender Twin, C12N",
         "parameters": [
-          {
-            "name": "@mic",
-            "type": "knob",
-            "default": 5.0
-          },
           {
             "name": "Distance",
             "type": "knob",
@@ -20180,6 +20176,11 @@
             "name": "Level",
             "type": "knob",
             "default": 5.0
+          },
+          {
+            "name": "Mic",
+            "type": "mic",
+            "default": 1.0
           }
         ],
         "image": "assets/icons_models/CAB_HX_2x12_DoubleC12N.png",
@@ -20203,11 +20204,6 @@
         "based_on": "2x12\" Silvertone 1484, Jensen C12Q",
         "parameters": [
           {
-            "name": "@mic",
-            "type": "knob",
-            "default": 5.0
-          },
-          {
             "name": "Distance",
             "type": "knob",
             "default": 5.0
@@ -20231,6 +20227,11 @@
             "name": "Level",
             "type": "knob",
             "default": 5.0
+          },
+          {
+            "name": "Mic",
+            "type": "mic",
+            "default": 1.0
           }
         ],
         "image": "assets/icons_models/CAB_HX_2x12_MailC12Q.png",
@@ -20253,11 +20254,6 @@
         ],
         "based_on": "2x12\" Dr. Z Z Best, V30",
         "parameters": [
-          {
-            "name": "@mic",
-            "type": "knob",
-            "default": 5.0
-          },
           {
             "name": "Distance",
             "type": "knob",
@@ -20282,6 +20278,11 @@
             "name": "Level",
             "type": "knob",
             "default": 5.0
+          },
+          {
+            "name": "Mic",
+            "type": "mic",
+            "default": 1.0
           }
         ],
         "image": "assets/icons_models/CAB_HX_2x12_Interstate.png",
@@ -20302,11 +20303,6 @@
         ],
         "based_on": "2x12\" Roland JC-120",
         "parameters": [
-          {
-            "name": "@mic",
-            "type": "knob",
-            "default": 5.0
-          },
           {
             "name": "Distance",
             "type": "knob",
@@ -20331,6 +20327,11 @@
             "name": "Level",
             "type": "knob",
             "default": 5.0
+          },
+          {
+            "name": "Mic",
+            "type": "mic",
+            "default": 1.0
           }
         ],
         "image": "assets/icons_models/CAB_HX_2x12_JazzRivet.png",
@@ -20353,11 +20354,6 @@
         "based_on": "2x12\" Vox AC-30TB, Silver Alnico",
         "parameters": [
           {
-            "name": "@mic",
-            "type": "knob",
-            "default": 5.0
-          },
-          {
             "name": "Distance",
             "type": "knob",
             "default": 5.0
@@ -20381,6 +20377,11 @@
             "name": "Level",
             "type": "knob",
             "default": 5.0
+          },
+          {
+            "name": "Mic",
+            "type": "mic",
+            "default": 1.0
           }
         ],
         "image": "assets/icons_models/CAB_HX_2x12_SilverBell.png",
@@ -20403,11 +20404,6 @@
         ],
         "based_on": "2x12\" Vox AC-30 Fawn, Blue Alnico",
         "parameters": [
-          {
-            "name": "@mic",
-            "type": "knob",
-            "default": 5.0
-          },
           {
             "name": "Distance",
             "type": "knob",
@@ -20432,6 +20428,11 @@
             "name": "Level",
             "type": "knob",
             "default": 5.0
+          },
+          {
+            "name": "Mic",
+            "type": "mic",
+            "default": 1.0
           }
         ],
         "image": "assets/icons_models/CAB_HX_2x12_BlueBell.png",
@@ -20455,11 +20456,6 @@
         "based_on": "2x12\" Matchless DC30, Custom G12H-30",
         "parameters": [
           {
-            "name": "@mic",
-            "type": "knob",
-            "default": 5.0
-          },
-          {
             "name": "Distance",
             "type": "knob",
             "default": 5.0
@@ -20483,6 +20479,11 @@
             "name": "Level",
             "type": "knob",
             "default": 5.0
+          },
+          {
+            "name": "Mic",
+            "type": "mic",
+            "default": 1.0
           }
         ],
         "image": "assets/icons_models/CAB_HX_2x12_Match_H30.png",
@@ -20506,11 +20507,6 @@
         "based_on": "2x12\" Matchless DC30, Custom G12M-35",
         "parameters": [
           {
-            "name": "@mic",
-            "type": "knob",
-            "default": 5.0
-          },
-          {
             "name": "Distance",
             "type": "knob",
             "default": 5.0
@@ -20534,6 +20530,11 @@
             "name": "Level",
             "type": "knob",
             "default": 5.0
+          },
+          {
+            "name": "Mic",
+            "type": "mic",
+            "default": 1.0
           }
         ],
         "image": "assets/icons_models/CAB_HX_2x12_Match_G25.png",
@@ -20557,11 +20558,6 @@
         "based_on": "4x10\" Fender Bassman, P10R",
         "parameters": [
           {
-            "name": "@mic",
-            "type": "knob",
-            "default": 5.0
-          },
-          {
             "name": "Distance",
             "type": "knob",
             "default": 5.0
@@ -20585,6 +20581,11 @@
             "name": "Level",
             "type": "knob",
             "default": 5.0
+          },
+          {
+            "name": "Mic",
+            "type": "mic",
+            "default": 1.0
           }
         ],
         "image": "assets/icons_models/CAB_HX_4x10_Tweed.png",
@@ -20608,11 +20609,6 @@
         "based_on": "Legacy 4x12\" Hiwatt AP Fane",
         "parameters": [
           {
-            "name": "@mic",
-            "type": "knob",
-            "default": 5.0
-          },
-          {
             "name": "Distance",
             "type": "knob",
             "default": 5.0
@@ -20636,6 +20632,11 @@
             "name": "Level",
             "type": "knob",
             "default": 5.0
+          },
+          {
+            "name": "Mic",
+            "type": "mic",
+            "default": 1.0
           }
         ],
         "image": "assets/icons_models/CAB_HX_4x12_WhoWatt100.png",
@@ -20659,11 +20660,6 @@
         "based_on": "4x12\" Orange, Eminence",
         "parameters": [
           {
-            "name": "@mic",
-            "type": "knob",
-            "default": 5.0
-          },
-          {
             "name": "Distance",
             "type": "knob",
             "default": 5.0
@@ -20687,6 +20683,11 @@
             "name": "Level",
             "type": "knob",
             "default": 5.0
+          },
+          {
+            "name": "Mic",
+            "type": "mic",
+            "default": 1.0
           }
         ],
         "image": "assets/icons_models/CAB_HX_4x12_MandarinEM.png",
@@ -20716,7 +20717,8 @@
         "instruments": [
           "Guitar"
         ],
-        "description": "Simulación de la caja 4x12\" Marshall Basketweave G12M-25. Pared de sonido masiva y direccional, graves muy controlados."
+        "description": "Simulación de la caja 4x12\" Marshall Basketweave G12M-25. Pared de sonido masiva y direccional, graves muy controlados.",
+        "parameters": []
       },
       {
         "name": "4x12 Greenback20",
@@ -20734,7 +20736,8 @@
         "instruments": [
           "Guitar"
         ],
-        "description": "Simulación de la caja 4x12\" Marshall Basketweave G12M-20. Pared de sonido masiva y direccional, graves muy controlados."
+        "description": "Simulación de la caja 4x12\" Marshall Basketweave G12M-20. Pared de sonido masiva y direccional, graves muy controlados.",
+        "parameters": []
       },
       {
         "name": "4x12 Blackback30",
@@ -20751,7 +20754,8 @@
         "instruments": [
           "Guitar"
         ],
-        "description": "Simulación de la caja 4x12\" Park 75, G12H-30. Pared de sonido masiva y direccional, graves muy controlados."
+        "description": "Simulación de la caja 4x12\" Park 75, G12H-30. Pared de sonido masiva y direccional, graves muy controlados.",
+        "parameters": []
       },
       {
         "name": "4x12 1960 T75",
@@ -20762,11 +20766,6 @@
         ],
         "based_on": "Legacy 4x12\" Marshall 1960 AT75",
         "parameters": [
-          {
-            "name": "@mic",
-            "type": "knob",
-            "default": 5.0
-          },
           {
             "name": "Distance",
             "type": "knob",
@@ -20791,6 +20790,11 @@
             "name": "Level",
             "type": "knob",
             "default": 5.0
+          },
+          {
+            "name": "Mic",
+            "type": "mic",
+            "default": 1.0
           }
         ],
         "image": "assets/icons_models/CAB_HX_4x12_1960T75.png",
@@ -20814,11 +20818,6 @@
         "based_on": "4x12\" Bogner Uberkab, V30",
         "parameters": [
           {
-            "name": "@mic",
-            "type": "knob",
-            "default": 5.0
-          },
-          {
             "name": "Distance",
             "type": "knob",
             "default": 5.0
@@ -20842,6 +20841,11 @@
             "name": "Level",
             "type": "knob",
             "default": 5.0
+          },
+          {
+            "name": "Mic",
+            "type": "mic",
+            "default": 1.0
           }
         ],
         "image": "assets/icons_models/CAB_HX_4x12_UberV30.png",
@@ -20865,11 +20869,6 @@
         "based_on": "4x12\" Bogner Uberkab, G12T-75",
         "parameters": [
           {
-            "name": "@mic",
-            "type": "knob",
-            "default": 5.0
-          },
-          {
             "name": "Distance",
             "type": "knob",
             "default": 5.0
@@ -20893,6 +20892,11 @@
             "name": "Level",
             "type": "knob",
             "default": 5.0
+          },
+          {
+            "name": "Mic",
+            "type": "mic",
+            "default": 1.0
           }
         ],
         "image": "assets/icons_models/CAB_HX_4x12_UberT75.png",
@@ -20916,11 +20920,6 @@
         "based_on": "4x12\" MESA/Boogie 4FB, V30",
         "parameters": [
           {
-            "name": "@mic",
-            "type": "knob",
-            "default": 5.0
-          },
-          {
             "name": "Distance",
             "type": "knob",
             "default": 5.0
@@ -20944,6 +20943,11 @@
             "name": "Level",
             "type": "knob",
             "default": 5.0
+          },
+          {
+            "name": "Mic",
+            "type": "mic",
+            "default": 1.0
           }
         ],
         "image": "assets/icons_models/CAB_HX_4x12_CaliV30.png",
@@ -20967,11 +20971,6 @@
         "based_on": "4x12\" ENGL XXL, V30",
         "parameters": [
           {
-            "name": "@mic",
-            "type": "knob",
-            "default": 5.0
-          },
-          {
             "name": "Distance",
             "type": "knob",
             "default": 5.0
@@ -20995,6 +20994,11 @@
             "name": "Level",
             "type": "knob",
             "default": 5.0
+          },
+          {
+            "name": "Mic",
+            "type": "mic",
+            "default": 1.0
           }
         ],
         "image": "assets/icons_models/CAB_HX_4x12_XXLV30.png",
@@ -21018,11 +21022,6 @@
         "based_on": "4x12\" Soldano, Eminence 12-5875",
         "parameters": [
           {
-            "name": "@mic",
-            "type": "knob",
-            "default": 5.0
-          },
-          {
             "name": "Distance",
             "type": "knob",
             "default": 5.0
@@ -21046,6 +21045,11 @@
             "name": "Level",
             "type": "knob",
             "default": 5.0
+          },
+          {
+            "name": "Mic",
+            "type": "mic",
+            "default": 1.0
           }
         ],
         "image": "assets/icons_models/CAB_HX_4x12_SoloLeadEM.png",
@@ -21069,11 +21073,6 @@
         "based_on": "Legacy 1x12\" Sunn Coliseum",
         "parameters": [
           {
-            "name": "@mic",
-            "type": "knob",
-            "default": 5.0
-          },
-          {
             "name": "Distance",
             "type": "knob",
             "default": 5.0
@@ -21097,6 +21096,11 @@
             "name": "Level",
             "type": "knob",
             "default": 5.0
+          },
+          {
+            "name": "Mic",
+            "type": "mic",
+            "default": 1.0
           }
         ],
         "image": "assets/icons_models/CAB_HX_1x18_DelSol.png",
@@ -21118,11 +21122,6 @@
         "based_on": "1x15\" Ampeg B-15",
         "parameters": [
           {
-            "name": "@mic",
-            "type": "knob",
-            "default": 5.0
-          },
-          {
             "name": "Distance",
             "type": "knob",
             "default": 5.0
@@ -21146,6 +21145,11 @@
             "name": "Level",
             "type": "knob",
             "default": 5.0
+          },
+          {
+            "name": "Mic",
+            "type": "mic",
+            "default": 1.0
           }
         ],
         "image": "assets/icons_models/CAB_HX_1x15_TuckNGo.png",
@@ -21168,11 +21172,6 @@
         "based_on": "Legacy 1x18\" Sunn Coliseum",
         "parameters": [
           {
-            "name": "@mic",
-            "type": "knob",
-            "default": 5.0
-          },
-          {
             "name": "Distance",
             "type": "knob",
             "default": 5.0
@@ -21196,6 +21195,11 @@
             "name": "Level",
             "type": "knob",
             "default": 5.0
+          },
+          {
+            "name": "Mic",
+            "type": "mic",
+            "default": 1.0
           }
         ],
         "image": "assets/icons_models/CAB_HX_1x12_DelSol.png",
@@ -21217,11 +21221,6 @@
         "based_on": "Legacy 1x18\" Acoustic 360",
         "parameters": [
           {
-            "name": "@mic",
-            "type": "knob",
-            "default": 5.0
-          },
-          {
             "name": "Distance",
             "type": "knob",
             "default": 5.0
@@ -21245,6 +21244,11 @@
             "name": "Level",
             "type": "knob",
             "default": 5.0
+          },
+          {
+            "name": "Mic",
+            "type": "mic",
+            "default": 1.0
           }
         ],
         "image": "assets/icons_models/CAB_HX_1x18_WoodyBlue.png",
@@ -21266,11 +21270,6 @@
         "based_on": "2x15\" MESA/Boogie, EV",
         "parameters": [
           {
-            "name": "@mic",
-            "type": "knob",
-            "default": 5.0
-          },
-          {
             "name": "Distance",
             "type": "knob",
             "default": 5.0
@@ -21294,6 +21293,11 @@
             "name": "Level",
             "type": "knob",
             "default": 5.0
+          },
+          {
+            "name": "Mic",
+            "type": "mic",
+            "default": 1.0
           }
         ],
         "image": "assets/icons_models/CAB_HX_2x15_Brute.png",
@@ -21316,11 +21320,6 @@
         "based_on": "Legacy 4x10\" Ampeg SVT 410HLF",
         "parameters": [
           {
-            "name": "@mic",
-            "type": "knob",
-            "default": 5.0
-          },
-          {
             "name": "Distance",
             "type": "knob",
             "default": 5.0
@@ -21344,6 +21343,11 @@
             "name": "Level",
             "type": "knob",
             "default": 5.0
+          },
+          {
+            "name": "Mic",
+            "type": "mic",
+            "default": 1.0
           }
         ],
         "image": "assets/icons_models/CAB_HX_4x10_Rhino.png",
@@ -21366,11 +21370,6 @@
         "based_on": "6x10” MESA/Boogie PowerHouse",
         "parameters": [
           {
-            "name": "@mic",
-            "type": "knob",
-            "default": 5.0
-          },
-          {
             "name": "Distance",
             "type": "knob",
             "default": 5.0
@@ -21394,6 +21393,11 @@
             "name": "Level",
             "type": "knob",
             "default": 5.0
+          },
+          {
+            "name": "Mic",
+            "type": "mic",
+            "default": 1.0
           }
         ],
         "image": "assets/icons_models/CAB_HX_6x10_CaliPower.png",
@@ -21415,11 +21419,6 @@
         ],
         "based_on": "Legacy 8x10\" Ampeg SVT",
         "parameters": [
-          {
-            "name": "@mic",
-            "type": "knob",
-            "default": 5.0
-          },
           {
             "name": "Distance",
             "type": "knob",
@@ -21444,6 +21443,11 @@
             "name": "Level",
             "type": "knob",
             "default": 5.0
+          },
+          {
+            "name": "Mic",
+            "type": "mic",
+            "default": 1.0
           }
         ],
         "image": "assets/icons_models/CAB_HX_8x10_SVBeast.png",
