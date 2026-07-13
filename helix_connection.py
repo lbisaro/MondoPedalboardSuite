@@ -697,6 +697,12 @@ class HelixConnection:
         self.preset_dump_ack_ctr = (self.preset_dump_ack_ctr + 1) & 0xffff
         return [self.preset_dump_ack_ctr & 0xff, (self.preset_dump_ack_ctr >> 8) & 0xff]
 
+    def next_preset_data_double_cnt(self):
+        val = (self.preset_data_double_cnt[1] << 8) | self.preset_data_double_cnt[0]
+        val = (val + 1) & 0xffff
+        self.preset_data_double_cnt = [val & 0xff, (val >> 8) & 0xff]
+        return self.preset_data_double_cnt
+
     def fetch_active_preset_blocks(self, slot_idx=None):
         """Descarga el preset actual por USB, lo parsea y devuelve la lista de bloques activos."""
         if not self.is_connected():
@@ -720,6 +726,10 @@ class HelixConnection:
 
     def _fetch_active_preset_blocks_impl(self):
         log.info("Starting 2-phase preset download...")
+        
+        old_session = getattr(self, 'session_no', 0)
+        old_double = getattr(self, 'preset_data_double_cnt', [0, 0]).copy()
+        
         while not self.event_queue.empty():
             self.event_queue.get_nowait()
             
@@ -844,6 +854,8 @@ class HelixConnection:
                 
         if not completed:
             log.warning("No se completó la descarga del preset.")
+            self.session_no = old_session
+            self.preset_data_double_cnt = old_double
             return []
             
         self.session_no = (phase2_session + 0x10) & 0xff
@@ -925,9 +937,13 @@ class HelixConnection:
                             "params_b": getattr(slot, 'parameter_b', []) if block_b != '' else []
                         })
             
+            self.session_no = old_session
+            self.preset_data_double_cnt = old_double
             return blocks
         except Exception as parse_err:
             log.error(f"Error al parsear bloques del preset: {parse_err}")
+            self.session_no = old_session
+            self.preset_data_double_cnt = old_double
             return []
 
     @staticmethod
@@ -944,6 +960,49 @@ class HelixConnection:
             0x85, 0x62, slot_bus, 0x1d, 0xc3, 0x1a, 0x00, 0x1c,
             param_selector, 0x77, 0xca, float_be[0], float_be[1], float_be[2], float_be[3], 0x00,
         ]
+    def write_block_model(self, slot_idx, new_hex_id_str, slot_bus=0x01):
+        """
+        Cambia el modelo de un bloque en un slot específico.
+        
+        Args:
+            slot_idx (int): Índice físico del slot en la grilla (0-31).
+            new_hex_id_str (str): ID hexadecimal del nuevo modelo (ej. 'cd0308').
+            slot_bus (int): Bus de ruta (generalmente 0x01 para 1A, 0x02 para 1B, etc.)
+            
+        Returns:
+            bool, str: (éxito, mensaje)
+        """
+        if not self.is_connected():
+            return False, "Dispositivo no conectado."
+            
+        try:
+            hex_id = int(new_hex_id_str, 16)
+            h1 = (hex_id >> 16) & 0xFF
+            h2 = (hex_id >> 8) & 0xFF
+            h3 = hex_id & 0xFF
+        except ValueError:
+            return False, f"hex_id inválido: {new_hex_id_str}"
+            
+        with self.write_lock:
+            d_cnt = self.next_preset_data_double_cnt()
+            packet = [
+                0x25, 0x00, 0x00, 0x18, 0x80, 0x10, 0xed, 0x03,
+                0x00, "XX", 0x00, 0x04,
+                self.session_no, d_cnt[0], d_cnt[1], 0x00,
+                0x01, 0x00, 0x06, 0x00, 0x15, 0x00, 0x00, 0x00,
+                0x83, 0x66, 0xcd, slot_idx, 0x00, 0x64, 0x28, 0x65,
+                0x82, 0x62, slot_bus, 0x64, 0x83, 0x17, 0xc2, 0x19,
+                h1, h2, h3, 0x1a, 0xff, 0x00, 0x00, 0x00,
+            ]
+            try:
+                # Escribimos el paquete internamente pero el write() gestiona el envío
+                # Llamar a _write directo no es necesario, self.write ya maneja 'XX'
+                self.write(packet)
+            except Exception as e:
+                return False, f"Error al enviar paquete USB: {str(e)}"
+                
+        return True, "Comando de cambio de modelo enviado."
+
 
     def write_block_parameter(self, slot_idx, param_idx, target_db, norm_val=None):
         """

@@ -278,6 +278,13 @@ class BlockEditorDialog(QtWidgets.QDialog):
         except Exception as e:
             print("Error loading catalog:", e)
             
+        self.cabs_mics = []
+        try:
+            with open("utils/cabs_mics.json", encoding="utf-8") as f:
+                self.cabs_mics = json.load(f)
+        except Exception as e:
+            print("Error loading cabs_mics:", e)
+            
         self.setWindowTitle("Editar Módulo")
         self.setMinimumWidth(1000)
         self.setMinimumHeight(600)
@@ -307,6 +314,7 @@ class BlockEditorDialog(QtWidgets.QDialog):
         # Subcategory
         self.cmb_subcategory = QtWidgets.QComboBox()
         self.cmb_subcategory.setStyleSheet("background-color: #333; color: white; border: 1px solid #555;")
+        self.cmb_subcategory.currentTextChanged.connect(self.update_name_suggestions)
         form_layout.addRow("Subcategoría:", self.cmb_subcategory)
         
         # Name
@@ -399,15 +407,44 @@ class BlockEditorDialog(QtWidgets.QDialog):
         return models
 
     def on_category_changed(self, category):
+        self.cmb_subcategory.blockSignals(True)
         self.cmb_subcategory.clear()
         subcats = self.categories_db.get(category, [])
         self.cmb_subcategory.addItems(subcats)
+        self.cmb_subcategory.blockSignals(False)
         
-        # Populate Name suggestions
+        self.update_name_suggestions()
+        
+    def update_name_suggestions(self, *args):
+        current_text = self.cmb_name.currentText()
+        
+        self.cmb_name.blockSignals(True)
         self.cmb_name.clear()
+        
+        category = self.cmb_category.currentText()
+        selected_subcat = self.cmb_subcategory.currentText()
+        
         models = self._get_models_for_category(category)
-        names = sorted([m.get("name", "") for m in models if m.get("name")])
-        self.cmb_name.addItems(names)
+        
+        names = []
+        for m in models:
+            name = m.get("name", "")
+            if not name:
+                continue
+                
+            subcats_list = m.get("subcategories", [])
+            if selected_subcat and subcats_list:
+                if selected_subcat.lower() not in [s.lower() for s in subcats_list]:
+                    continue
+                    
+            if subcats_list:
+                names.append(f"{name} [{', '.join(subcats_list)}]")
+            else:
+                names.append(name)
+                
+        self.cmb_name.addItems(sorted(names))
+        self.cmb_name.setCurrentText(current_text)
+        self.cmb_name.blockSignals(False)
         
         self.update_model_id()
         
@@ -417,7 +454,15 @@ class BlockEditorDialog(QtWidgets.QDialog):
         # Pull data from catalog
         cat = self.cmb_category.currentText()
         models = self._get_models_for_category(cat)
-        model_data = next((m for m in models if m.get("name") == text), None)
+        
+        model_data = None
+        for m in models:
+            m_name = m.get("name", "")
+            subcats_list = m.get("subcategories", [])
+            m_str = f"{m_name} [{', '.join(subcats_list)}]" if subcats_list else m_name
+            if m_str == text:
+                model_data = m
+                break
         
         if model_data:
             self.lbl_based_on.setText(model_data.get("based_on", ""))
@@ -453,9 +498,16 @@ class BlockEditorDialog(QtWidgets.QDialog):
         
     def update_model_id(self):
         cat = self.cmb_category.currentText().lower().strip().replace(" ", "_").replace("/", "_")
-        name = self.cmb_name.currentText().lower().strip().replace(" ", "_")
+        subcat = self.cmb_subcategory.currentText().lower().strip().replace(" ", "_").replace("/", "_")
+        
+        text = self.cmb_name.currentText()
+        name = text.split(" [")[0].strip() if " [" in text and text.endswith("]") else text.strip()
+        name = name.lower().replace(" ", "_")
+        
+        prefix = f"{cat}_{subcat}" if subcat else cat
+        
         if name:
-            self.lbl_model_id.setText(f"{cat}_{name}")
+            self.lbl_model_id.setText(f"{prefix}_{name}")
         else:
             self.lbl_model_id.setText("")
             
@@ -473,7 +525,22 @@ class BlockEditorDialog(QtWidgets.QDialog):
             self.cmb_category.setCurrentText(cat)
             
             self.cmb_subcategory.setCurrentText(self.full_module.get("variant", ""))
-            self.cmb_name.setCurrentText(self.full_module.get("name", ""))
+            
+            name = self.full_module.get("name", "")
+            variant = self.full_module.get("variant", "")
+            formatted_name = name
+            models = self._get_models_for_category(cat)
+            for m in models:
+                if m.get("name") == name:
+                    subcats_list = m.get("subcategories", [])
+                    if variant and subcats_list:
+                        if variant.lower() in [s.lower() for s in subcats_list]:
+                            formatted_name = f"{name} [{', '.join(subcats_list)}]"
+                            break
+                    elif subcats_list:
+                        formatted_name = f"{name} [{', '.join(subcats_list)}]"
+                        break
+            self.cmb_name.setCurrentText(formatted_name)
             self.lbl_based_on.setText(self.full_module.get("based_on", ""))
             img_path = self.full_module.get("image", "")
             
@@ -504,7 +571,17 @@ class BlockEditorDialog(QtWidgets.QDialog):
         
         cat = self.cmb_category.currentText()
         models = self._get_models_for_category(cat)
-        model_data = next((m for m in models if m.get("name") == self.cmb_name.currentText().strip()), None)
+        text = self.cmb_name.currentText()
+        
+        model_data = None
+        for m in models:
+            m_name = m.get("name", "")
+            subcats_list = m.get("subcategories", [])
+            m_str = f"{m_name} [{', '.join(subcats_list)}]" if subcats_list else m_name
+            if m_str == text:
+                model_data = m
+                break
+                
         catalog_params = model_data.get("parameters", []) if model_data else []
         
         params = []
@@ -535,6 +612,10 @@ class BlockEditorDialog(QtWidgets.QDialog):
         
         real_params = self.block_data.get("params_a", [])
         
+        # Print raw parameters to console for debugging
+        print(f"DEBUG - RAW params_a for {self.block_data.get('hex_id')}:", real_params)
+        print(f"DEBUG - current_parameters list from JSON:", [(p.get('index'), p.get('name')) for p in parameters])
+        
         cat = self.cmb_category.currentText()
         _, cat_color = get_icon_for_category(cat)
         
@@ -562,6 +643,13 @@ class BlockEditorDialog(QtWidgets.QDialog):
                 for opt in opts:
                     if opt.get("value") == int(float(raw_val)):
                         match_txt = opt.get("name")
+                        break
+                fmt_val = match_txt
+            elif p_type == "mic":
+                match_txt = f"Mic {int(float(raw_val))}"
+                for mic in getattr(self, 'cabs_mics', []):
+                    if mic.get("id") == int(float(raw_val)):
+                        match_txt = mic.get("model", match_txt)
                         break
                 fmt_val = match_txt
                 
@@ -595,7 +683,9 @@ class BlockEditorDialog(QtWidgets.QDialog):
         models = self._get_models_for_category(cat)
         valid_names = [m.get("name") for m in models]
         
-        name = self.cmb_name.currentText().strip()
+        text = self.cmb_name.currentText()
+        name = text.split(" [")[0].strip() if " [" in text and text.endswith("]") else text.strip()
+        
         if name not in valid_names:
             QtWidgets.QMessageBox.warning(self, "Error", "El módulo no existe en el catálogo maestro.\nPor favor, añade la información en 'helix_catalog.json' primero.")
             return

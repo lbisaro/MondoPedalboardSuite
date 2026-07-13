@@ -23,6 +23,7 @@ from tone_matcher_widget import ToneMatcherWidget
 from block_manager_widget import BlockManagerWidget
 from drive_analyzer_widget import DriveAnalyzer, DriveAnalyzerWidget
 from helix_catalog_widget import HelixCatalogWidget
+from helix_cabs_widget import HelixCabsWidget
 
 def resource_path(relative):
     """Resuelve rutas de recursos tanto en desarrollo como dentro del exe de PyInstaller."""
@@ -107,6 +108,8 @@ class HomeWidget(QtWidgets.QWidget):
                                         "Visualiza y administra bloques de la Helix via USB.", "block_mgr", self.main_window)
         self.card_catalog = NavCard("HELIX CATALOG", "fa5s.book-open",
                                         "Explora la base de datos de modelos, amplificadores y cajas.", "catalog", self.main_window)
+        self.card_cabs = NavCard("HELIX CABS", "fa5s.box",
+                                        "Extracción de IRs y respuesta en frecuencia de cajas.", "cabs", self.main_window)
         
         grid_layout.addWidget(self.card_eq, 0, 0)
         grid_layout.addWidget(self.card_drive, 0, 1)
@@ -114,6 +117,7 @@ class HomeWidget(QtWidgets.QWidget):
         grid_layout.addWidget(self.card_tone_matcher, 1, 0)
         grid_layout.addWidget(self.card_block_mgr, 1, 1)
         grid_layout.addWidget(self.card_catalog, 1, 2)
+        grid_layout.addWidget(self.card_cabs, 2, 0)
         
         layout.addLayout(grid_layout)
         layout.addStretch()
@@ -167,6 +171,9 @@ class MainWindow(QtWidgets.QMainWindow):
         print("[INIT-UI] Creando HelixCatalogWidget...")
         if splash: splash.showMessage("Creando Helix Catalog...", QtCore.Qt.AlignBottom | QtCore.Qt.AlignCenter, QtCore.Qt.white); QtWidgets.QApplication.processEvents()
         self.page_catalog = HelixCatalogWidget(self)
+        print("[INIT-UI] Creando HelixCabsWidget...")
+        if splash: splash.showMessage("Creando Helix Cabs...", QtCore.Qt.AlignBottom | QtCore.Qt.AlignCenter, QtCore.Qt.white); QtWidgets.QApplication.processEvents()
+        self.page_cabs = HelixCabsWidget(self.analyzer, self)
         
         self.stack.addWidget(self.page_home)
         self.stack.addWidget(self.page_eq)
@@ -175,6 +182,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.stack.addWidget(self.page_tone_matcher)
         self.stack.addWidget(self.page_block_mgr)
         self.stack.addWidget(self.page_catalog)
+        self.stack.addWidget(self.page_cabs)
         
         self.stack.setCurrentWidget(self.page_home)
         self.conn_mgr.active_analyzer = None # Home
@@ -310,6 +318,10 @@ class MainWindow(QtWidgets.QMainWindow):
             self.stack.setCurrentWidget(self.page_catalog)
             self.lbl_module_title.setText("HELIX CATALOG")
             self.conn_mgr.active_analyzer = None
+        elif page_name == "cabs":
+            self.stack.setCurrentWidget(self.page_cabs)
+            self.lbl_module_title.setText("HELIX CABS")
+            self.conn_mgr.active_analyzer = self.analyzer
             
         self.btn_home.setVisible(True)
 
