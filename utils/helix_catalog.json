@@ -16990,7 +16990,17 @@
             "default": 5.0
           },
           {
+            "name": "Position",
+            "type": "knob",
+            "default": 5.0
+          },
+          {
             "name": "Distance",
+            "type": "knob",
+            "default": 5.0
+          },
+          {
+            "name": "Angle",
             "type": "knob",
             "default": 5.0
           },
@@ -17001,11 +17011,6 @@
           },
           {
             "name": "High Cut",
-            "type": "knob",
-            "default": 5.0
-          },
-          {
-            "name": "EarlyReflections",
             "type": "knob",
             "default": 5.0
           },
@@ -17040,7 +17045,17 @@
             "default": 5.0
           },
           {
+            "name": "Position",
+            "type": "knob",
+            "default": 5.0
+          },
+          {
             "name": "Distance",
+            "type": "knob",
+            "default": 5.0
+          },
+          {
+            "name": "Angle",
             "type": "knob",
             "default": 5.0
           },
@@ -17050,12 +17065,7 @@
             "default": 5.0
           },
           {
-            "name": "HighCut",
-            "type": "knob",
-            "default": 5.0
-          },
-          {
-            "name": "Early Reflections",
+            "name": "High Cut",
             "type": "knob",
             "default": 5.0
           },
@@ -17091,7 +17101,17 @@
             "default": 5.0
           },
           {
+            "name": "Position",
+            "type": "knob",
+            "default": 5.0
+          },
+          {
             "name": "Distance",
+            "type": "knob",
+            "default": 5.0
+          },
+          {
+            "name": "Angle",
             "type": "knob",
             "default": 5.0
           },
@@ -17101,12 +17121,7 @@
             "default": 5.0
           },
           {
-            "name": "HighCut",
-            "type": "knob",
-            "default": 5.0
-          },
-          {
-            "name": "Early Reflections",
+            "name": "High Cut",
             "type": "knob",
             "default": 5.0
           },
@@ -17142,7 +17157,17 @@
             "default": 5.0
           },
           {
+            "name": "Position",
+            "type": "knob",
+            "default": 5.0
+          },
+          {
             "name": "Distance",
+            "type": "knob",
+            "default": 5.0
+          },
+          {
+            "name": "Angle",
             "type": "knob",
             "default": 5.0
           },
@@ -17152,12 +17177,7 @@
             "default": 5.0
           },
           {
-            "name": "HighCut",
-            "type": "knob",
-            "default": 5.0
-          },
-          {
-            "name": "EarlyReflections",
+            "name": "High Cut",
             "type": "knob",
             "default": 5.0
           },
@@ -17193,7 +17213,17 @@
             "default": 5.0
           },
           {
+            "name": "Position",
+            "type": "knob",
+            "default": 5.0
+          },
+          {
             "name": "Distance",
+            "type": "knob",
+            "default": 5.0
+          },
+          {
+            "name": "Angle",
             "type": "knob",
             "default": 5.0
           },
@@ -17203,12 +17233,7 @@
             "default": 5.0
           },
           {
-            "name": "HighCut",
-            "type": "knob",
-            "default": 5.0
-          },
-          {
-            "name": "EarlyReflections",
+            "name": "High Cut",
             "type": "knob",
             "default": 5.0
           },
@@ -17242,7 +17267,17 @@
             "default": 5.0
           },
           {
+            "name": "Position",
+            "type": "knob",
+            "default": 5.0
+          },
+          {
             "name": "Distance",
+            "type": "knob",
+            "default": 5.0
+          },
+          {
+            "name": "Angle",
             "type": "knob",
             "default": 5.0
           },
@@ -17252,12 +17287,7 @@
             "default": 5.0
           },
           {
-            "name": "HighCut",
-            "type": "knob",
-            "default": 5.0
-          },
-          {
-            "name": "EarlyReflections",
+            "name": "High Cut",
             "type": "knob",
             "default": 5.0
           },
@@ -17288,7 +17318,7 @@
         "based_on": "1x12\" Custom open-back, EVM12L",
         "parameters": [
           {
-            "name": "Mic",
+            "name": "@mic",
             "type": "knob",
             "default": 5.0
           },
@@ -17313,22 +17343,12 @@
             "default": 5.0
           },
           {
-            "name": "HighCut",
+            "name": "High Cut",
             "type": "knob",
             "default": 5.0
           },
           {
             "name": "Level",
-            "type": "knob",
-            "default": 5.0
-          },
-          {
-            "name": "Pan",
-            "type": "knob",
-            "default": 5.0
-          },
-          {
-            "name": "Delay",
             "type": "knob",
             "default": 5.0
           }
@@ -17352,7 +17372,7 @@
         "based_on": "1x12\" Custom open-back, G12M-65",
         "parameters": [
           {
-            "name": "Mic",
+            "name": "@mic",
             "type": "knob",
             "default": 5.0
           },
@@ -17377,22 +17397,12 @@
             "default": 5.0
           },
           {
-            "name": "HighCut",
+            "name": "High Cut",
             "type": "knob",
             "default": 5.0
           },
           {
             "name": "Level",
-            "type": "knob",
-            "default": 5.0
-          },
-          {
-            "name": "Pan",
-            "type": "knob",
-            "default": 5.0
-          },
-          {
-            "name": "Delay",
             "type": "knob",
             "default": 5.0
           }
@@ -17421,7 +17431,17 @@
             "default": 5.0
           },
           {
+            "name": "Position",
+            "type": "knob",
+            "default": 5.0
+          },
+          {
             "name": "Distance",
+            "type": "knob",
+            "default": 5.0
+          },
+          {
+            "name": "Angle",
             "type": "knob",
             "default": 5.0
           },
@@ -17431,12 +17451,7 @@
             "default": 5.0
           },
           {
-            "name": "HighCut",
-            "type": "knob",
-            "default": 5.0
-          },
-          {
-            "name": "EarlyReflections",
+            "name": "High Cut",
             "type": "knob",
             "default": 5.0
           },
@@ -17471,7 +17486,17 @@
             "default": 5.0
           },
           {
+            "name": "Position",
+            "type": "knob",
+            "default": 5.0
+          },
+          {
             "name": "Distance",
+            "type": "knob",
+            "default": 5.0
+          },
+          {
+            "name": "Angle",
             "type": "knob",
             "default": 5.0
           },
@@ -17481,12 +17506,7 @@
             "default": 5.0
           },
           {
-            "name": "HighCut",
-            "type": "knob",
-            "default": 5.0
-          },
-          {
-            "name": "EarlyReflections",
+            "name": "High Cut",
             "type": "knob",
             "default": 5.0
           },
@@ -17521,7 +17541,17 @@
             "default": 5.0
           },
           {
+            "name": "Position",
+            "type": "knob",
+            "default": 5.0
+          },
+          {
             "name": "Distance",
+            "type": "knob",
+            "default": 5.0
+          },
+          {
+            "name": "Angle",
             "type": "knob",
             "default": 5.0
           },
@@ -17531,12 +17561,7 @@
             "default": 5.0
           },
           {
-            "name": "HighCut",
-            "type": "knob",
-            "default": 5.0
-          },
-          {
-            "name": "EarlyReflections",
+            "name": "High Cut",
             "type": "knob",
             "default": 5.0
           },
@@ -17572,7 +17597,17 @@
             "default": 5.0
           },
           {
+            "name": "Position",
+            "type": "knob",
+            "default": 5.0
+          },
+          {
             "name": "Distance",
+            "type": "knob",
+            "default": 5.0
+          },
+          {
+            "name": "Angle",
             "type": "knob",
             "default": 5.0
           },
@@ -17583,11 +17618,6 @@
           },
           {
             "name": "High Cut",
-            "type": "knob",
-            "default": 5.0
-          },
-          {
-            "name": "EarlyReflections",
             "type": "knob",
             "default": 5.0
           },
@@ -17623,7 +17653,17 @@
             "default": 5.0
           },
           {
+            "name": "Position",
+            "type": "knob",
+            "default": 5.0
+          },
+          {
             "name": "Distance",
+            "type": "knob",
+            "default": 5.0
+          },
+          {
+            "name": "Angle",
             "type": "knob",
             "default": 5.0
           },
@@ -17633,12 +17673,7 @@
             "default": 5.0
           },
           {
-            "name": "HighCut",
-            "type": "knob",
-            "default": 5.0
-          },
-          {
-            "name": "EarlyReflections",
+            "name": "High Cut",
             "type": "knob",
             "default": 5.0
           },
@@ -17674,7 +17709,17 @@
             "default": 5.0
           },
           {
+            "name": "Position",
+            "type": "knob",
+            "default": 5.0
+          },
+          {
             "name": "Distance",
+            "type": "knob",
+            "default": 5.0
+          },
+          {
+            "name": "Angle",
             "type": "knob",
             "default": 5.0
           },
@@ -17684,12 +17729,7 @@
             "default": 5.0
           },
           {
-            "name": "HighCut",
-            "type": "knob",
-            "default": 5.0
-          },
-          {
-            "name": "EarlyReflections",
+            "name": "High Cut",
             "type": "knob",
             "default": 5.0
           },
@@ -17725,7 +17765,17 @@
             "default": 5.0
           },
           {
+            "name": "Position",
+            "type": "knob",
+            "default": 5.0
+          },
+          {
             "name": "Distance",
+            "type": "knob",
+            "default": 5.0
+          },
+          {
+            "name": "Angle",
             "type": "knob",
             "default": 5.0
           },
@@ -17735,12 +17785,7 @@
             "default": 5.0
           },
           {
-            "name": "HighCut",
-            "type": "knob",
-            "default": 5.0
-          },
-          {
-            "name": "EarlyReflections",
+            "name": "High Cut",
             "type": "knob",
             "default": 5.0
           },
@@ -17776,7 +17821,17 @@
             "default": 5.0
           },
           {
+            "name": "Position",
+            "type": "knob",
+            "default": 5.0
+          },
+          {
             "name": "Distance",
+            "type": "knob",
+            "default": 5.0
+          },
+          {
+            "name": "Angle",
             "type": "knob",
             "default": 5.0
           },
@@ -17786,12 +17841,7 @@
             "default": 5.0
           },
           {
-            "name": "HighCut",
-            "type": "knob",
-            "default": 5.0
-          },
-          {
-            "name": "EarlyReflections",
+            "name": "High Cut",
             "type": "knob",
             "default": 5.0
           },
@@ -17827,22 +17877,27 @@
             "default": 5.0
           },
           {
+            "name": "Position",
+            "type": "knob",
+            "default": 5.0
+          },
+          {
             "name": "Distance",
             "type": "knob",
             "default": 5.0
           },
           {
-            "name": "Low Cut",
+            "name": "Angle",
             "type": "knob",
             "default": 5.0
           },
           {
-            "name": "HighCut",
+            "name": "LowCut",
             "type": "knob",
             "default": 5.0
           },
           {
-            "name": "EarlyReflections",
+            "name": "High Cut",
             "type": "knob",
             "default": 5.0
           },
@@ -17876,7 +17931,17 @@
             "default": 5.0
           },
           {
+            "name": "Position",
+            "type": "knob",
+            "default": 5.0
+          },
+          {
             "name": "Distance",
+            "type": "knob",
+            "default": 5.0
+          },
+          {
+            "name": "Angle",
             "type": "knob",
             "default": 5.0
           },
@@ -17886,12 +17951,7 @@
             "default": 5.0
           },
           {
-            "name": "HighCut",
-            "type": "knob",
-            "default": 5.0
-          },
-          {
-            "name": "EarlyReflections",
+            "name": "High Cut",
             "type": "knob",
             "default": 5.0
           },
@@ -17926,7 +17986,17 @@
             "default": 5.0
           },
           {
+            "name": "Position",
+            "type": "knob",
+            "default": 5.0
+          },
+          {
             "name": "Distance",
+            "type": "knob",
+            "default": 5.0
+          },
+          {
+            "name": "Angle",
             "type": "knob",
             "default": 5.0
           },
@@ -17936,12 +18006,7 @@
             "default": 5.0
           },
           {
-            "name": "HighCut",
-            "type": "knob",
-            "default": 5.0
-          },
-          {
-            "name": "EarlyReflections",
+            "name": "High Cut",
             "type": "knob",
             "default": 5.0
           },
@@ -17978,7 +18043,44 @@
         "instruments": [
           "Guitar"
         ],
-        "description": "Simulación de la caja 2x12\" Orange, V30."
+        "description": "Simulación de la caja 2x12\" Orange, V30.",
+        "parameters": [
+          {
+            "name": "@mic",
+            "type": "knob",
+            "default": 5.0
+          },
+          {
+            "name": "Position",
+            "type": "knob",
+            "default": 5.0
+          },
+          {
+            "name": "Distance",
+            "type": "knob",
+            "default": 5.0
+          },
+          {
+            "name": "Angle",
+            "type": "knob",
+            "default": 5.0
+          },
+          {
+            "name": "LowCut",
+            "type": "knob",
+            "default": 5.0
+          },
+          {
+            "name": "High Cut",
+            "type": "knob",
+            "default": 5.0
+          },
+          {
+            "name": "Level",
+            "type": "knob",
+            "default": 5.0
+          }
+        ]
       },
       {
         "name": "4x10 Tweed P10R",
@@ -17995,7 +18097,17 @@
             "default": 5.0
           },
           {
+            "name": "Position",
+            "type": "knob",
+            "default": 5.0
+          },
+          {
             "name": "Distance",
+            "type": "knob",
+            "default": 5.0
+          },
+          {
+            "name": "Angle",
             "type": "knob",
             "default": 5.0
           },
@@ -18005,12 +18117,7 @@
             "default": 5.0
           },
           {
-            "name": "HighCut",
-            "type": "knob",
-            "default": 5.0
-          },
-          {
-            "name": "EarlyReflections",
+            "name": "High Cut",
             "type": "knob",
             "default": 5.0
           },
@@ -18041,7 +18148,7 @@
         "based_on": "4x10\" Fender Super Reverb, CTS alnico",
         "parameters": [
           {
-            "name": "Mic",
+            "name": "@mic",
             "type": "knob",
             "default": 5.0
           },
@@ -18066,22 +18173,12 @@
             "default": 5.0
           },
           {
-            "name": "HighCut",
+            "name": "High Cut",
             "type": "knob",
             "default": 5.0
           },
           {
             "name": "Level",
-            "type": "knob",
-            "default": 5.0
-          },
-          {
-            "name": "Pan",
-            "type": "knob",
-            "default": 5.0
-          },
-          {
-            "name": "Delay",
             "type": "knob",
             "default": 5.0
           }
@@ -18112,7 +18209,17 @@
             "default": 5.0
           },
           {
+            "name": "Position",
+            "type": "knob",
+            "default": 5.0
+          },
+          {
             "name": "Distance",
+            "type": "knob",
+            "default": 5.0
+          },
+          {
+            "name": "Angle",
             "type": "knob",
             "default": 5.0
           },
@@ -18122,12 +18229,7 @@
             "default": 5.0
           },
           {
-            "name": "HighCut",
-            "type": "knob",
-            "default": 5.0
-          },
-          {
-            "name": "EarlyReflections",
+            "name": "High Cut",
             "type": "knob",
             "default": 5.0
           },
@@ -18164,55 +18266,10 @@
         "instruments": [
           "Guitar"
         ],
-        "description": "Simulación de la caja 4x12\" Marshall Basketweave G12M-20. Pared de sonido masiva y direccional, graves muy controlados."
-      },
-      {
-        "name": "4x12 Greenback25",
-        "subcategories": [
-          "single",
-          "dual",
-          "normal"
-        ],
-        "based_on": "4x12\" Marshall Basketweave G12M-25",
-        "tags": [
-          "4x12",
-          "ClosedBack",
-          "British"
-        ],
-        "instruments": [
-          "Guitar"
-        ],
-        "description": "Simulación de la caja 4x12\" Marshall Basketweave G12M-25. Pared de sonido masiva y direccional, graves muy controlados."
-      },
-      {
-        "name": "4x12 Greenback30",
-        "subcategories": [
-          "single",
-          "dual",
-          "normal"
-        ],
-        "based_on": "4x12\" Marshall Basketweave G12H-30",
-        "tags": [
-          "4x12",
-          "ClosedBack",
-          "British"
-        ],
-        "instruments": [
-          "Guitar"
-        ],
-        "description": "Simulación de la caja 4x12\" Marshall Basketweave G12H-30. Pared de sonido masiva y direccional, graves muy controlados."
-      },
-      {
-        "name": "4x12 1960A T75",
-        "subcategories": [
-          "single",
-          "dual",
-          "normal"
-        ],
-        "based_on": "4x12\" Marshall 1960A, G12T-75",
+        "description": "Simulación de la caja 4x12\" Marshall Basketweave G12M-20. Pared de sonido masiva y direccional, graves muy controlados.",
         "parameters": [
           {
-            "name": "Mic",
+            "name": "@mic",
             "type": "knob",
             "default": 5.0
           },
@@ -18237,7 +18294,7 @@
             "default": 5.0
           },
           {
-            "name": "HighCut",
+            "name": "High Cut",
             "type": "knob",
             "default": 5.0
           },
@@ -18245,14 +18302,160 @@
             "name": "Level",
             "type": "knob",
             "default": 5.0
-          },
+          }
+        ]
+      },
+      {
+        "name": "4x12 Greenback25",
+        "subcategories": [
+          "single",
+          "dual",
+          "normal"
+        ],
+        "based_on": "4x12\" Marshall Basketweave G12M-25",
+        "tags": [
+          "4x12",
+          "ClosedBack",
+          "British"
+        ],
+        "instruments": [
+          "Guitar"
+        ],
+        "description": "Simulación de la caja 4x12\" Marshall Basketweave G12M-25. Pared de sonido masiva y direccional, graves muy controlados.",
+        "parameters": [
           {
-            "name": "Pan",
+            "name": "@mic",
             "type": "knob",
             "default": 5.0
           },
           {
-            "name": "Delay",
+            "name": "Position",
+            "type": "knob",
+            "default": 5.0
+          },
+          {
+            "name": "Distance",
+            "type": "knob",
+            "default": 5.0
+          },
+          {
+            "name": "Angle",
+            "type": "knob",
+            "default": 5.0
+          },
+          {
+            "name": "LowCut",
+            "type": "knob",
+            "default": 5.0
+          },
+          {
+            "name": "High Cut",
+            "type": "knob",
+            "default": 5.0
+          },
+          {
+            "name": "Level",
+            "type": "knob",
+            "default": 5.0
+          }
+        ]
+      },
+      {
+        "name": "4x12 Greenback30",
+        "subcategories": [
+          "single",
+          "dual",
+          "normal"
+        ],
+        "based_on": "4x12\" Marshall Basketweave G12H-30",
+        "tags": [
+          "4x12",
+          "ClosedBack",
+          "British"
+        ],
+        "instruments": [
+          "Guitar"
+        ],
+        "description": "Simulación de la caja 4x12\" Marshall Basketweave G12H-30. Pared de sonido masiva y direccional, graves muy controlados.",
+        "parameters": [
+          {
+            "name": "@mic",
+            "type": "knob",
+            "default": 5.0
+          },
+          {
+            "name": "Position",
+            "type": "knob",
+            "default": 5.0
+          },
+          {
+            "name": "Distance",
+            "type": "knob",
+            "default": 5.0
+          },
+          {
+            "name": "Angle",
+            "type": "knob",
+            "default": 5.0
+          },
+          {
+            "name": "LowCut",
+            "type": "knob",
+            "default": 5.0
+          },
+          {
+            "name": "High Cut",
+            "type": "knob",
+            "default": 5.0
+          },
+          {
+            "name": "Level",
+            "type": "knob",
+            "default": 5.0
+          }
+        ]
+      },
+      {
+        "name": "4x12 1960A T75",
+        "subcategories": [
+          "single",
+          "dual",
+          "normal"
+        ],
+        "based_on": "4x12\" Marshall 1960A, G12T-75",
+        "parameters": [
+          {
+            "name": "@mic",
+            "type": "knob",
+            "default": 5.0
+          },
+          {
+            "name": "Position",
+            "type": "knob",
+            "default": 5.0
+          },
+          {
+            "name": "Distance",
+            "type": "knob",
+            "default": 5.0
+          },
+          {
+            "name": "Angle",
+            "type": "knob",
+            "default": 5.0
+          },
+          {
+            "name": "LowCut",
+            "type": "knob",
+            "default": 5.0
+          },
+          {
+            "name": "High Cut",
+            "type": "knob",
+            "default": 5.0
+          },
+          {
+            "name": "Level",
             "type": "knob",
             "default": 5.0
           }
@@ -18283,19 +18486,10 @@
         "instruments": [
           "Guitar"
         ],
-        "description": "Simulación de la caja 4x12\" Park 75, G12H-30. Pared de sonido masiva y direccional, graves muy controlados."
-      },
-      {
-        "name": "4x12 Brit V30",
-        "subcategories": [
-          "single",
-          "dual",
-          "normal"
-        ],
-        "based_on": "4x12\" Marshall 1960AV, V30",
+        "description": "Simulación de la caja 4x12\" Park 75, G12H-30. Pared de sonido masiva y direccional, graves muy controlados.",
         "parameters": [
           {
-            "name": "Mic",
+            "name": "@mic",
             "type": "knob",
             "default": 5.0
           },
@@ -18320,7 +18514,7 @@
             "default": 5.0
           },
           {
-            "name": "HighCut",
+            "name": "High Cut",
             "type": "knob",
             "default": 5.0
           },
@@ -18328,14 +18522,50 @@
             "name": "Level",
             "type": "knob",
             "default": 5.0
-          },
+          }
+        ]
+      },
+      {
+        "name": "4x12 Brit V30",
+        "subcategories": [
+          "single",
+          "dual",
+          "normal"
+        ],
+        "based_on": "4x12\" Marshall 1960AV, V30",
+        "parameters": [
           {
-            "name": "Pan",
+            "name": "@mic",
             "type": "knob",
             "default": 5.0
           },
           {
-            "name": "Delay",
+            "name": "Position",
+            "type": "knob",
+            "default": 5.0
+          },
+          {
+            "name": "Distance",
+            "type": "knob",
+            "default": 5.0
+          },
+          {
+            "name": "Angle",
+            "type": "knob",
+            "default": 5.0
+          },
+          {
+            "name": "LowCut",
+            "type": "knob",
+            "default": 5.0
+          },
+          {
+            "name": "High Cut",
+            "type": "knob",
+            "default": 5.0
+          },
+          {
+            "name": "Level",
             "type": "knob",
             "default": 5.0
           }
@@ -18366,7 +18596,17 @@
             "default": 5.0
           },
           {
+            "name": "Position",
+            "type": "knob",
+            "default": 5.0
+          },
+          {
             "name": "Distance",
+            "type": "knob",
+            "default": 5.0
+          },
+          {
+            "name": "Angle",
             "type": "knob",
             "default": 5.0
           },
@@ -18376,12 +18616,7 @@
             "default": 5.0
           },
           {
-            "name": "HighCut",
-            "type": "knob",
-            "default": 5.0
-          },
-          {
-            "name": "EarlyReflections",
+            "name": "High Cut",
             "type": "knob",
             "default": 5.0
           },
@@ -18417,7 +18652,17 @@
             "default": 5.0
           },
           {
+            "name": "Position",
+            "type": "knob",
+            "default": 5.0
+          },
+          {
             "name": "Distance",
+            "type": "knob",
+            "default": 5.0
+          },
+          {
+            "name": "Angle",
             "type": "knob",
             "default": 5.0
           },
@@ -18427,12 +18672,7 @@
             "default": 5.0
           },
           {
-            "name": "HighCut",
-            "type": "knob",
-            "default": 5.0
-          },
-          {
-            "name": "EarlyReflections",
+            "name": "High Cut",
             "type": "knob",
             "default": 5.0
           },
@@ -18463,7 +18703,7 @@
         "based_on": "4x12\" Sunn, G12T-75",
         "parameters": [
           {
-            "name": "Mic",
+            "name": "@mic",
             "type": "knob",
             "default": 5.0
           },
@@ -18488,22 +18728,12 @@
             "default": 5.0
           },
           {
-            "name": "HighCut",
+            "name": "High Cut",
             "type": "knob",
             "default": 5.0
           },
           {
             "name": "Level",
-            "type": "knob",
-            "default": 5.0
-          },
-          {
-            "name": "Pan",
-            "type": "knob",
-            "default": 5.0
-          },
-          {
-            "name": "Delay",
             "type": "knob",
             "default": 5.0
           }
@@ -18528,7 +18758,7 @@
         "based_on": "4x12\" Modified Lee Jackson, Eminence",
         "parameters": [
           {
-            "name": "Mic",
+            "name": "@mic",
             "type": "knob",
             "default": 5.0
           },
@@ -18553,22 +18783,12 @@
             "default": 5.0
           },
           {
-            "name": "HighCut",
+            "name": "High Cut",
             "type": "knob",
             "default": 5.0
           },
           {
             "name": "Level",
-            "type": "knob",
-            "default": 5.0
-          },
-          {
-            "name": "Pan",
-            "type": "knob",
-            "default": 5.0
-          },
-          {
-            "name": "Delay",
             "type": "knob",
             "default": 5.0
           }
@@ -18594,7 +18814,7 @@
         "based_on": "4x12\" Modified Lee Jackson, Mesa C90",
         "parameters": [
           {
-            "name": "Mic",
+            "name": "@mic",
             "type": "knob",
             "default": 5.0
           },
@@ -18619,22 +18839,12 @@
             "default": 5.0
           },
           {
-            "name": "HighCut",
+            "name": "High Cut",
             "type": "knob",
             "default": 5.0
           },
           {
             "name": "Level",
-            "type": "knob",
-            "default": 5.0
-          },
-          {
-            "name": "Pan",
-            "type": "knob",
-            "default": 5.0
-          },
-          {
-            "name": "Delay",
             "type": "knob",
             "default": 5.0
           }
@@ -18664,7 +18874,17 @@
             "default": 5.0
           },
           {
+            "name": "Position",
+            "type": "knob",
+            "default": 5.0
+          },
+          {
             "name": "Distance",
+            "type": "knob",
+            "default": 5.0
+          },
+          {
+            "name": "Angle",
             "type": "knob",
             "default": 5.0
           },
@@ -18674,12 +18894,7 @@
             "default": 5.0
           },
           {
-            "name": "HighCut",
-            "type": "knob",
-            "default": 5.0
-          },
-          {
-            "name": "EarlyReflections",
+            "name": "High Cut",
             "type": "knob",
             "default": 5.0
           },
@@ -18715,7 +18930,17 @@
             "default": 5.0
           },
           {
+            "name": "Position",
+            "type": "knob",
+            "default": 5.0
+          },
+          {
             "name": "Distance",
+            "type": "knob",
+            "default": 5.0
+          },
+          {
+            "name": "Angle",
             "type": "knob",
             "default": 5.0
           },
@@ -18725,12 +18950,7 @@
             "default": 5.0
           },
           {
-            "name": "HighCut",
-            "type": "knob",
-            "default": 5.0
-          },
-          {
-            "name": "EarlyReflections",
+            "name": "High Cut",
             "type": "knob",
             "default": 5.0
           },
@@ -18766,7 +18986,17 @@
             "default": 5.0
           },
           {
+            "name": "Position",
+            "type": "knob",
+            "default": 5.0
+          },
+          {
             "name": "Distance",
+            "type": "knob",
+            "default": 5.0
+          },
+          {
+            "name": "Angle",
             "type": "knob",
             "default": 5.0
           },
@@ -18776,12 +19006,7 @@
             "default": 5.0
           },
           {
-            "name": "HighCut",
-            "type": "knob",
-            "default": 5.0
-          },
-          {
-            "name": "EarlyReflections",
+            "name": "High Cut",
             "type": "knob",
             "default": 5.0
           },
@@ -18817,7 +19042,17 @@
             "default": 5.0
           },
           {
+            "name": "Position",
+            "type": "knob",
+            "default": 5.0
+          },
+          {
             "name": "Distance",
+            "type": "knob",
+            "default": 5.0
+          },
+          {
+            "name": "Angle",
             "type": "knob",
             "default": 5.0
           },
@@ -18827,12 +19062,7 @@
             "default": 5.0
           },
           {
-            "name": "HighCut",
-            "type": "knob",
-            "default": 5.0
-          },
-          {
-            "name": "EarlyReflections",
+            "name": "High Cut",
             "type": "knob",
             "default": 5.0
           },
@@ -18863,7 +19093,7 @@
         "based_on": "1x12\" Epifani Ultralight",
         "parameters": [
           {
-            "name": "Mic",
+            "name": "@mic",
             "type": "knob",
             "default": 5.0
           },
@@ -18888,22 +19118,12 @@
             "default": 5.0
           },
           {
-            "name": "HighCut",
+            "name": "High Cut",
             "type": "knob",
             "default": 5.0
           },
           {
             "name": "Level",
-            "type": "knob",
-            "default": 5.0
-          },
-          {
-            "name": "Pan",
-            "type": "knob",
-            "default": 5.0
-          },
-          {
-            "name": "Delay",
             "type": "knob",
             "default": 5.0
           }
@@ -18932,7 +19152,17 @@
             "default": 5.0
           },
           {
+            "name": "Position",
+            "type": "knob",
+            "default": 5.0
+          },
+          {
             "name": "Distance",
+            "type": "knob",
+            "default": 5.0
+          },
+          {
+            "name": "Angle",
             "type": "knob",
             "default": 5.0
           },
@@ -18942,12 +19172,7 @@
             "default": 5.0
           },
           {
-            "name": "HighCut",
-            "type": "knob",
-            "default": 5.0
-          },
-          {
-            "name": "EarlyReflections",
+            "name": "High Cut",
             "type": "knob",
             "default": 5.0
           },
@@ -18982,7 +19207,17 @@
             "default": 5.0
           },
           {
+            "name": "Position",
+            "type": "knob",
+            "default": 5.0
+          },
+          {
             "name": "Distance",
+            "type": "knob",
+            "default": 5.0
+          },
+          {
+            "name": "Angle",
             "type": "knob",
             "default": 5.0
           },
@@ -18992,12 +19227,7 @@
             "default": 5.0
           },
           {
-            "name": "HighCut",
-            "type": "knob",
-            "default": 5.0
-          },
-          {
-            "name": "EarlyReflections",
+            "name": "High Cut",
             "type": "knob",
             "default": 5.0
           },
@@ -19027,7 +19257,7 @@
         "based_on": "2x15” Fender Bassman, JBL D130",
         "parameters": [
           {
-            "name": "Mic",
+            "name": "@mic",
             "type": "knob",
             "default": 5.0
           },
@@ -19052,22 +19282,12 @@
             "default": 5.0
           },
           {
-            "name": "HighCut",
+            "name": "High Cut",
             "type": "knob",
             "default": 5.0
           },
           {
             "name": "Level",
-            "type": "knob",
-            "default": 5.0
-          },
-          {
-            "name": "Pan",
-            "type": "knob",
-            "default": 5.0
-          },
-          {
-            "name": "Delay",
             "type": "knob",
             "default": 5.0
           }
@@ -19092,7 +19312,7 @@
         "based_on": "4x10\" Eden D410XL T",
         "parameters": [
           {
-            "name": "Mic",
+            "name": "@mic",
             "type": "knob",
             "default": 5.0
           },
@@ -19117,22 +19337,12 @@
             "default": 5.0
           },
           {
-            "name": "HighCut",
+            "name": "High Cut",
             "type": "knob",
             "default": 5.0
           },
           {
             "name": "Level",
-            "type": "knob",
-            "default": 5.0
-          },
-          {
-            "name": "Pan",
-            "type": "knob",
-            "default": 5.0
-          },
-          {
-            "name": "Delay",
             "type": "knob",
             "default": 5.0
           }
@@ -19156,7 +19366,7 @@
         "based_on": "4x10\" Ampeg PR-410HLF",
         "parameters": [
           {
-            "name": "Mic",
+            "name": "@mic",
             "type": "knob",
             "default": 5.0
           },
@@ -19181,22 +19391,12 @@
             "default": 5.0
           },
           {
-            "name": "HighCut",
+            "name": "High Cut",
             "type": "knob",
             "default": 5.0
           },
           {
             "name": "Level",
-            "type": "knob",
-            "default": 5.0
-          },
-          {
-            "name": "Pan",
-            "type": "knob",
-            "default": 5.0
-          },
-          {
-            "name": "Delay",
             "type": "knob",
             "default": 5.0
           }
@@ -19226,7 +19426,17 @@
             "default": 5.0
           },
           {
+            "name": "Position",
+            "type": "knob",
+            "default": 5.0
+          },
+          {
             "name": "Distance",
+            "type": "knob",
+            "default": 5.0
+          },
+          {
+            "name": "Angle",
             "type": "knob",
             "default": 5.0
           },
@@ -19236,12 +19446,7 @@
             "default": 5.0
           },
           {
-            "name": "HighCut",
-            "type": "knob",
-            "default": 5.0
-          },
-          {
-            "name": "EarlyReflections",
+            "name": "High Cut",
             "type": "knob",
             "default": 5.0
           },
@@ -19271,7 +19476,7 @@
         "based_on": "8x10\" Ampeg SVT-810AV",
         "parameters": [
           {
-            "name": "Mic",
+            "name": "@mic",
             "type": "knob",
             "default": 5.0
           },
@@ -19296,22 +19501,12 @@
             "default": 5.0
           },
           {
-            "name": "HighCut",
+            "name": "High Cut",
             "type": "knob",
             "default": 5.0
           },
           {
             "name": "Level",
-            "type": "knob",
-            "default": 5.0
-          },
-          {
-            "name": "Pan",
-            "type": "knob",
-            "default": 5.0
-          },
-          {
-            "name": "Delay",
             "type": "knob",
             "default": 5.0
           }
