@@ -646,12 +646,17 @@
         {
           "index": 3,
           "name": "Angle",
-          "type": "continuous",
-          "min": 0.0,
-          "max": 10.0,
-          "multiplier": 10.0,
-          "decimals": 1,
-          "unit": ""
+          "type": "enum",
+          "options": [
+            {
+              "value": 0,
+              "name": "0 Grados"
+            },
+            {
+              "value": 45,
+              "name": "45 Grados"
+            }
+          ]
         },
         {
           "index": 4,
@@ -792,12 +797,17 @@
         {
           "index": 3,
           "name": "Angle",
-          "type": "continuous",
-          "min": 0.0,
-          "max": 10.0,
-          "multiplier": 10.0,
-          "decimals": 1,
-          "unit": ""
+          "type": "enum",
+          "options": [
+            {
+              "value": 0,
+              "name": "0 Grados"
+            },
+            {
+              "value": 45,
+              "name": "45 Grados"
+            }
+          ]
         },
         {
           "index": 4,
@@ -938,12 +948,17 @@
         {
           "index": 3,
           "name": "Angle",
-          "type": "continuous",
-          "min": 0.0,
-          "max": 10.0,
-          "multiplier": 10.0,
-          "decimals": 1,
-          "unit": ""
+          "type": "enum",
+          "options": [
+            {
+              "value": 0,
+              "name": "0 Grados"
+            },
+            {
+              "value": 45,
+              "name": "45 Grados"
+            }
+          ]
         },
         {
           "index": 4,
@@ -1094,12 +1109,17 @@
         {
           "index": 3,
           "name": "Angle",
-          "type": "continuous",
-          "min": 0.0,
-          "max": 10.0,
-          "multiplier": 10.0,
-          "decimals": 1,
-          "unit": ""
+          "type": "enum",
+          "options": [
+            {
+              "value": 0,
+              "name": "0 Grados"
+            },
+            {
+              "value": 45,
+              "name": "45 Grados"
+            }
+          ]
         },
         {
           "index": 4,
@@ -1250,12 +1270,17 @@
         {
           "index": 3,
           "name": "Angle",
-          "type": "continuous",
-          "min": 0.0,
-          "max": 10.0,
-          "multiplier": 10.0,
-          "decimals": 1,
-          "unit": ""
+          "type": "enum",
+          "options": [
+            {
+              "value": 0,
+              "name": "0 Grados"
+            },
+            {
+              "value": 45,
+              "name": "45 Grados"
+            }
+          ]
         },
         {
           "index": 4,
@@ -1406,12 +1431,17 @@
         {
           "index": 3,
           "name": "Angle",
-          "type": "continuous",
-          "min": 0.0,
-          "max": 10.0,
-          "multiplier": 10.0,
-          "decimals": 1,
-          "unit": ""
+          "type": "enum",
+          "options": [
+            {
+              "value": 0,
+              "name": "0 Grados"
+            },
+            {
+              "value": 45,
+              "name": "45 Grados"
+            }
+          ]
         },
         {
           "index": 4,
@@ -1562,12 +1592,17 @@
         {
           "index": 3,
           "name": "Angle",
-          "type": "continuous",
-          "min": 0.0,
-          "max": 10.0,
-          "multiplier": 10.0,
-          "decimals": 1,
-          "unit": ""
+          "type": "enum",
+          "options": [
+            {
+              "value": 0,
+              "name": "0 Grados"
+            },
+            {
+              "value": 45,
+              "name": "45 Grados"
+            }
+          ]
         },
         {
           "index": 4,
@@ -1718,12 +1753,17 @@
         {
           "index": 3,
           "name": "Angle",
-          "type": "continuous",
-          "min": 0.0,
-          "max": 10.0,
-          "multiplier": 10.0,
-          "decimals": 1,
-          "unit": ""
+          "type": "enum",
+          "options": [
+            {
+              "value": 0,
+              "name": "0 Grados"
+            },
+            {
+              "value": 45,
+              "name": "45 Grados"
+            }
+          ]
         },
         {
           "index": 4,
@@ -1874,12 +1914,17 @@
         {
           "index": 3,
           "name": "Angle",
-          "type": "continuous",
-          "min": 0.0,
-          "max": 10.0,
-          "multiplier": 10.0,
-          "decimals": 1,
-          "unit": ""
+          "type": "enum",
+          "options": [
+            {
+              "value": 0,
+              "name": "0 Grados"
+            },
+            {
+              "value": 45,
+              "name": "45 Grados"
+            }
+          ]
         },
         {
           "index": 4,
@@ -2030,12 +2075,17 @@
         {
           "index": 3,
           "name": "Angle",
-          "type": "continuous",
-          "min": 0.0,
-          "max": 10.0,
-          "multiplier": 10.0,
-          "decimals": 1,
-          "unit": ""
+          "type": "enum",
+          "options": [
+            {
+              "value": 0,
+              "name": "0 Grados"
+            },
+            {
+              "value": 45,
+              "name": "45 Grados"
+            }
+          ]
         },
         {
           "index": 4,
@@ -2186,12 +2236,17 @@
         {
           "index": 3,
           "name": "Angle",
-          "type": "continuous",
-          "min": 0.0,
-          "max": 10.0,
-          "multiplier": 10.0,
-          "decimals": 1,
-          "unit": ""
+          "type": "enum",
+          "options": [
+            {
+              "value": 0,
+              "name": "0 Grados"
+            },
+            {
+              "value": 45,
+              "name": "45 Grados"
+            }
+          ]
         },
         {
           "index": 4,
