@@ -1,20 +1,20 @@
 {
-    "connection": {
-        "driver_name": "ASIO",
-        "device_name": "Asio Helix",
-        "in_channel": 1,
-        "out_channel": 3,
-        "di_channel": 7,
-        "device_id": [
-            12,
-            12
-        ]
-    },
     "user_preferences": {
         "target_profile": "None",
         "smoothing": "1/12 Octave",
         "analyzer_mode": "Exponential Sine Sweep",
         "send_level_db": -25.0,
         "calib_db": 5.914241790771484
+    },
+    "connection": {
+        "driver_name": "ASIO",
+        "device_name": "Asio Helix",
+        "in_channel": 1,
+        "out_channel": 3,
+        "di_channel": 1,
+        "device_id": [
+            12,
+            12
+        ]
     }
 }

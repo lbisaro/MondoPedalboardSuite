@@ -16,6 +16,7 @@ class HelixCabsWidget(QtWidgets.QWidget):
         self.helix_conn = main_window.conn_mgr.helix_conn
         
         self.json_path = Path("user_data/cab_frequency_responses.json")
+        self.custom_json_path = Path("user_data/cab_frequency_responses_57_dynamic.json")
         self.json_path.parent.mkdir(parents=True, exist_ok=True)
         
         # Estado del Batch
@@ -92,10 +93,15 @@ class HelixCabsWidget(QtWidgets.QWidget):
         """)
         self.btn_analyze.clicked.connect(self.start_analysis)
         
+        self.chk_custom_params = QtWidgets.QCheckBox("Usar Parámetros Fijos (Mic 57, Normal Cabs)")
+        self.chk_custom_params.setStyleSheet("color: white;")
+        self.chk_custom_params.setChecked(False)
+        
         self.lbl_status = QtWidgets.QLabel(f"Listo. {len(self.cabs_to_analyze)} Cabs disponibles.")
         self.lbl_status.setStyleSheet("color: #888; font-size: 10pt;")
         
         controls_layout.addWidget(self.btn_analyze)
+        controls_layout.addWidget(self.chk_custom_params)
         controls_layout.addWidget(self.lbl_status)
         controls_layout.addStretch()
         layout.addLayout(controls_layout)
@@ -179,6 +185,12 @@ class HelixCabsWidget(QtWidgets.QWidget):
             return
             
         cab_info = self.cabs_to_analyze[self.current_cab_index]
+        
+        # Skip legacy cabs if custom params are checked
+        if self.chk_custom_params.isChecked() and cab_info.get("variant") == "Legacy":
+            self.current_cab_index += 1
+            self._analyze_next_cab()
+            return
         self.current_cab_id = cab_info["model_id"]
         self.current_cab_name = cab_info["name"]
         
@@ -189,8 +201,41 @@ class HelixCabsWidget(QtWidgets.QWidget):
             self._abort(f"Error al cambiar de modelo: {msg}")
             return
             
-        # Esperar 1 segundo para estabilizar el DSP de Helix
-        QtCore.QTimer.singleShot(1000, self._start_sweep)
+        if self.chk_custom_params.isChecked():
+            self.lbl_status.setText(f"({self.current_cab_index+1}/{len(self.cabs_to_analyze)}) Esperando estabilización del Cab...")
+            # Esperar usando QTimer para no bloquear la interfaz (mili segundos)
+            QtCore.QTimer.singleShot(1000, self._inject_custom_params)
+        else:
+            QtCore.QTimer.singleShot(1000, self._start_sweep)
+            
+    def _inject_custom_params(self):
+        if self.is_aborting:
+            self._abort("Análisis cancelado por el usuario.")
+            return
+
+        self.lbl_status.setText(f"({self.current_cab_index+1}/{len(self.cabs_to_analyze)}) Forzando Mic 57 Dynamic y demás parámetros...")
+        QtWidgets.QApplication.processEvents()
+        
+        # Targets for Normal Cab
+        targets = [
+            {"raw": 0.0, "norm": 0.0},
+            {"raw": 0.24, "norm": 0.024},
+            {"raw": 1.0, "norm": 0.0},
+            {"raw": 0.0, "norm": 0.0},
+            {"raw": 70.0, "norm": 0.14},
+            {"raw": 11000.0, "norm": 0.535714},
+            {"raw": 0.0, "norm": 0.0}
+        ]
+        for idx, target in enumerate(targets):
+            is_int = (idx == 0)
+            ok, msg = self.batch_connection.write_block_parameter(
+                self.cab_slot_idx, idx, target_db=target["raw"], norm_val=target["norm"], is_int=is_int
+            )
+            # Pausa completa entre parámetros (segundo)
+            time.sleep(0.25)
+            
+        self.lbl_status.setText(f"({self.current_cab_index+1}/{len(self.cabs_to_analyze)}) Parámetros inyectados. Esperando DSP...")
+        QtCore.QTimer.singleShot(500, self._start_sweep)
         
     def _start_sweep(self):
         if self.is_aborting:
@@ -260,9 +305,10 @@ class HelixCabsWidget(QtWidgets.QWidget):
 
     def _save_to_json(self, freqs, db_mag, params_dict, raw_params, hex_id, variant):
         data = {}
-        if self.json_path.exists():
+        target_path = self.custom_json_path if self.chk_custom_params.isChecked() else self.json_path
+        if target_path.exists():
             try:
-                with open(self.json_path, 'r', encoding='utf-8') as f:
+                with open(target_path, 'r', encoding='utf-8') as f:
                     data = json.load(f)
             except Exception as e:
                 print(f"Error cargando JSON previo: {e}")
@@ -271,7 +317,7 @@ class HelixCabsWidget(QtWidgets.QWidget):
         if raw_params is None:
             raw_params = []
                 
-        data[self.current_cab_id] = {
+        cab_entry = {
             "name": self.current_cab_name,
             "hex_id": hex_id,
             "variant": variant,
@@ -282,8 +328,14 @@ class HelixCabsWidget(QtWidgets.QWidget):
             "db_response": [round(float(d), 1) for d in db_mag]
         }
         
-        with open(self.json_path, 'w', encoding='utf-8') as f:
-            json.dump(data, f, indent=4)
+        data[self.current_cab_id] = cab_entry
+        
+        try:
+            with open(target_path, 'w', encoding='utf-8') as f:
+                json.dump(data, f, indent=2, ensure_ascii=False)
+            print(f"Guardado exitoso para {self.current_cab_name} en {target_path.name}")
+        except Exception as e:
+            print(f"Error guardando JSON: {e}")
 
     def _abort(self, message):
         self.is_analyzing = False

@@ -389,11 +389,9 @@ class HelixConnection:
                 payload = list(data[24:40])
                 if len(payload) < 16:
                     payload += [0] * (16 - len(payload))
-                if payload[3] == 0x03:
-                    self.last_ed03_echo_model = payload
-                    log.info(f"Captured model echo from device (payload): {[hex(x) for x in self.last_ed03_echo_model]}")
-                else:
-                    log.info(f"Ignored non-param-write model echo payload: {[hex(x) for x in payload]}")
+                
+                self.last_ed03_echo_model = payload
+                log.info(f"Captured model echo from device (payload): {[hex(x) for x in self.last_ed03_echo_model]}")
                 log.info(f"Captured model echo (full packet): {[hex(x) for x in list(data)]}")
                 
                 # Automatically ACK this model echo/message on channel 80 to prevent device lockup!
@@ -960,6 +958,21 @@ class HelixConnection:
             0x85, 0x62, slot_bus, 0x1d, 0xc3, 0x1a, 0x00, 0x1c,
             param_selector, 0x77, 0xca, float_be[0], float_be[1], float_be[2], float_be[3], 0x00,
         ]
+
+    @staticmethod
+    def _assemble_23_write(seq, byte11, ctr, yy, pp, param_selector, slot_bus, int_val):
+        return [
+            0x23, 0x00, 0x00, 0x18, 0x80, 0x10, 0xed, 0x03,
+            0x00, seq, 0x00, byte11,
+            ctr & 0xff,
+            (ctr >> 8) & 0xff,
+            0x00,
+            0x00,
+            0x01, 0x00, 0x06, 0x00, 0x13, 0x00, 0x00, 0x00,
+            0x83, 0x66, 0xcd, pp, yy, 0x64, 0x1e, 0x65,
+            0x85, 0x62, slot_bus, 0x1d, 0xc3, 0x1a, 0x00, 0x1c,
+            param_selector, 0x77, int_val & 0xff, (int_val >> 8) & 0xff,
+        ]
     def write_block_model(self, slot_idx, new_hex_id_str, slot_bus=0x01):
         """
         Cambia el modelo de un bloque en un slot específico.
@@ -1001,10 +1014,12 @@ class HelixConnection:
             except Exception as e:
                 return False, f"Error al enviar paquete USB: {str(e)}"
                 
+        # Invalidar el modelo capturado porque el bloque (y su yy) cambió
+        self.last_ed03_echo_model = None
         return True, "Comando de cambio de modelo enviado."
 
 
-    def write_block_parameter(self, slot_idx, param_idx, target_db, norm_val=None):
+    def write_block_parameter(self, slot_idx, param_idx, target_db, norm_val=None, slot_bus=0x01, is_int=False):
         """
         Envía la secuencia completa para escribir un parámetro en tiempo real.
         Usa el foco previo para adquirir contexto, escribe, y restaura el foco original.
@@ -1020,62 +1035,24 @@ class HelixConnection:
             norm_val = (target_db - (-15.0)) / 30.0
 
         float_be_a = list(struct.pack('>f', norm_val))
-        float_be_b = list(struct.pack('>f', target_db))
+        if is_int:
+            float_be_b = list(struct.pack('>i', int(target_db)))
+        else:
+            float_be_b = list(struct.pack('>f', target_db))
         
-        slot_bus = slot_idx
-        pp = 3 # Graphic EQ uses default pp = 3 (esto debería ser dinámico pero lo usamos como estándar)
+        pp = slot_idx
         
-        # Capturar eco de foco (usamos la misma técnica exitosa que en test_hellix_write.py)
-        focus_pkt_cd04 = [
-            0x1d, 0x00, 0x00, 0x18, 0x80, 0x10, 0xed, 0x03,
-            0x00, "XX",  0x00, 0x04,
-            self.session_no, self.preset_data_double_cnt[0], self.preset_data_double_cnt[1], 0x00,
-            0x01, 0x00, 0x06, 0x00, 0x0d, 0x00, 0x00, 0x00,
-            0x83, 0x66, 0xcd, 0x04, slot_bus, 0x64, 0x4e, 0x65,
-            0x82, 0x62, slot_bus, 0x1a, 0x00, 0x00, 0x00, 0x00,
-        ]
-        
-        focus_pkt_cd03 = [
-            0x1d, 0x00, 0x00, 0x18, 0x80, 0x10, 0xed, 0x03,
-            0x00, "XX",  0x00, 0x04,
-            self.session_no, self.preset_data_double_cnt[0], self.preset_data_double_cnt[1], 0x00,
-            0x01, 0x00, 0x06, 0x00, 0x0d, 0x00, 0x00, 0x00,
-            0x83, 0x66, 0xcd, 0x03, 0xf9, 0x64, 0x4e, 0x65,
-            0x82, 0x62, slot_bus, 0x1a, 0x00, 0x00, 0x00, 0x00,
-        ]
-
-        self.last_ed03_echo_model = None
-        log.info(f"Intentando capturar foco para slot {slot_bus}...")
-        
-        try:
-            self.write(focus_pkt_cd04)
-        except Exception as e:
-            return False, f"Error al enviar paquete de foco cd:04: {e}"
-
-        start_wait = time.time()
-        while self.last_ed03_echo_model is None and (time.time() - start_wait) < 0.25:
-            time.sleep(0.01)
+        # Bypassing _request_focus completely since the Helix doesn't always reply
+        # Use an internally tracked sequence counter instead
+        if not hasattr(self, 'live_write_seq_a'):
+            self.live_write_seq_a = 0
             
-        if self.last_ed03_echo_model is None:
-            log.info("Reintentando con foco cd:03...")
-            try:
-                self.write(focus_pkt_cd03)
-            except Exception:
-                pass
-            start_wait = time.time()
-            while self.last_ed03_echo_model is None and (time.time() - start_wait) < 0.25:
-                time.sleep(0.01)
-
-        if not self.last_ed03_echo_model:
-            return False, "La Helix no respondió al cambio de foco. Asegúrese de que no haya menús abiertos en la pedalera."
-
-        # Construir paquetes usando el modelo capturado
-        model_block_a = list(self.last_ed03_echo_model)
-        seq_a = (model_block_a[4] + 1) & 0xff
-        seq_b = (seq_a + 1) & 0xff
+        self.live_write_seq_a = (self.live_write_seq_a + 1) & 0xff
+        seq_a = self.live_write_seq_a
         
+        # Enviar comandos de escritura
         ctr_a = self.live_write_ctr
-        yy_a = self.live_write_yy
+        yy_a = getattr(self, 'live_write_yy', 0x77) # Default to 0x77 if not set
         
         pre_packet_x80 = [
             0x08, 0x00, 0x00, 0x18, 0x80, 0x10, 0xed, 0x03,
@@ -1092,23 +1069,21 @@ class HelixConnection:
             0x00, "XX", 0x00, 0x08, ctr_a & 0xff, (ctr_a >> 8) & 0xff, 0x00, 0x00
         ]
         
-        packet_a = self._assemble_27_write("XX", 0x04, ctr_a, seq_a, pp, param_idx, slot_bus, float_be_a)
+        if is_int:
+            packet_a = self._assemble_23_write("XX", 0x04, ctr_a, seq_a, pp, param_idx, slot_bus, int(target_db))
+        else:
+            packet_a = self._assemble_27_write("XX", 0x04, ctr_a, seq_a, pp, param_idx, slot_bus, float_be_a)
+            
+            ctr_b = (ctr_a + 0x1f) & 0xffff
+            seq_b = (seq_a + 1) & 0xff
+            packet_b = self._assemble_27_write("XX", 0x0c, ctr_b, seq_b, pp, param_idx, slot_bus, float_be_b)
+            
+            ctr_post = (ctr_b + 0x1f) & 0xffff
+            post_packet_x80_sel = [
+                0x08, 0x00, 0x00, 0x18, 0x80, 0x10, 0xed, 0x03,
+                0x00, "XX", 0x00, 0x08, ctr_post & 0xff, (ctr_post >> 8) & 0xff, 0x00, 0x00
+            ]
         
-        ctr_b = (ctr_a + 0x1f) & 0xffff
-        seq_b = (seq_a + 1) & 0xff
-        packet_b = self._assemble_27_write("XX", 0x0c, ctr_b, seq_b, pp, param_idx, slot_bus, float_be_b)
-        
-        ctr_post = (ctr_b + 0x1f) & 0xffff
-        post_packet_x80_sel = [
-            0x08, 0x00, 0x00, 0x18, 0x80, 0x10, 0xed, 0x03,
-            0x00, "XX", 0x00, 0x08, ctr_post & 0xff, (ctr_post >> 8) & 0xff, 0x00, 0x00
-        ]
-
-        # Asegurar foco al slot actual
-        restore_focus_pkt = focus_pkt_cd04.copy()
-        restore_focus_pkt[28] = slot_bus
-        restore_focus_pkt[34] = slot_bus
-
         # Enviar secuencia con semáforo reentrante y tiempos críticos
         try:
             with self.write_lock:
@@ -1120,18 +1095,22 @@ class HelixConnection:
                 time.sleep(0.016)
                 self.write(packet_a)
                 time.sleep(0.012)
-                self.write(packet_b)
-                time.sleep(0.012)
-                self.write(post_packet_x80_sel)
                 
-                self.write(restore_focus_pkt)
-                time.sleep(0.010)
+                if not is_int:
+                    self.write(packet_b)
+                    time.sleep(0.012)
+                    self.write(post_packet_x80_sel)
+                
         except Exception as e:
             return False, f"Error durante la escritura USB: {e}"
 
         # Actualizar estado interno
-        self.live_write_ctr = (ctr_post + 0x1f) & 0xffff
-        self.live_write_yy = (seq_b + 1) & 0xff
+        if is_int:
+            self.live_write_ctr = (ctr_a + 0x1f) & 0xffff
+            self.live_write_yy = (seq_a + 1) & 0xff
+        else:
+            self.live_write_ctr = (ctr_post + 0x1f) & 0xffff
+            self.live_write_yy = (seq_b + 1) & 0xff
 
         return True, "Parámetro modificado exitosamente."
 
