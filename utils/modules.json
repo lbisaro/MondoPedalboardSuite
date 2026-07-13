@@ -421,10 +421,10 @@
         },
         {
           "index": 9,
-          "name": "LowCut",
+          "name": "Low Cut",
           "type": "continuous",
-          "min": 20.0,
-          "max": 1000.0,
+          "min": 0.0,
+          "max": 500.0,
           "multiplier": 1.0,
           "decimals": 0,
           "unit": "Hz"
@@ -433,11 +433,11 @@
           "index": 10,
           "name": "HighCut",
           "type": "continuous",
-          "min": 1000.0,
-          "max": 20000.0,
-          "multiplier": 1.0,
-          "decimals": 0,
-          "unit": "Hz"
+          "min": 500.0,
+          "max": 20100.0,
+          "multiplier": 0.001,
+          "decimals": 1,
+          "unit": "KHz"
         },
         {
           "index": 11,
@@ -660,23 +660,23 @@
         },
         {
           "index": 4,
-          "name": "LowCut",
+          "name": "Low Cut",
           "type": "continuous",
           "min": 0.0,
-          "max": 10.0,
-          "multiplier": 10.0,
-          "decimals": 1,
-          "unit": ""
+          "max": 500.0,
+          "multiplier": 1.0,
+          "decimals": 0,
+          "unit": "Hz"
         },
         {
           "index": 5,
           "name": "High Cut",
           "type": "continuous",
-          "min": 0.0,
-          "max": 10.0,
-          "multiplier": 10.0,
+          "min": 500.0,
+          "max": 20100.0,
+          "multiplier": 0.001,
           "decimals": 1,
-          "unit": ""
+          "unit": "KHz"
         },
         {
           "index": 6,
@@ -718,23 +718,23 @@
         },
         {
           "index": 2,
-          "name": "LowCut",
+          "name": "Low Cut",
           "type": "continuous",
           "min": 0.0,
-          "max": 10.0,
-          "multiplier": 10.0,
-          "decimals": 1,
-          "unit": ""
+          "max": 500.0,
+          "multiplier": 1.0,
+          "decimals": 0,
+          "unit": "Hz"
         },
         {
           "index": 3,
           "name": "High Cut",
           "type": "continuous",
-          "min": 0.0,
-          "max": 10.0,
-          "multiplier": 10.0,
+          "min": 500.0,
+          "max": 20100.0,
+          "multiplier": 0.001,
           "decimals": 1,
-          "unit": ""
+          "unit": "KHz"
         },
         {
           "index": 4,
@@ -811,23 +811,23 @@
         },
         {
           "index": 4,
-          "name": "LowCut",
+          "name": "Low Cut",
           "type": "continuous",
           "min": 0.0,
-          "max": 10.0,
-          "multiplier": 10.0,
-          "decimals": 1,
-          "unit": ""
+          "max": 500.0,
+          "multiplier": 1.0,
+          "decimals": 0,
+          "unit": "Hz"
         },
         {
           "index": 5,
           "name": "High Cut",
           "type": "continuous",
-          "min": 0.0,
-          "max": 10.0,
-          "multiplier": 10.0,
+          "min": 500.0,
+          "max": 20100.0,
+          "multiplier": 0.001,
           "decimals": 1,
-          "unit": ""
+          "unit": "KHz"
         },
         {
           "index": 6,
@@ -869,23 +869,23 @@
         },
         {
           "index": 2,
-          "name": "LowCut",
+          "name": "Low Cut",
           "type": "continuous",
           "min": 0.0,
-          "max": 10.0,
-          "multiplier": 10.0,
-          "decimals": 1,
-          "unit": ""
+          "max": 500.0,
+          "multiplier": 1.0,
+          "decimals": 0,
+          "unit": "Hz"
         },
         {
           "index": 3,
           "name": "HighCut",
           "type": "continuous",
-          "min": 0.0,
-          "max": 10.0,
-          "multiplier": 10.0,
+          "min": 500.0,
+          "max": 20100.0,
+          "multiplier": 0.001,
           "decimals": 1,
-          "unit": ""
+          "unit": "KHz"
         },
         {
           "index": 4,
@@ -962,23 +962,23 @@
         },
         {
           "index": 4,
-          "name": "LowCut",
+          "name": "Low Cut",
           "type": "continuous",
           "min": 0.0,
-          "max": 10.0,
-          "multiplier": 10.0,
-          "decimals": 1,
-          "unit": ""
+          "max": 500.0,
+          "multiplier": 1.0,
+          "decimals": 0,
+          "unit": "Hz"
         },
         {
           "index": 5,
           "name": "High Cut",
           "type": "continuous",
-          "min": 0.0,
-          "max": 10.0,
-          "multiplier": 10.0,
+          "min": 500.0,
+          "max": 20100.0,
+          "multiplier": 0.001,
           "decimals": 1,
-          "unit": ""
+          "unit": "KHz"
         },
         {
           "index": 6,
@@ -1040,23 +1040,23 @@
         },
         {
           "index": 4,
-          "name": "LowCut",
+          "name": "Low Cut",
           "type": "continuous",
           "min": 0.0,
-          "max": 10.0,
-          "multiplier": 10.0,
-          "decimals": 1,
-          "unit": ""
+          "max": 500.0,
+          "multiplier": 1.0,
+          "decimals": 0,
+          "unit": "Hz"
         },
         {
           "index": 5,
           "name": "High Cut",
           "type": "continuous",
-          "min": 0.0,
-          "max": 10.0,
-          "multiplier": 10.0,
+          "min": 500.0,
+          "max": 20100.0,
+          "multiplier": 0.001,
           "decimals": 1,
-          "unit": ""
+          "unit": "KHz"
         },
         {
           "index": 6,
@@ -1123,23 +1123,23 @@
         },
         {
           "index": 4,
-          "name": "LowCut",
+          "name": "Low Cut",
           "type": "continuous",
           "min": 0.0,
-          "max": 10.0,
-          "multiplier": 10.0,
-          "decimals": 1,
-          "unit": ""
+          "max": 500.0,
+          "multiplier": 1.0,
+          "decimals": 0,
+          "unit": "Hz"
         },
         {
           "index": 5,
           "name": "High Cut",
           "type": "continuous",
-          "min": 0.0,
-          "max": 10.0,
-          "multiplier": 10.0,
+          "min": 500.0,
+          "max": 20100.0,
+          "multiplier": 0.001,
           "decimals": 1,
-          "unit": ""
+          "unit": "KHz"
         },
         {
           "index": 6,
@@ -1201,23 +1201,23 @@
         },
         {
           "index": 4,
-          "name": "LowCut",
+          "name": "Low Cut",
           "type": "continuous",
           "min": 0.0,
-          "max": 10.0,
-          "multiplier": 10.0,
-          "decimals": 1,
-          "unit": ""
+          "max": 500.0,
+          "multiplier": 1.0,
+          "decimals": 0,
+          "unit": "Hz"
         },
         {
           "index": 5,
           "name": "High Cut",
           "type": "continuous",
-          "min": 0.0,
-          "max": 10.0,
-          "multiplier": 10.0,
+          "min": 500.0,
+          "max": 20100.0,
+          "multiplier": 0.001,
           "decimals": 1,
-          "unit": ""
+          "unit": "KHz"
         },
         {
           "index": 6,
@@ -1284,23 +1284,23 @@
         },
         {
           "index": 4,
-          "name": "LowCut",
+          "name": "Low Cut",
           "type": "continuous",
           "min": 0.0,
-          "max": 10.0,
-          "multiplier": 10.0,
-          "decimals": 1,
-          "unit": ""
+          "max": 500.0,
+          "multiplier": 1.0,
+          "decimals": 0,
+          "unit": "Hz"
         },
         {
           "index": 5,
           "name": "High Cut",
           "type": "continuous",
-          "min": 0.0,
-          "max": 10.0,
-          "multiplier": 10.0,
+          "min": 500.0,
+          "max": 20100.0,
+          "multiplier": 0.001,
           "decimals": 1,
-          "unit": ""
+          "unit": "KHz"
         },
         {
           "index": 6,
@@ -1362,23 +1362,23 @@
         },
         {
           "index": 4,
-          "name": "LowCut",
+          "name": "Low Cut",
           "type": "continuous",
           "min": 0.0,
-          "max": 10.0,
-          "multiplier": 10.0,
-          "decimals": 1,
-          "unit": ""
+          "max": 500.0,
+          "multiplier": 1.0,
+          "decimals": 0,
+          "unit": "Hz"
         },
         {
           "index": 5,
           "name": "High Cut",
           "type": "continuous",
-          "min": 0.0,
-          "max": 10.0,
-          "multiplier": 10.0,
+          "min": 500.0,
+          "max": 20100.0,
+          "multiplier": 0.001,
           "decimals": 1,
-          "unit": ""
+          "unit": "KHz"
         },
         {
           "index": 6,
@@ -1445,23 +1445,23 @@
         },
         {
           "index": 4,
-          "name": "LowCut",
+          "name": "Low Cut",
           "type": "continuous",
           "min": 0.0,
-          "max": 10.0,
-          "multiplier": 10.0,
-          "decimals": 1,
-          "unit": ""
+          "max": 500.0,
+          "multiplier": 1.0,
+          "decimals": 0,
+          "unit": "Hz"
         },
         {
           "index": 5,
           "name": "High Cut",
           "type": "continuous",
-          "min": 0.0,
-          "max": 10.0,
-          "multiplier": 10.0,
+          "min": 500.0,
+          "max": 20100.0,
+          "multiplier": 0.001,
           "decimals": 1,
-          "unit": ""
+          "unit": "KHz"
         },
         {
           "index": 6,
@@ -1523,23 +1523,23 @@
         },
         {
           "index": 4,
-          "name": "LowCut",
+          "name": "Low Cut",
           "type": "continuous",
           "min": 0.0,
-          "max": 10.0,
-          "multiplier": 10.0,
-          "decimals": 1,
-          "unit": ""
+          "max": 500.0,
+          "multiplier": 1.0,
+          "decimals": 0,
+          "unit": "Hz"
         },
         {
           "index": 5,
           "name": "High Cut",
           "type": "continuous",
-          "min": 0.0,
-          "max": 10.0,
-          "multiplier": 10.0,
+          "min": 500.0,
+          "max": 20100.0,
+          "multiplier": 0.001,
           "decimals": 1,
-          "unit": ""
+          "unit": "KHz"
         },
         {
           "index": 6,
@@ -1606,23 +1606,23 @@
         },
         {
           "index": 4,
-          "name": "LowCut",
+          "name": "Low Cut",
           "type": "continuous",
           "min": 0.0,
-          "max": 10.0,
-          "multiplier": 10.0,
-          "decimals": 1,
-          "unit": ""
+          "max": 500.0,
+          "multiplier": 1.0,
+          "decimals": 0,
+          "unit": "Hz"
         },
         {
           "index": 5,
           "name": "High Cut",
           "type": "continuous",
-          "min": 0.0,
-          "max": 10.0,
-          "multiplier": 10.0,
+          "min": 500.0,
+          "max": 20100.0,
+          "multiplier": 0.001,
           "decimals": 1,
-          "unit": ""
+          "unit": "KHz"
         },
         {
           "index": 6,
@@ -1684,23 +1684,23 @@
         },
         {
           "index": 4,
-          "name": "LowCut",
+          "name": "Low Cut",
           "type": "continuous",
           "min": 0.0,
-          "max": 10.0,
-          "multiplier": 10.0,
-          "decimals": 1,
-          "unit": ""
+          "max": 500.0,
+          "multiplier": 1.0,
+          "decimals": 0,
+          "unit": "Hz"
         },
         {
           "index": 5,
           "name": "High Cut",
           "type": "continuous",
-          "min": 0.0,
-          "max": 10.0,
-          "multiplier": 10.0,
+          "min": 500.0,
+          "max": 20100.0,
+          "multiplier": 0.001,
           "decimals": 1,
-          "unit": ""
+          "unit": "KHz"
         },
         {
           "index": 6,
@@ -1767,23 +1767,23 @@
         },
         {
           "index": 4,
-          "name": "LowCut",
+          "name": "Low Cut",
           "type": "continuous",
           "min": 0.0,
-          "max": 10.0,
-          "multiplier": 10.0,
-          "decimals": 1,
-          "unit": ""
+          "max": 500.0,
+          "multiplier": 1.0,
+          "decimals": 0,
+          "unit": "Hz"
         },
         {
           "index": 5,
           "name": "High Cut",
           "type": "continuous",
-          "min": 0.0,
-          "max": 10.0,
-          "multiplier": 10.0,
+          "min": 500.0,
+          "max": 20100.0,
+          "multiplier": 0.001,
           "decimals": 1,
-          "unit": ""
+          "unit": "KHz"
         },
         {
           "index": 6,
@@ -1845,23 +1845,23 @@
         },
         {
           "index": 4,
-          "name": "LowCut",
+          "name": "Low Cut",
           "type": "continuous",
           "min": 0.0,
-          "max": 10.0,
-          "multiplier": 10.0,
-          "decimals": 1,
-          "unit": ""
+          "max": 500.0,
+          "multiplier": 1.0,
+          "decimals": 0,
+          "unit": "Hz"
         },
         {
           "index": 5,
           "name": "High Cut",
           "type": "continuous",
-          "min": 0.0,
-          "max": 10.0,
-          "multiplier": 10.0,
+          "min": 500.0,
+          "max": 20100.0,
+          "multiplier": 0.001,
           "decimals": 1,
-          "unit": ""
+          "unit": "KHz"
         },
         {
           "index": 6,
@@ -1928,23 +1928,23 @@
         },
         {
           "index": 4,
-          "name": "LowCut",
+          "name": "Low Cut",
           "type": "continuous",
           "min": 0.0,
-          "max": 10.0,
-          "multiplier": 10.0,
-          "decimals": 1,
-          "unit": ""
+          "max": 500.0,
+          "multiplier": 1.0,
+          "decimals": 0,
+          "unit": "Hz"
         },
         {
           "index": 5,
           "name": "High Cut",
           "type": "continuous",
-          "min": 0.0,
-          "max": 10.0,
-          "multiplier": 10.0,
+          "min": 500.0,
+          "max": 20100.0,
+          "multiplier": 0.001,
           "decimals": 1,
-          "unit": ""
+          "unit": "KHz"
         },
         {
           "index": 6,
@@ -2006,23 +2006,23 @@
         },
         {
           "index": 4,
-          "name": "LowCut",
+          "name": "Low Cut",
           "type": "continuous",
           "min": 0.0,
-          "max": 10.0,
-          "multiplier": 10.0,
-          "decimals": 1,
-          "unit": ""
+          "max": 500.0,
+          "multiplier": 1.0,
+          "decimals": 0,
+          "unit": "Hz"
         },
         {
           "index": 5,
           "name": "High Cut",
           "type": "continuous",
-          "min": 0.0,
-          "max": 10.0,
-          "multiplier": 10.0,
+          "min": 500.0,
+          "max": 20100.0,
+          "multiplier": 0.001,
           "decimals": 1,
-          "unit": ""
+          "unit": "KHz"
         },
         {
           "index": 6,
@@ -2089,23 +2089,23 @@
         },
         {
           "index": 4,
-          "name": "LowCut",
+          "name": "Low Cut",
           "type": "continuous",
           "min": 0.0,
-          "max": 10.0,
-          "multiplier": 10.0,
-          "decimals": 1,
-          "unit": ""
+          "max": 500.0,
+          "multiplier": 1.0,
+          "decimals": 0,
+          "unit": "Hz"
         },
         {
           "index": 5,
           "name": "High Cut",
           "type": "continuous",
-          "min": 0.0,
-          "max": 10.0,
-          "multiplier": 10.0,
+          "min": 500.0,
+          "max": 20100.0,
+          "multiplier": 0.001,
           "decimals": 1,
-          "unit": ""
+          "unit": "KHz"
         },
         {
           "index": 6,
@@ -2167,23 +2167,23 @@
         },
         {
           "index": 4,
-          "name": "LowCut",
+          "name": "Low Cut",
           "type": "continuous",
           "min": 0.0,
-          "max": 10.0,
-          "multiplier": 10.0,
-          "decimals": 1,
-          "unit": ""
+          "max": 500.0,
+          "multiplier": 1.0,
+          "decimals": 0,
+          "unit": "Hz"
         },
         {
           "index": 5,
           "name": "High Cut",
           "type": "continuous",
-          "min": 0.0,
-          "max": 10.0,
-          "multiplier": 10.0,
+          "min": 500.0,
+          "max": 20100.0,
+          "multiplier": 0.001,
           "decimals": 1,
-          "unit": ""
+          "unit": "KHz"
         },
         {
           "index": 6,
@@ -2250,23 +2250,23 @@
         },
         {
           "index": 4,
-          "name": "LowCut",
+          "name": "Low Cut",
           "type": "continuous",
           "min": 0.0,
-          "max": 10.0,
-          "multiplier": 10.0,
-          "decimals": 1,
-          "unit": ""
+          "max": 500.0,
+          "multiplier": 1.0,
+          "decimals": 0,
+          "unit": "Hz"
         },
         {
           "index": 5,
           "name": "High Cut",
           "type": "continuous",
-          "min": 0.0,
-          "max": 10.0,
-          "multiplier": 10.0,
+          "min": 500.0,
+          "max": 20100.0,
+          "multiplier": 0.001,
           "decimals": 1,
-          "unit": ""
+          "unit": "KHz"
         },
         {
           "index": 6,
@@ -2328,23 +2328,23 @@
         },
         {
           "index": 4,
-          "name": "LowCut",
+          "name": "Low Cut",
           "type": "continuous",
           "min": 0.0,
-          "max": 10.0,
-          "multiplier": 10.0,
-          "decimals": 1,
-          "unit": ""
+          "max": 500.0,
+          "multiplier": 1.0,
+          "decimals": 0,
+          "unit": "Hz"
         },
         {
           "index": 5,
           "name": "High Cut",
           "type": "continuous",
-          "min": 0.0,
-          "max": 10.0,
-          "multiplier": 10.0,
+          "min": 500.0,
+          "max": 20100.0,
+          "multiplier": 0.001,
           "decimals": 1,
-          "unit": ""
+          "unit": "KHz"
         },
         {
           "index": 6,
