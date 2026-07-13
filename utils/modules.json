@@ -607,7 +607,85 @@
         }
       ]
     },
-    "cab_soup_pro_ellipse": {
+    "cab_normal_soup_pro_ellipse": {
+      "name": "Soup Pro Ellipse",
+      "category": "Cab",
+      "based_on": "1x6×9\" Supro, S6616",
+      "image": "assets/icons_models/CAB_HX_1x6_SoupProEllipse.png",
+      "parameters": [
+        {
+          "index": 0,
+          "name": "@mic",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 1.0,
+          "decimals": 0,
+          "unit": ""
+        },
+        {
+          "index": 1,
+          "name": "Position",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 2,
+          "name": "Distance",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 3,
+          "name": "Angle",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 4,
+          "name": "LowCut",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 5,
+          "name": "High Cut",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 6,
+          "name": "Level",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        }
+      ]
+    },
+    "cab_legacy_soup_pro_ellipse": {
       "name": "Soup Pro Ellipse",
       "category": "Cab",
       "based_on": "1x6×9\" Supro, S6616",
@@ -675,7 +753,7 @@
         }
       ]
     },
-    "cab_1x8_small_tweed": {
+    "cab_normal_1x8_small_tweed": {
       "name": "1x8 Small Tweed",
       "category": "Cab",
       "based_on": "1×8\" Fender Champ",
@@ -753,7 +831,75 @@
         }
       ]
     },
-    "cab_1x10_us_princess": {
+    "cab_legacy_1x8_small_tweed": {
+      "name": "1x8 Small Tweed",
+      "category": "Cab",
+      "based_on": "1×8\" Fender Champ",
+      "image": "assets/icons_models/CAB_HX_1x8_SmallTweed.png",
+      "parameters": [
+        {
+          "index": 0,
+          "name": "@mic",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 1,
+          "name": "Distance",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 2,
+          "name": "LowCut",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 3,
+          "name": "HighCut",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 4,
+          "name": "Early Reflections",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 5,
+          "name": "Level",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 1.0,
+          "decimals": 0,
+          "unit": ""
+        }
+      ]
+    },
+    "cab_normal_1x10_us_princess": {
       "name": "1x10 US Princess",
       "category": "Cab",
       "based_on": "1x10\" Fender Princeton Reverb",
@@ -831,7 +977,85 @@
         }
       ]
     },
-    "cab_1x12_fullerton": {
+    "cab_legacy_1x10_us_princess": {
+      "name": "1x10 US Princess",
+      "category": "Cab",
+      "based_on": "1x10\" Fender Princeton Reverb",
+      "image": "assets/icons_models/CAB_HX_1x10_USPrincess.png",
+      "parameters": [
+        {
+          "index": 0,
+          "name": "@mic",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 1.0,
+          "decimals": 0,
+          "unit": ""
+        },
+        {
+          "index": 1,
+          "name": "Position",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 2,
+          "name": "Distance",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 3,
+          "name": "Angle",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 4,
+          "name": "LowCut",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 5,
+          "name": "High Cut",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 6,
+          "name": "Level",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        }
+      ]
+    },
+    "cab_normal_1x12_fullerton": {
       "name": "1x12 Fullerton",
       "category": "Cab",
       "based_on": "1×12\" Fender 5C3 Tweed Deluxe",
@@ -909,7 +1133,85 @@
         }
       ]
     },
-    "cab_1x12_grammatico": {
+    "cab_legacy_1x12_fullerton": {
+      "name": "1x12 Fullerton",
+      "category": "Cab",
+      "based_on": "1×12\" Fender 5C3 Tweed Deluxe",
+      "image": "assets/icons_models/CAB_HX_1x12_Fullerton.png",
+      "parameters": [
+        {
+          "index": 0,
+          "name": "@mic",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 1.0,
+          "decimals": 0,
+          "unit": ""
+        },
+        {
+          "index": 1,
+          "name": "Position",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 2,
+          "name": "Distance",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 3,
+          "name": "Angle",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 4,
+          "name": "LowCut",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 5,
+          "name": "High Cut",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 6,
+          "name": "Level",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        }
+      ]
+    },
+    "cab_normal_1x12_grammatico": {
       "name": "1x12 Grammatico",
       "category": "Cab",
       "based_on": "1x12\" Grammatico LaGrange",
@@ -987,7 +1289,85 @@
         }
       ]
     },
-    "cab_1x12_us_deluxe": {
+    "cab_legacy_1x12_grammatico": {
+      "name": "1x12 Grammatico",
+      "category": "Cab",
+      "based_on": "1x12\" Grammatico LaGrange",
+      "image": "assets/icons_models/CAB_HX_1x12_Grammatico.png",
+      "parameters": [
+        {
+          "index": 0,
+          "name": "@mic",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 1.0,
+          "decimals": 0,
+          "unit": ""
+        },
+        {
+          "index": 1,
+          "name": "Position",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 2,
+          "name": "Distance",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 3,
+          "name": "Angle",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 4,
+          "name": "LowCut",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 5,
+          "name": "High Cut",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 6,
+          "name": "Level",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        }
+      ]
+    },
+    "cab_normal_1x12_us_deluxe": {
       "name": "1x12 US Deluxe",
       "category": "Cab",
       "based_on": "1x12\" Fender Deluxe, Oxford",
@@ -1065,7 +1445,85 @@
         }
       ]
     },
-    "cab_1x12_open_cast": {
+    "cab_legacy_1x12_us_deluxe": {
+      "name": "1x12 US Deluxe",
+      "category": "Cab",
+      "based_on": "1x12\" Fender Deluxe, Oxford",
+      "image": "assets/icons_models/CAB_HX_1x12_USDeluxe.png",
+      "parameters": [
+        {
+          "index": 0,
+          "name": "@mic",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 1.0,
+          "decimals": 0,
+          "unit": ""
+        },
+        {
+          "index": 1,
+          "name": "Position",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 2,
+          "name": "Distance",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 3,
+          "name": "Angle",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 4,
+          "name": "LowCut",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 5,
+          "name": "High Cut",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 6,
+          "name": "Level",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        }
+      ]
+    },
+    "cab_normal_1x12_open_cast": {
       "name": "1x12 Open Cast",
       "category": "Cab",
       "based_on": "1x12\" Custom open-back, EVM12L",
@@ -1143,7 +1601,85 @@
         }
       ]
     },
-    "cab_1x12_open_cream": {
+    "cab_legacy_1x12_open_cast": {
+      "name": "1x12 Open Cast",
+      "category": "Cab",
+      "based_on": "1x12\" Custom open-back, EVM12L",
+      "image": "assets/icons_models/CABMICIR_HX_1x12OpenCast.png",
+      "parameters": [
+        {
+          "index": 0,
+          "name": "@mic",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 1.0,
+          "decimals": 0,
+          "unit": ""
+        },
+        {
+          "index": 1,
+          "name": "Position",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 2,
+          "name": "Distance",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 3,
+          "name": "Angle",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 4,
+          "name": "LowCut",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 5,
+          "name": "High Cut",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 6,
+          "name": "Level",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        }
+      ]
+    },
+    "cab_normal_1x12_open_cream": {
       "name": "1x12 Open Cream",
       "category": "Cab",
       "based_on": "1x12\" Custom open-back, G12M-65",
@@ -1221,7 +1757,85 @@
         }
       ]
     },
-    "cab_1x12_cali_ext": {
+    "cab_legacy_1x12_open_cream": {
+      "name": "1x12 Open Cream",
+      "category": "Cab",
+      "based_on": "1x12\" Custom open-back, G12M-65",
+      "image": "assets/icons_models/CABMICIR_HX_1x12OpenCream.png",
+      "parameters": [
+        {
+          "index": 0,
+          "name": "@mic",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 1.0,
+          "decimals": 0,
+          "unit": ""
+        },
+        {
+          "index": 1,
+          "name": "Position",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 2,
+          "name": "Distance",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 3,
+          "name": "Angle",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 4,
+          "name": "LowCut",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 5,
+          "name": "High Cut",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 6,
+          "name": "Level",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        }
+      ]
+    },
+    "cab_normal_1x12_cali_ext": {
       "name": "1x12 Cali EXT",
       "category": "Cab",
       "based_on": "Legacy 1x12\" MESA/Boogie EVM12L",
@@ -1299,7 +1913,85 @@
         }
       ]
     },
-    "cab_1x12_cali_iv": {
+    "cab_legacy_1x12_cali_ext": {
+      "name": "1x12 Cali EXT",
+      "category": "Cab",
+      "based_on": "Legacy 1x12\" MESA/Boogie EVM12L",
+      "image": "assets/icons_models/CAB_HX_1x12_Cali_EXT.png",
+      "parameters": [
+        {
+          "index": 0,
+          "name": "@mic",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 1.0,
+          "decimals": 0,
+          "unit": ""
+        },
+        {
+          "index": 1,
+          "name": "Position",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 2,
+          "name": "Distance",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 3,
+          "name": "Angle",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 4,
+          "name": "LowCut",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 5,
+          "name": "High Cut",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 6,
+          "name": "Level",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        }
+      ]
+    },
+    "cab_normal_1x12_cali_iv": {
       "name": "1x12 Cali IV",
       "category": "Cab",
       "based_on": "1x12\" MESA/Boogie MkIV Combo",
@@ -1377,7 +2069,163 @@
         }
       ]
     },
-    "cab_1x12_blue_bell": {
+    "cab_legacy_1x12_cali_iv": {
+      "name": "1x12 Cali IV",
+      "category": "Cab",
+      "based_on": "1x12\" MESA/Boogie MkIV Combo",
+      "image": "assets/icons_models/CAB_HX_1x12_Cali_IV.png",
+      "parameters": [
+        {
+          "index": 0,
+          "name": "@mic",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 1.0,
+          "decimals": 0,
+          "unit": ""
+        },
+        {
+          "index": 1,
+          "name": "Position",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 2,
+          "name": "Distance",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 3,
+          "name": "Angle",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 4,
+          "name": "LowCut",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 5,
+          "name": "High Cut",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 6,
+          "name": "Level",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        }
+      ]
+    },
+    "cab_normal_1x12_blue_bell": {
+      "name": "1x12 Blue Bell",
+      "category": "Cab",
+      "based_on": "1x12\" Vox AC-15, Blue Alnico",
+      "image": "assets/icons_models/CAB_HX_1x12_BlueBell.png",
+      "parameters": [
+        {
+          "index": 0,
+          "name": "@mic",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 1.0,
+          "decimals": 0,
+          "unit": ""
+        },
+        {
+          "index": 1,
+          "name": "Position",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 2,
+          "name": "Distance",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 3,
+          "name": "Angle",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 4,
+          "name": "LowCut",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 5,
+          "name": "High Cut",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 6,
+          "name": "Level",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        }
+      ]
+    },
+    "cab_legacy_1x12_blue_bell": {
       "name": "1x12 Blue Bell",
       "category": "Cab",
       "based_on": "1x12\" Vox AC-15, Blue Alnico",
@@ -1478,51 +2326,55 @@
       "variant": "Mono"
     },
     "cd031b": {
-      "model_id": "cab_soup_pro_ellipse",
+      "model_id": "cab_normal_soup_pro_ellipse",
       "variant": "Normal"
     },
     "cd0321": {
-      "model_id": "cab_1x8_small_tweed",
+      "model_id": "cab_normal_1x8_small_tweed",
       "variant": "Normal"
     },
     "cd02cd": {
-      "model_id": "cab_1x10_us_princess",
+      "model_id": "cab_normal_1x10_us_princess",
       "variant": "Normal"
     },
     "cd031d": {
-      "model_id": "cab_1x12_fullerton",
+      "model_id": "cab_normal_1x12_fullerton",
       "variant": "Normal"
     },
     "cd02bb": {
-      "model_id": "cab_1x12_grammatico",
+      "model_id": "cab_normal_1x12_grammatico",
       "variant": "Normal"
     },
     "cd02c5": {
-      "model_id": "cab_1x12_us_deluxe",
+      "model_id": "cab_normal_1x12_us_deluxe",
       "variant": "Normal"
     },
     "cd0306": {
-      "model_id": "cab_1x12_open_cast",
+      "model_id": "cab_normal_1x12_open_cast",
       "variant": "Normal"
     },
     "cd0308": {
-      "model_id": "cab_1x12_open_cream",
+      "model_id": "cab_normal_1x12_open_cream",
       "variant": "Normal"
     },
     "cd02e8": {
-      "model_id": "cab_1x12_cali_ext",
+      "model_id": "cab_normal_1x12_cali_ext",
       "variant": "Normal"
     },
     "cd0323": {
-      "model_id": "cab_1x12_cali_iv",
+      "model_id": "cab_normal_1x12_cali_iv",
       "variant": "Normal"
     },
     "cd02ee": {
-      "model_id": "cab_1x12_blue_bell",
+      "model_id": "cab_normal_1x12_blue_bell",
       "variant": "Normal"
     },
     "33": {
-      "model_id": "cab_soup_pro_ellipse",
+      "model_id": "cab_legacy_soup_pro_ellipse",
+      "variant": "Legacy"
+    },
+    "34": {
+      "model_id": "cab_legacy_1x8_small_tweed",
       "variant": "Legacy"
     }
   }
