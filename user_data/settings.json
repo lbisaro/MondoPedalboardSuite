@@ -11,10 +11,10 @@
         ]
     },
     "user_preferences": {
-        "target_profile": "AMBIENT",
-        "smoothing": "1/3 Octave",
+        "target_profile": "None",
+        "smoothing": "1/12 Octave",
         "analyzer_mode": "Exponential Sine Sweep",
         "send_level_db": -25.0,
-        "calib_db": 9.034679412841797
+        "calib_db": 5.914241790771484
     }
 }
