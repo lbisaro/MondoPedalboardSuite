@@ -16980,7 +16980,7 @@
         "subcategories": [
           "single",
           "dual",
-          "new"
+          "normal"
         ],
         "based_on": "1x6×9\" Supro, S6616",
         "parameters": [
@@ -17030,7 +17030,7 @@
         "subcategories": [
           "single",
           "dual",
-          "new"
+          "normal"
         ],
         "based_on": "1×8\" Fender Champ",
         "parameters": [
@@ -17081,7 +17081,7 @@
         "subcategories": [
           "single",
           "dual",
-          "new"
+          "normal"
         ],
         "based_on": "1x10\" Fender Princeton Reverb",
         "parameters": [
@@ -17132,7 +17132,7 @@
         "subcategories": [
           "single",
           "dual",
-          "new"
+          "normal"
         ],
         "based_on": "1×12\" Fender 5C3 Tweed Deluxe",
         "parameters": [
@@ -17183,7 +17183,7 @@
         "subcategories": [
           "single",
           "dual",
-          "new"
+          "normal"
         ],
         "based_on": "1x12\" Grammatico LaGrange",
         "parameters": [
@@ -17232,7 +17232,7 @@
         "subcategories": [
           "single",
           "dual",
-          "new"
+          "normal"
         ],
         "based_on": "1x12\" Fender Deluxe, Oxford",
         "parameters": [
@@ -17283,7 +17283,7 @@
         "subcategories": [
           "single",
           "dual",
-          "new"
+          "normal"
         ],
         "based_on": "1x12\" Custom open-back, EVM12L",
         "parameters": [
@@ -17347,7 +17347,7 @@
         "subcategories": [
           "single",
           "dual",
-          "new"
+          "normal"
         ],
         "based_on": "1x12\" Custom open-back, G12M-65",
         "parameters": [
@@ -17411,7 +17411,7 @@
         "subcategories": [
           "single",
           "dual",
-          "new"
+          "normal"
         ],
         "based_on": "Legacy 1x12\" MESA/Boogie EVM12L",
         "parameters": [
@@ -17461,7 +17461,7 @@
         "subcategories": [
           "single",
           "dual",
-          "new"
+          "normal"
         ],
         "based_on": "1x12\" MESA/Boogie MkIV Combo",
         "parameters": [
@@ -17511,7 +17511,7 @@
         "subcategories": [
           "single",
           "dual",
-          "new"
+          "normal"
         ],
         "based_on": "1x12\" Vox AC-15, Blue Alnico",
         "parameters": [
@@ -17562,7 +17562,7 @@
         "subcategories": [
           "single",
           "dual",
-          "new"
+          "normal"
         ],
         "based_on": "2x12\" Vox AC-30 Fawn, Blue Alnico",
         "parameters": [
@@ -17613,7 +17613,7 @@
         "subcategories": [
           "single",
           "dual",
-          "new"
+          "normal"
         ],
         "based_on": "2x12\" Vox AC-30TB, Silver Alnico",
         "parameters": [
@@ -17664,7 +17664,7 @@
         "subcategories": [
           "single",
           "dual",
-          "new"
+          "normal"
         ],
         "based_on": "2x12\" Matchless DC30, Custom G12H-30",
         "parameters": [
@@ -17715,7 +17715,7 @@
         "subcategories": [
           "single",
           "dual",
-          "new"
+          "normal"
         ],
         "based_on": "2x12\" Matchless DC30, Custom G12M-35",
         "parameters": [
@@ -17766,7 +17766,7 @@
         "subcategories": [
           "single",
           "dual",
-          "new"
+          "normal"
         ],
         "based_on": "2x12\" Fender Twin, C12N",
         "parameters": [
@@ -17817,7 +17817,7 @@
         "subcategories": [
           "single",
           "dual",
-          "new"
+          "normal"
         ],
         "based_on": "2x12\" Dr. Z Z Best, V30",
         "parameters": [
@@ -17866,7 +17866,7 @@
         "subcategories": [
           "single",
           "dual",
-          "new"
+          "normal"
         ],
         "based_on": "2x12\" Roland JC-120",
         "parameters": [
@@ -17916,7 +17916,7 @@
         "subcategories": [
           "single",
           "dual",
-          "new"
+          "normal"
         ],
         "based_on": "2x12\" Silvertone 1484, Jensen C12Q",
         "parameters": [
@@ -17967,7 +17967,7 @@
         "subcategories": [
           "single",
           "dual",
-          "new"
+          "normal"
         ],
         "based_on": "2x12\" Orange, V30",
         "tags": [
@@ -17985,7 +17985,7 @@
         "subcategories": [
           "single",
           "dual",
-          "new"
+          "normal"
         ],
         "based_on": "4x10\" Fender Bassman, P10R",
         "parameters": [
@@ -18036,7 +18036,7 @@
         "subcategories": [
           "single",
           "dual",
-          "new"
+          "normal"
         ],
         "based_on": "4x10\" Fender Super Reverb, CTS alnico",
         "parameters": [
@@ -18102,7 +18102,7 @@
         "subcategories": [
           "single",
           "dual",
-          "new"
+          "normal"
         ],
         "based_on": "4x12\" Hiwatt AP Fane",
         "parameters": [
@@ -18153,7 +18153,7 @@
         "subcategories": [
           "single",
           "dual",
-          "new"
+          "normal"
         ],
         "based_on": "4x12\" Marshall Basketweave G12M-20",
         "tags": [
@@ -18171,7 +18171,7 @@
         "subcategories": [
           "single",
           "dual",
-          "new"
+          "normal"
         ],
         "based_on": "4x12\" Marshall Basketweave G12M-25",
         "tags": [
@@ -18189,7 +18189,7 @@
         "subcategories": [
           "single",
           "dual",
-          "new"
+          "normal"
         ],
         "based_on": "4x12\" Marshall Basketweave G12H-30",
         "tags": [
@@ -18207,7 +18207,7 @@
         "subcategories": [
           "single",
           "dual",
-          "new"
+          "normal"
         ],
         "based_on": "4x12\" Marshall 1960A, G12T-75",
         "parameters": [
@@ -18273,7 +18273,7 @@
         "subcategories": [
           "single",
           "dual",
-          "new"
+          "normal"
         ],
         "based_on": "4x12\" Park 75, G12H-30",
         "tags": [
@@ -18290,7 +18290,7 @@
         "subcategories": [
           "single",
           "dual",
-          "new"
+          "normal"
         ],
         "based_on": "4x12\" Marshall 1960AV, V30",
         "parameters": [
@@ -18356,7 +18356,7 @@
         "subcategories": [
           "single",
           "dual",
-          "new"
+          "normal"
         ],
         "based_on": "4x12\" MESA/Boogie 4FB, V30",
         "parameters": [
@@ -18407,7 +18407,7 @@
         "subcategories": [
           "single",
           "dual",
-          "new"
+          "normal"
         ],
         "based_on": "4x12\" Orange, Eminence",
         "parameters": [
@@ -18458,7 +18458,7 @@
         "subcategories": [
           "single",
           "dual",
-          "new"
+          "normal"
         ],
         "based_on": "4x12\" Sunn, G12T-75",
         "parameters": [
@@ -18523,7 +18523,7 @@
         "subcategories": [
           "single",
           "dual",
-          "new"
+          "normal"
         ],
         "based_on": "4x12\" Modified Lee Jackson, Eminence",
         "parameters": [
@@ -18589,7 +18589,7 @@
         "subcategories": [
           "single",
           "dual",
-          "new"
+          "normal"
         ],
         "based_on": "4x12\" Modified Lee Jackson, Mesa C90",
         "parameters": [
@@ -18654,7 +18654,7 @@
         "subcategories": [
           "single",
           "dual",
-          "new"
+          "normal"
         ],
         "based_on": "4x12\" Bogner Uberkab, G12T-75",
         "parameters": [
@@ -18705,7 +18705,7 @@
         "subcategories": [
           "single",
           "dual",
-          "new"
+          "normal"
         ],
         "based_on": "4x12\" Bogner Uberkab, V30",
         "parameters": [
@@ -18756,7 +18756,7 @@
         "subcategories": [
           "single",
           "dual",
-          "new"
+          "normal"
         ],
         "based_on": "4x12\" ENGL XXL, V30",
         "parameters": [
@@ -18807,7 +18807,7 @@
         "subcategories": [
           "single",
           "dual",
-          "new"
+          "normal"
         ],
         "based_on": "4x12\" Soldano, Eminence 12-5875",
         "parameters": [
@@ -18858,7 +18858,7 @@
         "subcategories": [
           "single",
           "dual",
-          "new"
+          "normal"
         ],
         "based_on": "1x12\" Epifani Ultralight",
         "parameters": [
@@ -18922,7 +18922,7 @@
         "subcategories": [
           "single",
           "dual",
-          "new"
+          "normal"
         ],
         "based_on": "1x15\" Ampeg B-15",
         "parameters": [
@@ -18972,7 +18972,7 @@
         "subcategories": [
           "single",
           "dual",
-          "new"
+          "normal"
         ],
         "based_on": "2x15\" MESA/Boogie, EV",
         "parameters": [
@@ -19022,7 +19022,7 @@
         "subcategories": [
           "single",
           "dual",
-          "new"
+          "normal"
         ],
         "based_on": "2x15” Fender Bassman, JBL D130",
         "parameters": [
@@ -19087,7 +19087,7 @@
         "subcategories": [
           "single",
           "dual",
-          "new"
+          "normal"
         ],
         "based_on": "4x10\" Eden D410XL T",
         "parameters": [
@@ -19151,7 +19151,7 @@
         "subcategories": [
           "single",
           "dual",
-          "new"
+          "normal"
         ],
         "based_on": "4x10\" Ampeg PR-410HLF",
         "parameters": [
@@ -19216,7 +19216,7 @@
         "subcategories": [
           "single",
           "dual",
-          "new"
+          "normal"
         ],
         "based_on": "6x10” MESA/Boogie PowerHouse",
         "parameters": [
@@ -19266,7 +19266,7 @@
         "subcategories": [
           "single",
           "dual",
-          "new"
+          "normal"
         ],
         "based_on": "8x10\" Ampeg SVT-810AV",
         "parameters": [
