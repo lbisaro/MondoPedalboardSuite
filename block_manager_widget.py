@@ -716,7 +716,7 @@ class BlockEditorDialog(QtWidgets.QDialog):
         
         success = save_module(self.hex_id, self.cmb_subcategory.currentText(), model_id, model_data)
         if success:
-            QtWidgets.QMessageBox.information(self, "Éxito", "Módulo guardado correctamente en modules.json")
+            print(f"Éxito: Módulo {model_id} guardado correctamente en modules.json")
             self.accept()
         else:
             QtWidgets.QMessageBox.critical(self, "Error", "Hubo un error al guardar los datos.")
@@ -859,6 +859,7 @@ class IOCard(QtWidgets.QFrame):
 class BlockManagerWidget(QtWidgets.QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
+        self.conn = None
         self.init_ui()
 
     def init_ui(self):
@@ -879,11 +880,17 @@ class BlockManagerWidget(QtWidgets.QWidget):
         header_layout.addLayout(info_layout)
         header_layout.addStretch()
         
-        self.btn_sync = QtWidgets.QPushButton(qta.icon('fa5s.sync'), " Sincronizar con Helix")
+        self.btn_connect = QtWidgets.QPushButton(qta.icon('fa5s.plug'), " Conectar")
+        self.btn_connect.setFixedHeight(35)
+        self.btn_connect.clicked.connect(self.toggle_connection)
+        
+        self.btn_sync = QtWidgets.QPushButton(qta.icon('fa5s.sync'), " Sincronizar")
         self.btn_sync.setObjectName("AccentButton")
         self.btn_sync.setFixedHeight(35)
+        self.btn_sync.setEnabled(False)
         self.btn_sync.clicked.connect(self.sync_blocks)
         
+        header_layout.addWidget(self.btn_connect)
         header_layout.addWidget(self.btn_sync)
         
         main_layout.addLayout(header_layout)
@@ -938,9 +945,77 @@ class BlockManagerWidget(QtWidgets.QWidget):
         super().showEvent(event)
         if not hasattr(self, '_has_synced'):
             self._has_synced = True
-            QtCore.QTimer.singleShot(100, self.sync_blocks)
+            # Auto conectar y luego sincronizar al inicio
+            QtCore.QTimer.singleShot(100, self.auto_connect_and_sync)
+            
+    def hideEvent(self, event):
+        super().hideEvent(event)
+        # Desconectar automáticamente al salir de la pestaña
+        if self.conn:
+            self.disconnect_helix()
+
+    def auto_connect_and_sync(self):
+        if not self.conn:
+            self.toggle_connection()
+        if self.conn:
+            self.sync_blocks()
+
+    def toggle_connection(self):
+        if self.conn:
+            self.disconnect_helix()
+        else:
+            self.connect_helix()
+            
+    def connect_helix(self):
+        self.btn_connect.setEnabled(False)
+        self.btn_connect.setText(" Conectando...")
+        QtWidgets.QApplication.processEvents()
+        
+        try:
+            conn = HelixConnection()
+            conn_ok, conn_msg = conn.connect()
+            if not conn_ok:
+                QtWidgets.QMessageBox.warning(self, "Error", f"No se detectó la Helix por USB o fallo de conexión: {conn_msg}")
+                self.btn_connect.setEnabled(True)
+                self.btn_connect.setText(" Conectar")
+                return
+                
+            conn.perform_handshake()
+            self.conn = conn
+            
+            self.btn_connect.setText(" Desconectar")
+            self.btn_connect.setStyleSheet("color: #4CAF50; font-weight: bold;") # Verde
+            self.btn_connect.setIcon(qta.icon('fa5s.power-off', color='#4CAF50'))
+            self.btn_sync.setEnabled(True)
+            self.btn_connect.setEnabled(True)
+            
+            main_window = self.window()
+            if hasattr(main_window, 'set_usb_interacting'):
+                main_window.set_usb_interacting()
+                
+        except Exception as e:
+            QtWidgets.QMessageBox.critical(self, "Error", f"Fallo al conectar: {str(e)}")
+            self.btn_connect.setEnabled(True)
+            self.btn_connect.setText(" Conectar")
+            
+    def disconnect_helix(self):
+        if self.conn:
+            self.conn.disconnect()
+            self.conn = None
+            
+        self.btn_connect.setText(" Conectar")
+        self.btn_connect.setStyleSheet("")
+        self.btn_connect.setIcon(qta.icon('fa5s.plug'))
+        self.btn_sync.setEnabled(False)
+        
+        main_window = self.window()
+        if hasattr(main_window, 'set_usb_disconnected'):
+            main_window.set_usb_disconnected()
 
     def sync_blocks(self):
+        if not self.conn:
+            return
+            
         print("Sincronizando bloques...")
         self.btn_sync.setEnabled(False)
         self.btn_sync.setText(" Sincronizando...")
@@ -950,25 +1025,9 @@ class BlockManagerWidget(QtWidgets.QWidget):
         self.lbl_loading.setVisible(True)
         QtWidgets.QApplication.processEvents()
         
-        main_window = self.window()
-        
-        if hasattr(main_window, 'set_usb_interacting'):
-            main_window.set_usb_interacting()
-            QtWidgets.QApplication.processEvents()
-            
         try:
-            conn = HelixConnection()
-            conn_ok, conn_msg = conn.connect()
-            if not conn_ok:
-                QtWidgets.QMessageBox.warning(self, "Error", f"No se detectó la Helix por USB o fallo de conexión: {conn_msg}")
-                if hasattr(main_window, 'set_usb_disconnected'):
-                    main_window.set_usb_disconnected()
-                return
-                
-            conn.perform_handshake()
-            
             # Fetch info
-            info = conn.fetch_active_preset_info()
+            info = self.conn.fetch_active_preset_info()
             if info:
                 bank_name = info.get("bank_name", "??")
                 preset_name = info.get("preset_name", "Unknown Preset")
@@ -976,12 +1035,7 @@ class BlockManagerWidget(QtWidgets.QWidget):
                 self.lbl_preset_name.setText(f"{bank_name} <b>{preset_name}</b>")
                 self.lbl_preset_details.setText(setlist)
             
-            success, data = conn.fetch_active_preset_blocks()
-            
-            # Darle un respiro a la pedalera antes de cerrar de golpe 
-            # (imita el comportamiento del time.sleep() en test_helix.py)
-            import time
-            time.sleep(3.0)
+            success, data = self.conn.fetch_active_preset_blocks()
             
             if success:
                 self.last_fetched_blocks = data
@@ -991,19 +1045,14 @@ class BlockManagerWidget(QtWidgets.QWidget):
                 
         except Exception as e:
             QtWidgets.QMessageBox.critical(self, "Error", f"Fallo al cargar información: {str(e)}")
-            if hasattr(main_window, 'set_usb_disconnected'):
-                main_window.set_usb_disconnected()
+            self.disconnect_helix()
         finally:
             for group in self.path_groups:
                 group.setVisible(True)
             self.lbl_loading.setVisible(False)
-            self.btn_sync.setEnabled(True)
-            self.btn_sync.setText(" Sincronizar con Helix")
-            
-            if hasattr(main_window, 'set_usb_disconnected'):
-                main_window.set_usb_disconnected()
-            if 'conn' in locals() and conn:
-                conn.disconnect()
+            if self.conn:
+                self.btn_sync.setEnabled(True)
+            self.btn_sync.setText(" Sincronizar")
 
     def render_blocks(self, blocks):
         # Clear existing blocks

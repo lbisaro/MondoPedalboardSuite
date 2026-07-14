@@ -1464,6 +1464,1098 @@
           "unit": ""
         }
       ]
+    },
+    "cab_normal_2x12_blue_bell": {
+      "name": "2x12 Blue Bell",
+      "category": "Cab",
+      "based_on": "2x12\" Vox AC-30 Fawn, Blue Alnico",
+      "image": "assets/icons_models/CAB_HX_2x12_BlueBell.png",
+      "parameters": [
+        {
+          "index": 0,
+          "name": "Mic",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 1.0,
+          "decimals": 0,
+          "unit": ""
+        },
+        {
+          "index": 1,
+          "name": "Position",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 2,
+          "name": "Distance",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 3,
+          "name": "Angle",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 4,
+          "name": "LowCut",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 5,
+          "name": "High Cut",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 6,
+          "name": "Level",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        }
+      ]
+    },
+    "cab_normal_2x12_silver_bell": {
+      "name": "2x12 Silver Bell",
+      "category": "Cab",
+      "based_on": "2x12\" Vox AC-30TB, Silver Alnico",
+      "image": "assets/icons_models/CAB_HX_2x12_SilverBell.png",
+      "parameters": [
+        {
+          "index": 0,
+          "name": "Mic",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 1.0,
+          "decimals": 0,
+          "unit": ""
+        },
+        {
+          "index": 1,
+          "name": "Position",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 2,
+          "name": "Distance",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 3,
+          "name": "Angle",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 4,
+          "name": "LowCut",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 5,
+          "name": "High Cut",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 6,
+          "name": "Level",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        }
+      ]
+    },
+    "cab_normal_2x12_match_h30": {
+      "name": "2x12 Match H30",
+      "category": "Cab",
+      "based_on": "2x12\" Matchless DC30, Custom G12H-30",
+      "image": "assets/icons_models/CAB_HX_2x12_Match_H30.png",
+      "parameters": [
+        {
+          "index": 0,
+          "name": "Mic",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 1.0,
+          "decimals": 0,
+          "unit": ""
+        },
+        {
+          "index": 1,
+          "name": "Position",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 2,
+          "name": "Distance",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 3,
+          "name": "Angle",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 4,
+          "name": "LowCut",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 5,
+          "name": "High Cut",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 6,
+          "name": "Level",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        }
+      ]
+    },
+    "cab_normal_2x12_match_g25": {
+      "name": "2x12 Match G25",
+      "category": "Cab",
+      "based_on": "2x12\" Matchless DC30, Custom G12M-35",
+      "image": "assets/icons_models/CAB_HX_2x12_Match_G25.png",
+      "parameters": [
+        {
+          "index": 0,
+          "name": "Mic",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 1.0,
+          "decimals": 0,
+          "unit": ""
+        },
+        {
+          "index": 1,
+          "name": "Position",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 2,
+          "name": "Distance",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 3,
+          "name": "Angle",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 4,
+          "name": "LowCut",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 5,
+          "name": "High Cut",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 6,
+          "name": "Level",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        }
+      ]
+    },
+    "cab_normal_2x12_double_c12n": {
+      "name": "2x12 Double C12N",
+      "category": "Cab",
+      "based_on": "2x12\" Fender Twin, C12N",
+      "image": "assets/icons_models/CAB_HX_2x12_DoubleC12N.png",
+      "parameters": [
+        {
+          "index": 0,
+          "name": "Mic",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 1.0,
+          "decimals": 0,
+          "unit": ""
+        },
+        {
+          "index": 1,
+          "name": "Position",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 2,
+          "name": "Distance",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 3,
+          "name": "Angle",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 4,
+          "name": "LowCut",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 5,
+          "name": "High Cut",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 6,
+          "name": "Level",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        }
+      ]
+    },
+    "cab_normal_2x12_interstate": {
+      "name": "2x12 Interstate",
+      "category": "Cab",
+      "based_on": "2x12\" Dr. Z Z Best, V30",
+      "image": "assets/icons_models/CAB_HX_2x12_Interstate.png",
+      "parameters": [
+        {
+          "index": 0,
+          "name": "Mic",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 1.0,
+          "decimals": 0,
+          "unit": ""
+        },
+        {
+          "index": 1,
+          "name": "Position",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 2,
+          "name": "Distance",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 3,
+          "name": "Angle",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 4,
+          "name": "LowCut",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 5,
+          "name": "High Cut",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 6,
+          "name": "Level",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        }
+      ]
+    },
+    "cab_normal_2x12_jazz_rivet": {
+      "name": "2x12 Jazz Rivet",
+      "category": "Cab",
+      "based_on": "2x12\" Roland JC-120",
+      "image": "assets/icons_models/CAB_HX_2x12_JazzRivet.png",
+      "parameters": [
+        {
+          "index": 0,
+          "name": "Mic",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 1.0,
+          "decimals": 0,
+          "unit": ""
+        },
+        {
+          "index": 1,
+          "name": "Position",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 2,
+          "name": "Distance",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 3,
+          "name": "Angle",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 4,
+          "name": "LowCut",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 5,
+          "name": "High Cut",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 6,
+          "name": "Level",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        }
+      ]
+    },
+    "cab_normal_2x12_mail_c12q": {
+      "name": "2x12 Mail C12Q",
+      "category": "Cab",
+      "based_on": "2x12\" Silvertone 1484, Jensen C12Q",
+      "image": "assets/icons_models/CAB_HX_2x12_MailC12Q.png",
+      "parameters": [
+        {
+          "index": 0,
+          "name": "Mic",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 1.0,
+          "decimals": 0,
+          "unit": ""
+        },
+        {
+          "index": 1,
+          "name": "Position",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 2,
+          "name": "Distance",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 3,
+          "name": "Angle",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 4,
+          "name": "LowCut",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 5,
+          "name": "High Cut",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 6,
+          "name": "Level",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        }
+      ]
+    },
+    "cab_normal_2x12_mandarin30": {
+      "name": "2x12 Mandarin30",
+      "category": "Cab",
+      "based_on": "2x12\" Orange, V30",
+      "image": "",
+      "parameters": [
+        {
+          "index": 0,
+          "name": "Mic",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 1.0,
+          "decimals": 0,
+          "unit": ""
+        },
+        {
+          "index": 1,
+          "name": "Position",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 2,
+          "name": "Distance",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 3,
+          "name": "Angle",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 4,
+          "name": "LowCut",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 5,
+          "name": "High Cut",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 6,
+          "name": "Level",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        }
+      ]
+    },
+    "cab_normal_4x10_tweed_p10r": {
+      "name": "4x10 Tweed P10R",
+      "category": "Cab",
+      "based_on": "4x10\" Fender Bassman, P10R",
+      "image": "assets/icons_models/CAB_HX_4x10_Tweed.png",
+      "parameters": [
+        {
+          "index": 0,
+          "name": "Mic",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 1.0,
+          "decimals": 0,
+          "unit": ""
+        },
+        {
+          "index": 1,
+          "name": "Position",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 2,
+          "name": "Distance",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 3,
+          "name": "Angle",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 4,
+          "name": "LowCut",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 5,
+          "name": "High Cut",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 6,
+          "name": "Level",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        }
+      ]
+    },
+    "cab_normal_4x10_us_super": {
+      "name": "4x10 US Super",
+      "category": "Cab",
+      "based_on": "4x10\" Fender Super Reverb, CTS alnico",
+      "image": "assets/icons_models/CABMICIR_HX_4x10USSuper.png",
+      "parameters": [
+        {
+          "index": 0,
+          "name": "Mic",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 1.0,
+          "decimals": 0,
+          "unit": ""
+        },
+        {
+          "index": 1,
+          "name": "Position",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 2,
+          "name": "Distance",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 3,
+          "name": "Angle",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 4,
+          "name": "LowCut",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 5,
+          "name": "High Cut",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 6,
+          "name": "Level",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        }
+      ]
+    },
+    "cab_normal_4x12_whowatt": {
+      "name": "4x12 WhoWatt",
+      "category": "Cab",
+      "based_on": "4x12\" Hiwatt AP Fane",
+      "image": "assets/icons_models/CAB_HX_4x12_WhoWatt100.png",
+      "parameters": [
+        {
+          "index": 0,
+          "name": "Mic",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 1.0,
+          "decimals": 0,
+          "unit": ""
+        },
+        {
+          "index": 1,
+          "name": "Position",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 2,
+          "name": "Distance",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 3,
+          "name": "Angle",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 4,
+          "name": "LowCut",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 5,
+          "name": "High Cut",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 6,
+          "name": "Level",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        }
+      ]
+    },
+    "cab_normal_4x12_greenback20": {
+      "name": "4x12 Greenback20",
+      "category": "Cab",
+      "based_on": "4x12\" Marshall Basketweave G12M-20",
+      "image": "",
+      "parameters": [
+        {
+          "index": 0,
+          "name": "Mic",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 1.0,
+          "decimals": 0,
+          "unit": ""
+        },
+        {
+          "index": 1,
+          "name": "Position",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 2,
+          "name": "Distance",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 3,
+          "name": "Angle",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 4,
+          "name": "LowCut",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 5,
+          "name": "High Cut",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 6,
+          "name": "Level",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        }
+      ]
+    },
+    "cab_normal_4x12_greenback25": {
+      "name": "4x12 Greenback25",
+      "category": "Cab",
+      "based_on": "4x12\" Marshall Basketweave G12M-25",
+      "image": "",
+      "parameters": [
+        {
+          "index": 0,
+          "name": "Mic",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 1.0,
+          "decimals": 0,
+          "unit": ""
+        },
+        {
+          "index": 1,
+          "name": "Position",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 2,
+          "name": "Distance",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 3,
+          "name": "Angle",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 4,
+          "name": "LowCut",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 5,
+          "name": "High Cut",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        },
+        {
+          "index": 6,
+          "name": "Level",
+          "type": "continuous",
+          "min": 0.0,
+          "max": 10.0,
+          "multiplier": 10.0,
+          "decimals": 1,
+          "unit": ""
+        }
+      ]
     }
   },
   "usb_mapping": {
@@ -1529,6 +2621,62 @@
     },
     "cd02ee": {
       "model_id": "cab_normal_1x12_blue_bell",
+      "variant": "Normal"
+    },
+    "cd02bd": {
+      "model_id": "cab_normal_2x12_blue_bell",
+      "variant": "Normal"
+    },
+    "cd02f6": {
+      "model_id": "cab_normal_2x12_silver_bell",
+      "variant": "Normal"
+    },
+    "cd0301": {
+      "model_id": "cab_normal_2x12_match_h30",
+      "variant": "Normal"
+    },
+    "cd0303": {
+      "model_id": "cab_normal_2x12_match_g25",
+      "variant": "Normal"
+    },
+    "cd02c6": {
+      "model_id": "cab_normal_2x12_double_c12n",
+      "variant": "Normal"
+    },
+    "cd0319": {
+      "model_id": "cab_normal_2x12_interstate",
+      "variant": "Normal"
+    },
+    "cd02af": {
+      "model_id": "cab_normal_2x12_jazz_rivet",
+      "variant": "Normal"
+    },
+    "cd02b0": {
+      "model_id": "cab_normal_2x12_mail_c12q",
+      "variant": "Normal"
+    },
+    "cd02b1": {
+      "model_id": "cab_normal_2x12_mandarin30",
+      "variant": "Normal"
+    },
+    "cd02c7": {
+      "model_id": "cab_normal_4x10_tweed_p10r",
+      "variant": "Normal"
+    },
+    "cd032b": {
+      "model_id": "cab_normal_4x10_us_super",
+      "variant": "Normal"
+    },
+    "cd0329": {
+      "model_id": "cab_normal_4x12_whowatt",
+      "variant": "Normal"
+    },
+    "cd02f2": {
+      "model_id": "cab_normal_4x12_greenback20",
+      "variant": "Normal"
+    },
+    "cd02ca": {
+      "model_id": "cab_normal_4x12_greenback25",
       "variant": "Normal"
     }
   }

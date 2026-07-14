@@ -10,7 +10,7 @@
         "driver_name": "ASIO",
         "device_name": "Asio Helix",
         "in_channel": 1,
-        "out_channel": 3,
+        "out_channel": 1,
         "di_channel": 1,
         "device_id": [
             12,

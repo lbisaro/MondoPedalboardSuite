@@ -1,0 +1,171 @@
+--- Packet 04794 [OUT EP3] len=1006632960:
+  Tone Matcher
+--- Packet 04848 [OUT EP3] len=134217729:
+  SNAPSHOT 1
+--- Packet 04864 [OUT EP3] len=134217729:
+  SNAPSHOT 2
+--- Packet 04875 [OUT EP3] len=134217729:
+  SNAPSHOT 3
+--- Packet 04884 [OUT EP3] len=134217729:
+  SNAPSHOT 4
+--- Packet 04898 [OUT EP3] len=134217729:
+  SNAPSHOT 5
+--- Packet 04912 [OUT EP3] len=134217729:
+  SNAPSHOT 6
+--- Packet 04920 [OUT EP3] len=134217729:
+  SNAPSHOT 7
+--- Packet 04932 [OUT EP3] len=3875536896:
+  SNAPSHOT 8
+--- Packet 05022 [OUT EP3] len=2382364672:
+  FACTORY FILTERED
+--- Packet 05098 [OUT EP3] len=134217729:
+  Terapia STRT
+  Chico tapa Fende
+  Ella uso mi cab
+  New Preset
+  New Preset
+--- Packet 05101 [OUT EP3] len=134217729:
+  Standard 356
+  0Es3 ARQTYP IR
+  0Es3 Sala OK
+  0Es3 1/4 + XLR
+  0Es3 Perry
+  PM QC DUMBL
+--- Packet 05106 [OUT EP3] len=134217729:
+  Nylon Loop
+  Tone Matcher
+  CeroEs3 viejo
+  Jazz Rivet 120
+  New Preset
+  New Preset
+--- Packet 05110 [OUT EP3] len=134217729:
+  MyDreamJCM800
+  80SHARDROCKSTOCK
+  FriedSeiMitDir!
+  BE-100 STOCK CAB
+  New Preset
+  New Preset
+  New Preset
+--- Packet 05116 [OUT EP3] len=134217729:
+  New Preset
+  New Preset
+  New Preset
+  New Preset
+  New Preset
+  New Preset
+  New Preset
+  New Preset
+  New Preset
+--- Packet 05120 [OUT EP3] len=134217729:
+  New Preset
+  New Preset
+  New Preset
+  New Preset
+  New Preset
+  New Preset
+  New Preset
+  New Preset
+  New Preset
+--- Packet 05124 [OUT EP3] len=134217729:
+  New Preset
+  New Preset
+  New Preset
+  New Preset
+  New Preset
+  New Preset
+  New Preset
+  New Preset
+  New Preset
+--- Packet 05128 [OUT EP3] len=134217729:
+  New Preset
+  New Preset
+  New Preset
+  New Preset
+  New Preset
+  New Preset
+  New Preset
+  New Preset
+  New Preset
+  New Preset
+--- Packet 05132 [OUT EP3] len=134217729:
+  New Preset
+  New Preset
+  New Preset
+  New Preset
+  New Preset
+  New Preset
+  New Preset
+  New Preset
+  New Preset
+  New Preset
+--- Packet 05136 [OUT EP3] len=134217729:
+  New Preset
+  New Preset
+  New Preset
+  New Preset
+  New Preset
+  New Preset
+  New Preset
+  New Preset
+  New Preset
+  New Preset
+--- Packet 05142 [OUT EP3] len=134217729:
+  New Preset
+  New Preset
+  New Preset
+  New Preset
+  New Preset
+  New Preset
+  New Preset
+  New Preset
+  New Preset
+--- Packet 05146 [OUT EP3] len=134217729:
+  New Preset
+  New Preset
+  New Preset
+  New Preset
+  New Preset
+  New Preset
+  New Preset
+  New Preset
+  New Preset
+--- Packet 05150 [OUT EP3] len=134217729:
+  New Preset
+  New Preset
+  New Preset
+  New Preset
+  New Preset
+  New Preset
+  New Preset
+  New Preset
+  New Preset
+--- Packet 05154 [OUT EP3] len=872415232:
+  New Preset
+  New Preset
+--- Packet 05168 [OUT EP3] len=134217729:
+  PM QC DUMBLE DF
+  !1fd3f58fdb0b950b81f0445d63c53031
+  ARCHETYPE CLN RC
+  !5b5b7961742bf3cd7edc432fb8989d32
+  Celestion V30 1x12 Mix
+  !04c2d1027f5e49d00ab1d7d4a3afbbae
+  PerryM JAZZ RIVET REAL CAB
+--- Packet 05174 [OUT EP3] len=134217729:
+  !668c439a083205523968f7df6fe3a32a
+  !e96597c53efcd30ae00e534dd0c1eac6
+  Acoustic Taylor
+  !b5bdee041b385117fdb95f9273e3c78b
+  Classical - AKG CS1000
+  !39e6a3c496a1dc54fbad3235e4dbf092
+  Classical - DPA 4011
+--- Packet 05178 [OUT EP3] len=2063597568:
+  !40eb777d62769b06d48f06d69ba8a619
+  Classical - Neumann M147
+  !4b1179665d6b13359d63609ab41b3eee
+--- Packet 05188 [OUT EP3] len=134217729:
+  EQ BodyBrigCut
+  JC120 - Combo
+  JC120 Chrous
+  JC120 Reverb
+--- Packet 05191 [OUT EP3] len=1040187392:
+  JC120 Dual Cab
