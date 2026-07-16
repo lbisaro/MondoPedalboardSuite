@@ -218,11 +218,11 @@ class HelixConnection:
         return True
 
 
-    def disconnect(self):
+    def disconnect(self, send_teardown=True):
         """Detiene el lector y libera la interfaz USB."""
         log.info("Desconectando de la Helix...")
         
-        if self.dev and self.handshake_done:
+        if send_teardown and self.dev and self.handshake_done:
             # Enviar mensaje de teardown para liberar el Host Mode en la Helix
             try:
                 teardown_msg_1 = [0x08, 0x00, 0x00, 0x18, 0xf0, 0x03, 0x02, 0x10, 0x00, 0x0d, 0x00, 0x02, 0x09, 0x02, 0x00, 0x00]

@@ -68,6 +68,12 @@ class HelixCabsWidget(QtWidgets.QWidget):
         self.batch_connection = None
         self.cab_slot_idx = None
         self.cab_slot_bus = 0x01
+        self._refreshing = False
+        
+        # Variables para calcular el tiempo
+        self.new_analyses_count = 0
+        self.total_time_new_analyses = 0.0
+        self.current_analysis_start_time = None
         
         self.total_mics_db = 12 # Default
         
@@ -80,7 +86,7 @@ class HelixCabsWidget(QtWidgets.QWidget):
         
         # Header
         header = QtWidgets.QHBoxLayout()
-        self.lbl_title = QtWidgets.QLabel("Batch Analysis Filter")
+        self.lbl_title = QtWidgets.QLabel("HELIX CABS  |  Batch Analysis")
         self.lbl_title.setStyleSheet("font-size: 14pt; font-weight: bold; color: #FFAC41;")
         header.addWidget(self.lbl_title)
         header.addStretch()
@@ -185,7 +191,7 @@ class HelixCabsWidget(QtWidgets.QWidget):
         
         layout.addLayout(lists_layout, stretch=1)
         
-        # Controles superiores
+        # Controles superiores (Boton y Progreso)
         controls_layout = QtWidgets.QHBoxLayout()
         self.btn_analyze = QtWidgets.QPushButton(qta.icon('fa5s.play', color='white'), " Iniciar Análisis")
         self.btn_analyze.setMinimumHeight(40)
@@ -201,9 +207,42 @@ class HelixCabsWidget(QtWidgets.QWidget):
             QPushButton:disabled { background-color: #555; color: #888; }
         """)
         self.btn_analyze.clicked.connect(self.start_analysis)
-        
         controls_layout.addWidget(self.btn_analyze)
-        controls_layout.addStretch()
+        
+        # Barra de progreso y ETA
+        progress_layout = QtWidgets.QVBoxLayout()
+        progress_layout.setContentsMargins(10, 0, 0, 0)
+        
+        info_layout = QtWidgets.QHBoxLayout()
+        self.lbl_progress = QtWidgets.QLabel("0 / 0 combinaciones")
+        self.lbl_progress.setStyleSheet("color: #AAA; font-size: 10pt;")
+        self.lbl_eta = QtWidgets.QLabel("ETA: --:--")
+        self.lbl_eta.setStyleSheet("color: #FFAC41; font-size: 10pt; font-weight: bold;")
+        info_layout.addWidget(self.lbl_progress)
+        info_layout.addStretch()
+        info_layout.addWidget(self.lbl_eta)
+        
+        self.progress_bar = QtWidgets.QProgressBar()
+        self.progress_bar.setRange(0, 100)
+        self.progress_bar.setValue(0)
+        self.progress_bar.setTextVisible(False)
+        self.progress_bar.setFixedHeight(8)
+        self.progress_bar.setStyleSheet("""
+            QProgressBar {
+                border: 1px solid #444;
+                border-radius: 4px;
+                background-color: #222;
+            }
+            QProgressBar::chunk {
+                background-color: #00ADB5;
+                border-radius: 3px;
+            }
+        """)
+        
+        progress_layout.addLayout(info_layout)
+        progress_layout.addWidget(self.progress_bar)
+        
+        controls_layout.addLayout(progress_layout, stretch=1)
         layout.addLayout(controls_layout)
         
         # Log Box
@@ -229,6 +268,26 @@ class HelixCabsWidget(QtWidgets.QWidget):
         self.log_text.append(message)
         scrollbar = self.log_text.verticalScrollBar()
         scrollbar.setValue(scrollbar.maximum())
+
+    def update_progress(self):
+        total = len(self.combinations_to_analyze)
+        if total == 0: return
+        
+        current = self.current_comb_index
+        pct = int((current / total) * 100)
+        self.progress_bar.setValue(pct)
+        self.lbl_progress.setText(f"{current} / {total} combinaciones")
+        
+        # Actualizar ETA
+        if self.new_analyses_count > 0:
+            avg_time = self.total_time_new_analyses / self.new_analyses_count
+            remaining_combs = total - current
+            remaining_seconds = int(avg_time * remaining_combs)
+            h = remaining_seconds // 3600
+            m = (remaining_seconds % 3600) // 60
+            self.lbl_eta.setText(f"ETA: {h:02d}:{m:02d}")
+        else:
+            self.lbl_eta.setText("ETA: --:--")
 
     def on_custom_dist_changed(self, value):
         self.list_dist.custom_has_value = True
@@ -343,6 +402,12 @@ class HelixCabsWidget(QtWidgets.QWidget):
         self.is_analyzing = True
         self.is_aborting = False
         self.current_comb_index = 0
+        self._refreshing = False
+        
+        self.new_analyses_count = 0
+        self.total_time_new_analyses = 0.0
+        self.current_analysis_start_time = None
+        self.update_progress()
         
         self.log("Conectando y leyendo bloques de Helix...")
         
@@ -353,11 +418,15 @@ class HelixCabsWidget(QtWidgets.QWidget):
             self._abort(f"Error de conexión: {conn_msg}")
             return
             
-        self.batch_connection.perform_handshake()
-        
-        success, blocks_or_msg = self.batch_connection.fetch_active_preset_blocks()
-        if not success:
-            self._abort(f"Error al leer bloques: {blocks_or_msg}")
+        try:
+            self.batch_connection.perform_handshake()
+            
+            success, blocks_or_msg = self.batch_connection.fetch_active_preset_blocks()
+            if not success:
+                self._abort(f"Error al leer bloques: {blocks_or_msg}")
+                return
+        except Exception as e:
+            self._abort(f"Error de comunicación con Helix: {str(e)}")
             return
             
         cab_block = next((b for b in blocks_or_msg if b.get('category') in ['Cab', 'Impulse Response', 'IR']), None)
@@ -371,12 +440,31 @@ class HelixCabsWidget(QtWidgets.QWidget):
         self._analyze_next_combination()
 
     def _analyze_next_combination(self):
+        
+        PAUSE_LIMIT = 10
+        PAUSE_SECONDS = 7
+
         if self.is_aborting:
             self._abort("Análisis cancelado por el usuario.")
             return
             
+        self.update_progress()
+            
         if self.current_comb_index >= len(self.combinations_to_analyze):
+            self.progress_bar.setValue(100)
             self._abort(f"¡Análisis completado! ({len(self.combinations_to_analyze)} combinaciones).")
+            return
+            
+        if self.new_analyses_count > 0 and self.new_analyses_count % PAUSE_LIMIT == 0 and self.new_analyses_count > getattr(self, 'last_refresh_count', 0):
+            self.last_refresh_count = self.new_analyses_count
+            self.log(f"--- [Lote Seguro] Pausando por {PAUSE_SECONDS} segundos para estabilizar la pedalera... ---")
+            if getattr(self, 'batch_connection', None):
+                try:
+                    self.batch_connection.disconnect(send_teardown=True)
+                except:
+                    pass
+                self.batch_connection = None
+            QtCore.QTimer.singleShot(PAUSE_SECONDS * 1000, self._resume_after_refresh)
             return
             
         comb = self.combinations_to_analyze[self.current_comb_index]
@@ -402,6 +490,9 @@ class HelixCabsWidget(QtWidgets.QWidget):
             QtCore.QTimer.singleShot(10, self._analyze_next_combination)
             return
 
+        # Start timer for new analysis
+        self.current_analysis_start_time = time.time()
+        
         msg = f"[{self.current_comb_index+1}/{len(self.combinations_to_analyze)}] ANALIZANDO: {comb['cab_name']} | Mic: {mic_id} | Pos: {pos_val} | Dist: {dist_val}"
         self.log(msg)
         
@@ -412,6 +503,28 @@ class HelixCabsWidget(QtWidgets.QWidget):
             
         QtCore.QTimer.singleShot(500, self._inject_custom_params)
             
+    def _resume_after_refresh(self):
+        if self.is_aborting:
+            self._abort("Análisis cancelado por el usuario durante la pausa.")
+            return
+            
+        self.log("--- [Lote Seguro] Reconectando Helix tras la pausa... ---")
+        from helix_connection import HelixConnection
+        self.batch_connection = HelixConnection()
+        conn_success, conn_msg = self.batch_connection.connect()
+        if not conn_success:
+            self._abort(f"Error de reconexión tras pausa: {conn_msg}")
+            return
+            
+        try:
+            self.batch_connection.perform_handshake()
+        except Exception as e:
+            self._abort(f"Error de reconexión (Handshake) tras pausa: {str(e)}")
+            return
+            
+        self._refreshing = False
+        self._analyze_next_combination()
+
     def _inject_custom_params(self):
         if self.is_aborting:
             self._abort("Análisis cancelado por el usuario.")
@@ -482,6 +595,13 @@ class HelixCabsWidget(QtWidgets.QWidget):
             self.log(f"  -> Guardado exitoso en DB.")
         except Exception as e:
             self.log(f"  -> Error guardando en DB: {e}")
+        
+        # Actualizar tiempos de ETA
+        if self.current_analysis_start_time:
+            elapsed = time.time() - self.current_analysis_start_time
+            self.new_analyses_count += 1
+            self.total_time_new_analyses += elapsed
+            self.current_analysis_start_time = None
         
         self.current_comb_index += 1
         QtCore.QTimer.singleShot(500, self._analyze_next_combination)
