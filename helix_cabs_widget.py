@@ -30,16 +30,28 @@ class CheckableListWidget(QtWidgets.QListWidget):
         """)
 
     def on_item_clicked(self, item):
+        if not (item.flags() & QtCore.Qt.ItemFlag.ItemIsEnabled): return
+        if not (item.flags() & QtCore.Qt.ItemFlag.ItemIsUserCheckable): return
         state = QtCore.Qt.CheckState.Checked if item.checkState() == QtCore.Qt.CheckState.Unchecked else QtCore.Qt.CheckState.Unchecked
         item.setCheckState(state)
 
     def on_item_double_clicked(self, item):
         if self.count() == 0: return
         
-        target_state = QtCore.Qt.CheckState.Checked if self.item(0).checkState() == QtCore.Qt.CheckState.Unchecked else QtCore.Qt.CheckState.Unchecked
+        target_state = None
+        for i in range(self.count()):
+            list_item = self.item(i)
+            if list_item.flags() & QtCore.Qt.ItemFlag.ItemIsEnabled:
+                target_state = QtCore.Qt.CheckState.Checked if list_item.checkState() == QtCore.Qt.CheckState.Unchecked else QtCore.Qt.CheckState.Unchecked
+                break
+                
+        if target_state is None:
+            return
         
         for i in range(self.count()):
             list_item = self.item(i)
+            if not (list_item.flags() & QtCore.Qt.ItemFlag.ItemIsEnabled):
+                continue
             if self.ignore_custom and list_item.text() == "Custom":
                 if not self.custom_has_value and target_state == QtCore.Qt.CheckState.Checked:
                     continue
@@ -207,7 +219,15 @@ class HelixCabsWidget(QtWidgets.QWidget):
             QPushButton:disabled { background-color: #555; color: #888; }
         """)
         self.btn_analyze.clicked.connect(self.start_analysis)
-        controls_layout.addWidget(self.btn_analyze)
+        self.chk_hide_completed = QtWidgets.QCheckBox("Omitir combinaciones ya analizadas")
+        self.chk_hide_completed.setChecked(True)
+        self.chk_hide_completed.setStyleSheet("color: #AAA;")
+        self.chk_hide_completed.toggled.connect(self.update_completed_filters)
+        
+        btn_chk_layout = QtWidgets.QVBoxLayout()
+        btn_chk_layout.addWidget(self.btn_analyze)
+        btn_chk_layout.addWidget(self.chk_hide_completed)
+        controls_layout.addLayout(btn_chk_layout)
         
         # Barra de progreso y ETA
         progress_layout = QtWidgets.QVBoxLayout()
@@ -321,8 +341,10 @@ class HelixCabsWidget(QtWidgets.QWidget):
                 self.list_mics.addItem(item)
                 
             conn.close()
+            
+            self.update_completed_filters()
         except Exception as e:
-            print(f"Error loading DB data: {e}")
+            self.log(f"Error cargando DB: {e}")
 
     def generate_combinations(self):
         sel_cabs = []
@@ -371,6 +393,11 @@ class HelixCabsWidget(QtWidgets.QWidget):
                         })
 
     def start_analysis(self):
+        if getattr(self, 'pause_timer', None) and self.pause_timer.isActive():
+            self.pause_timer.stop()
+            self._abort("Análisis cancelado por el usuario durante la pausa.")
+            return
+
         if self.is_analyzing:
             self.is_aborting = True
             self.log("Cancelando el análisis...")
@@ -441,8 +468,8 @@ class HelixCabsWidget(QtWidgets.QWidget):
 
     def _analyze_next_combination(self):
         
-        PAUSE_LIMIT = 10
-        PAUSE_SECONDS = 7
+        PAUSE_LIMIT = 50
+        PAUSE_SECONDS = 5
 
         if self.is_aborting:
             self._abort("Análisis cancelado por el usuario.")
@@ -457,14 +484,7 @@ class HelixCabsWidget(QtWidgets.QWidget):
             
         if self.new_analyses_count > 0 and self.new_analyses_count % PAUSE_LIMIT == 0 and self.new_analyses_count > getattr(self, 'last_refresh_count', 0):
             self.last_refresh_count = self.new_analyses_count
-            self.log(f"--- [Lote Seguro] Pausando por {PAUSE_SECONDS} segundos para estabilizar la pedalera... ---")
-            if getattr(self, 'batch_connection', None):
-                try:
-                    self.batch_connection.disconnect(send_teardown=True)
-                except:
-                    pass
-                self.batch_connection = None
-            QtCore.QTimer.singleShot(PAUSE_SECONDS * 1000, self._resume_after_refresh)
+            self._abort(f"Reiniciando automáticamente en {PAUSE_SECONDS} segundos para estabilizar la pedalera", is_pause=True, pause_seconds=PAUSE_SECONDS)
             return
             
         comb = self.combinations_to_analyze[self.current_comb_index]
@@ -606,25 +626,12 @@ class HelixCabsWidget(QtWidgets.QWidget):
         self.current_comb_index += 1
         QtCore.QTimer.singleShot(500, self._analyze_next_combination)
 
-    def _abort(self, message):
+    def _abort(self, message, is_pause=False, pause_seconds=0):
         self.is_analyzing = False
         self.is_aborting = False
-        self.btn_analyze.setText(" Iniciar Análisis")
-        self.btn_analyze.setIcon(qta.icon('fa5s.play', color='white'))
-        self.btn_analyze.setStyleSheet("""
-            QPushButton {
-                background-color: #00ADB5;
-                color: white;
-                font-weight: bold;
-                border-radius: 4px;
-                padding: 5px 15px;
-            }
-            QPushButton:hover { background-color: #00939A; }
-            QPushButton:disabled { background-color: #555; color: #888; }
-        """)
-        self.btn_analyze.setEnabled(True)
-        self.log(f"STATUS: {message}")
         self.analyzer.analyzer_active = False
+        
+        self.update_completed_filters()
         
         if self.batch_connection:
             try:
@@ -632,3 +639,164 @@ class HelixCabsWidget(QtWidgets.QWidget):
             except:
                 pass
             self.batch_connection = None
+            
+        if is_pause:
+            self.is_analyzing = True
+            self.log(f"--- [Lote Seguro] {message} ---")
+            self.btn_analyze.setText(f" Cancelar Pausa ({pause_seconds}s)...")
+            self.btn_analyze.setIcon(qta.icon('fa5s.stop', color='white'))
+            self.btn_analyze.setStyleSheet("""
+                QPushButton {
+                    background-color: #E74C3C;
+                    color: white;
+                    font-weight: bold;
+                    border-radius: 4px;
+                    padding: 5px 15px;
+                }
+                QPushButton:hover { background-color: #C0392B; }
+            """)
+            self.btn_analyze.setEnabled(True)
+            self.pause_timer = QtCore.QTimer()
+            self.pause_timer.setSingleShot(True)
+            self.pause_timer.timeout.connect(self._resume_from_pause)
+            self.pause_timer.start(pause_seconds * 1000)
+        else:
+            self.log(f"STATUS: {message}")
+            self.btn_analyze.setText(" Iniciar Análisis")
+            self.btn_analyze.setIcon(qta.icon('fa5s.play', color='white'))
+            self.btn_analyze.setStyleSheet("""
+                QPushButton {
+                    background-color: #00ADB5;
+                    color: white;
+                    font-weight: bold;
+                    border-radius: 4px;
+                    padding: 5px 15px;
+                }
+                QPushButton:hover { background-color: #00939A; }
+                QPushButton:disabled { background-color: #555; color: #888; }
+            """)
+            self.btn_analyze.setEnabled(True)
+
+    def _resume_from_pause(self):
+        self.is_analyzing = False
+        self.start_analysis()
+
+    def update_completed_filters(self):
+        try:
+            conn = sqlite3.connect(DB_PATH)
+            c = conn.cursor()
+            c.execute("SELECT cab_id, mic_id, position, distance FROM cabs_frequency_response")
+            existing = set(c.fetchall())
+            conn.close()
+        except:
+            existing = set()
+            
+        hide = self.chk_hide_completed.isChecked()
+        
+        all_cabs = []
+        for i in range(self.list_cabs.count()):
+            all_cabs.append(self.list_cabs.item(i).data(QtCore.Qt.ItemDataRole.UserRole))
+            
+        all_mics = []
+        for i in range(self.list_mics.count()):
+            all_mics.append(self.list_mics.item(i).data(QtCore.Qt.ItemDataRole.UserRole))
+            
+        all_pos_types = ["Center", "Cap Edge", "Mid-Cone"]
+        all_dists = [1.0, 3.5, 8.0]
+        
+        def get_p_val(cab, pt):
+            if pt == "Center": return 0.0
+            if pt == "Cap Edge": return cab["cap_edge"]
+            return cab["cap_edge"] + ((10.0 - cab["cap_edge"]) / 2.0)
+            
+        def set_item_state(item, complete):
+            if complete and hide:
+                item.setCheckState(QtCore.Qt.CheckState.Unchecked)
+                item.setFlags(item.flags() & ~QtCore.Qt.ItemFlag.ItemIsUserCheckable & ~QtCore.Qt.ItemFlag.ItemIsEnabled)
+                item.setForeground(QtGui.QBrush(QtGui.QColor("#555555")))
+            else:
+                item.setFlags(item.flags() | QtCore.Qt.ItemFlag.ItemIsUserCheckable | QtCore.Qt.ItemFlag.ItemIsEnabled)
+                item.setForeground(QtGui.QBrush(QtGui.QColor("white")))
+
+        # Cabs
+        for i in range(self.list_cabs.count()):
+            item = self.list_cabs.item(i)
+            cab = item.data(QtCore.Qt.ItemDataRole.UserRole)
+            if not hide:
+                set_item_state(item, False)
+                continue
+                
+            complete = True
+            for m in all_mics:
+                for pt in all_pos_types:
+                    p_val = round(get_p_val(cab, pt), 1)
+                    for d in all_dists:
+                        if (cab["cab_id"], m, p_val, round(d, 1)) not in existing:
+                            complete = False
+                            break
+                    if not complete: break
+                if not complete: break
+            set_item_state(item, complete)
+            
+        # Mics
+        for i in range(self.list_mics.count()):
+            item = self.list_mics.item(i)
+            m_id = item.data(QtCore.Qt.ItemDataRole.UserRole)
+            if not hide:
+                set_item_state(item, False)
+                continue
+                
+            complete = True
+            for cab in all_cabs:
+                for pt in all_pos_types:
+                    p_val = round(get_p_val(cab, pt), 1)
+                    for d in all_dists:
+                        if (cab["cab_id"], m_id, p_val, round(d, 1)) not in existing:
+                            complete = False
+                            break
+                    if not complete: break
+                if not complete: break
+            set_item_state(item, complete)
+            
+        # Positions
+        for i in range(self.list_pos.count()):
+            item = self.list_pos.item(i)
+            pt = item.text()
+            if not hide:
+                set_item_state(item, False)
+                continue
+                
+            complete = True
+            for cab in all_cabs:
+                p_val = round(get_p_val(cab, pt), 1)
+                for m in all_mics:
+                    for d in all_dists:
+                        if (cab["cab_id"], m, p_val, round(d, 1)) not in existing:
+                            complete = False
+                            break
+                    if not complete: break
+                if not complete: break
+            set_item_state(item, complete)
+            
+        # Distances
+        for i in range(self.list_dist.count()):
+            item = self.list_dist.item(i)
+            d_txt = item.text()
+            if d_txt == "Custom": continue
+            d = round(float(d_txt), 1)
+            
+            if not hide:
+                set_item_state(item, False)
+                continue
+                
+            complete = True
+            for cab in all_cabs:
+                for pt in all_pos_types:
+                    p_val = round(get_p_val(cab, pt), 1)
+                    for m in all_mics:
+                        if (cab["cab_id"], m, p_val, d) not in existing:
+                            complete = False
+                            break
+                    if not complete: break
+                if not complete: break
+            set_item_state(item, complete)
