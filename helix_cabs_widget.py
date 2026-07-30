@@ -180,7 +180,7 @@ class HelixCabsWidget(QtWidgets.QWidget):
         dist_layout = QtWidgets.QVBoxLayout(dist_group)
         dist_layout.setContentsMargins(10, 15, 10, 10)
         self.list_dist = CheckableListWidget(ignore_custom=True)
-        for d in ["1.0", "3.5", "8.0", "Custom"]:
+        for d in ["1.0", "2.0", "3.5", "8.0", "Custom"]:
             item = QtWidgets.QListWidgetItem(d)
             item.setFlags(item.flags() | QtCore.Qt.ItemFlag.ItemIsUserCheckable)
             item.setCheckState(QtCore.Qt.CheckState.Unchecked)
@@ -388,6 +388,7 @@ class HelixCabsWidget(QtWidgets.QWidget):
                             "hex_id": cab["hex_id"],
                             "cab_name": cab["name"],
                             "mic_id": mic_id,
+                            "pos_name": pos_type,
                             "pos_val": round(pos_val, 1),
                             "dist_val": round(dist_val, 1)
                         })
@@ -469,7 +470,7 @@ class HelixCabsWidget(QtWidgets.QWidget):
     def _analyze_next_combination(self):
         
         PAUSE_LIMIT = 50
-        PAUSE_SECONDS = 5
+        PAUSE_SECONDS = 10
 
         if self.is_aborting:
             self._abort("Análisis cancelado por el usuario.")
@@ -490,7 +491,7 @@ class HelixCabsWidget(QtWidgets.QWidget):
         comb = self.combinations_to_analyze[self.current_comb_index]
         cab_id = comb["cab_id"]
         mic_id = comb["mic_id"]
-        pos_val = comb["pos_val"]
+        pos_name = comb["pos_name"]
         dist_val = comb["dist_val"]
         
         conn = sqlite3.connect(DB_PATH)
@@ -498,12 +499,12 @@ class HelixCabsWidget(QtWidgets.QWidget):
         c.execute('''
             SELECT response_data FROM cabs_frequency_response 
             WHERE cab_id=? AND mic_id=? AND position=? AND distance=?
-        ''', (cab_id, mic_id, pos_val, dist_val))
+        ''', (cab_id, mic_id, pos_name, dist_val))
         row = c.fetchone()
         conn.close()
         
         if row and row[0]:
-            msg = f"[{self.current_comb_index+1}/{len(self.combinations_to_analyze)}] OMITIDO (Caché DB): {comb['cab_name']} | Mic: {mic_id} | Pos: {pos_val} | Dist: {dist_val}"
+            msg = f"[{self.current_comb_index+1}/{len(self.combinations_to_analyze)}] OMITIDO (Caché DB): {comb['cab_name']} | Mic: {mic_id} | Pos: {pos_name} | Dist: {dist_val}"
             self.log(msg)
                 
             self.current_comb_index += 1
@@ -513,7 +514,7 @@ class HelixCabsWidget(QtWidgets.QWidget):
         # Start timer for new analysis
         self.current_analysis_start_time = time.time()
         
-        msg = f"[{self.current_comb_index+1}/{len(self.combinations_to_analyze)}] ANALIZANDO: {comb['cab_name']} | Mic: {mic_id} | Pos: {pos_val} | Dist: {dist_val}"
+        msg = f"[{self.current_comb_index+1}/{len(self.combinations_to_analyze)}] ANALIZANDO: {comb['cab_name']} | Mic: {mic_id} | Pos: {pos_name} | Dist: {dist_val}"
         self.log(msg)
         
         ok, msg_err = self.batch_connection.write_block_model(self.cab_slot_idx, comb["hex_id"], self.cab_slot_bus)
@@ -608,7 +609,7 @@ class HelixCabsWidget(QtWidgets.QWidget):
                 INSERT OR REPLACE INTO cabs_frequency_response 
                 (cab_id, mic_id, position, distance, response_data)
                 VALUES (?, ?, ?, ?, ?)
-            ''', (comb['cab_id'], comb['mic_id'], comb['pos_val'], comb['dist_val'], data))
+            ''', (comb['cab_id'], comb['mic_id'], comb['pos_name'], comb['dist_val'], data))
             
             conn.commit()
             conn.close()
@@ -702,13 +703,8 @@ class HelixCabsWidget(QtWidgets.QWidget):
             all_mics.append(self.list_mics.item(i).data(QtCore.Qt.ItemDataRole.UserRole))
             
         all_pos_types = ["Center", "Cap Edge", "Mid-Cone"]
-        all_dists = [1.0, 3.5, 8.0]
+        all_dists = [1.0, 2.0, 3.5, 8.0]
         
-        def get_p_val(cab, pt):
-            if pt == "Center": return 0.0
-            if pt == "Cap Edge": return cab["cap_edge"]
-            return cab["cap_edge"] + ((10.0 - cab["cap_edge"]) / 2.0)
-            
         def set_item_state(item, complete):
             if complete and hide:
                 item.setCheckState(QtCore.Qt.CheckState.Unchecked)
@@ -729,9 +725,8 @@ class HelixCabsWidget(QtWidgets.QWidget):
             complete = True
             for m in all_mics:
                 for pt in all_pos_types:
-                    p_val = round(get_p_val(cab, pt), 1)
                     for d in all_dists:
-                        if (cab["cab_id"], m, p_val, round(d, 1)) not in existing:
+                        if (cab["cab_id"], m, pt, round(d, 1)) not in existing:
                             complete = False
                             break
                     if not complete: break
@@ -749,9 +744,8 @@ class HelixCabsWidget(QtWidgets.QWidget):
             complete = True
             for cab in all_cabs:
                 for pt in all_pos_types:
-                    p_val = round(get_p_val(cab, pt), 1)
                     for d in all_dists:
-                        if (cab["cab_id"], m_id, p_val, round(d, 1)) not in existing:
+                        if (cab["cab_id"], m_id, pt, round(d, 1)) not in existing:
                             complete = False
                             break
                     if not complete: break
@@ -768,10 +762,9 @@ class HelixCabsWidget(QtWidgets.QWidget):
                 
             complete = True
             for cab in all_cabs:
-                p_val = round(get_p_val(cab, pt), 1)
                 for m in all_mics:
                     for d in all_dists:
-                        if (cab["cab_id"], m, p_val, round(d, 1)) not in existing:
+                        if (cab["cab_id"], m, pt, round(d, 1)) not in existing:
                             complete = False
                             break
                     if not complete: break
@@ -792,9 +785,8 @@ class HelixCabsWidget(QtWidgets.QWidget):
             complete = True
             for cab in all_cabs:
                 for pt in all_pos_types:
-                    p_val = round(get_p_val(cab, pt), 1)
                     for m in all_mics:
-                        if (cab["cab_id"], m, p_val, d) not in existing:
+                        if (cab["cab_id"], m, pt, d) not in existing:
                             complete = False
                             break
                     if not complete: break
