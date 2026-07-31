@@ -12,12 +12,10 @@ import utils.modules
 DB_PATH = "user_data/MondoPBSuite.db"
 
 class CheckableListWidget(QtWidgets.QListWidget):
-    def __init__(self, ignore_custom=False):
+    def __init__(self):
         super().__init__()
-        self.ignore_custom = ignore_custom
         self.itemClicked.connect(self.on_item_clicked)
         self.itemDoubleClicked.connect(self.on_item_double_clicked)
-        self.custom_has_value = False
         self.setStyleSheet("""
             QListWidget {
                 background-color: transparent;
@@ -52,9 +50,6 @@ class CheckableListWidget(QtWidgets.QListWidget):
             list_item = self.item(i)
             if not (list_item.flags() & QtCore.Qt.ItemFlag.ItemIsEnabled):
                 continue
-            if self.ignore_custom and list_item.text() == "Custom":
-                if not self.custom_has_value and target_state == QtCore.Qt.CheckState.Checked:
-                    continue
             list_item.setCheckState(target_state)
             
     def resizeEvent(self, event):
@@ -179,22 +174,23 @@ class HelixCabsWidget(QtWidgets.QWidget):
         dist_group.setStyleSheet(group_style)
         dist_layout = QtWidgets.QVBoxLayout(dist_group)
         dist_layout.setContentsMargins(10, 15, 10, 10)
-        self.list_dist = CheckableListWidget(ignore_custom=True)
-        for d in ["1.0", "2.0", "3.5", "8.0", "Custom"]:
-            item = QtWidgets.QListWidgetItem(d)
+        self.list_dist = CheckableListWidget()
+        
+        # Load distances from settings.json
+        distances = [1.0, 2.0, 3.5, 8.0]
+        try:
+            with open("user_data/settings.json", "r", encoding="utf-8") as f:
+                settings_data = json.load(f)
+                distances = settings_data.get("user_preferences", {}).get("analysis_distances", distances)
+        except Exception:
+            pass
+            
+        for d in distances:
+            item = QtWidgets.QListWidgetItem(f"{d:.1f}")
             item.setFlags(item.flags() | QtCore.Qt.ItemFlag.ItemIsUserCheckable)
             item.setCheckState(QtCore.Qt.CheckState.Unchecked)
             self.list_dist.addItem(item)
         dist_layout.addWidget(self.list_dist)
-        
-        self.spin_custom_dist = QtWidgets.QDoubleSpinBox()
-        self.spin_custom_dist.setRange(1.0, 12.0)
-        self.spin_custom_dist.setSingleStep(0.1)
-        self.spin_custom_dist.setPrefix("Custom: ")
-        self.spin_custom_dist.setSuffix(" in")
-        self.spin_custom_dist.setValue(1.0)
-        self.spin_custom_dist.valueChanged.connect(self.on_custom_dist_changed)
-        dist_layout.addWidget(self.spin_custom_dist)
         
         bottom_right_layout.addWidget(dist_group)
         
@@ -309,9 +305,6 @@ class HelixCabsWidget(QtWidgets.QWidget):
         else:
             self.lbl_eta.setText("ETA: --:--")
 
-    def on_custom_dist_changed(self, value):
-        self.list_dist.custom_has_value = True
-
     def load_db_data(self):
         try:
             conn = sqlite3.connect(DB_PATH)
@@ -365,11 +358,7 @@ class HelixCabsWidget(QtWidgets.QWidget):
         sel_dists = []
         for i in range(self.list_dist.count()):
             if self.list_dist.item(i).checkState() == QtCore.Qt.CheckState.Checked:
-                txt = self.list_dist.item(i).text()
-                if txt == "Custom":
-                    sel_dists.append(self.spin_custom_dist.value())
-                else:
-                    sel_dists.append(float(txt))
+                sel_dists.append(float(self.list_dist.item(i).text()))
                     
         self.combinations_to_analyze = []
         for cab in sel_cabs:
@@ -435,6 +424,8 @@ class HelixCabsWidget(QtWidgets.QWidget):
         self.new_analyses_count = 0
         self.total_time_new_analyses = 0.0
         self.current_analysis_start_time = None
+        self.last_injected_cab_hex = None
+        self.last_injected_targets = None
         self.update_progress()
         
         self.log("Conectando y leyendo bloques de Helix...")
@@ -517,10 +508,13 @@ class HelixCabsWidget(QtWidgets.QWidget):
         msg = f"[{self.current_comb_index+1}/{len(self.combinations_to_analyze)}] ANALIZANDO: {comb['cab_name']} | Mic: {mic_id} | Pos: {pos_name} | Dist: {dist_val}"
         self.log(msg)
         
-        ok, msg_err = self.batch_connection.write_block_model(self.cab_slot_idx, comb["hex_id"], self.cab_slot_bus)
-        if not ok:
-            self._abort(f"Error al cambiar de modelo: {msg_err}")
-            return
+        if getattr(self, 'last_injected_cab_hex', None) != comb["hex_id"]:
+            ok, msg_err = self.batch_connection.write_block_model(self.cab_slot_idx, comb["hex_id"], self.cab_slot_bus)
+            if not ok:
+                self._abort(f"Error al cambiar de modelo: {msg_err}")
+                return
+            self.last_injected_cab_hex = comb["hex_id"]
+            self.last_injected_targets = None  # Forzar envío de todos los parámetros
             
         QtCore.QTimer.singleShot(500, self._inject_custom_params)
             
@@ -555,7 +549,7 @@ class HelixCabsWidget(QtWidgets.QWidget):
         
         mic_norm = comb["mic_id"] / max(1, self.total_mics_db - 1)
         pos_norm = comb["pos_val"] / 10.0
-        dist_norm = max(0.0, min(1.0, (comb["dist_val"] - 1.0) / 11.0))
+        dist_norm = comb["dist_val"]  # El parámetro de distancia en el bloque Cab usa el valor literal (1.0 a 12.0)
         
         targets = [
             {"raw": comb["mic_id"], "norm": mic_norm, "is_int": True},
@@ -563,15 +557,21 @@ class HelixCabsWidget(QtWidgets.QWidget):
             {"raw": comb["dist_val"], "norm": dist_norm, "is_int": False},
             {"raw": 0.0, "norm": 0.0, "is_int": False},
             {"raw": 0.0, "norm": 0.0, "is_int": False},
-            {"raw": 20100.0, "norm": 1.0, "is_int": False},
+            {"raw": 20100.0, "norm": 20100.0, "is_int": False},
             {"raw": 0.0, "norm": 0.0, "is_int": False}
         ]
         
+        # Enviar solo los parámetros que cambiaron respecto al análisis anterior
+        last_targets = getattr(self, 'last_injected_targets', None)
+        
         for idx, target in enumerate(targets):
-            self.batch_connection.write_block_parameter(
-                self.cab_slot_idx, idx, target_db=target["raw"], norm_val=target["norm"], is_int=target["is_int"]
-            )
-            time.sleep(0.1)
+            if last_targets is None or last_targets[idx]["raw"] != target["raw"]:
+                self.batch_connection.write_block_parameter(
+                    self.cab_slot_idx, idx, target_db=target["raw"], norm_val=target["norm"], is_int=target["is_int"]
+                )
+                time.sleep(0.1)
+                
+        self.last_injected_targets = targets
             
         QtCore.QTimer.singleShot(200, self._start_sweep)
         
@@ -775,7 +775,6 @@ class HelixCabsWidget(QtWidgets.QWidget):
         for i in range(self.list_dist.count()):
             item = self.list_dist.item(i)
             d_txt = item.text()
-            if d_txt == "Custom": continue
             d = round(float(d_txt), 1)
             
             if not hide:

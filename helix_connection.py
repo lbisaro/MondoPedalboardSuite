@@ -1073,16 +1073,6 @@ class HelixConnection:
             packet_a = self._assemble_23_write("XX", 0x04, ctr_a, seq_a, pp, param_idx, slot_bus, int(target_db))
         else:
             packet_a = self._assemble_27_write("XX", 0x04, ctr_a, seq_a, pp, param_idx, slot_bus, float_be_a)
-            
-            ctr_b = (ctr_a + 0x1f) & 0xffff
-            seq_b = (seq_a + 1) & 0xff
-            packet_b = self._assemble_27_write("XX", 0x0c, ctr_b, seq_b, pp, param_idx, slot_bus, float_be_b)
-            
-            ctr_post = (ctr_b + 0x1f) & 0xffff
-            post_packet_x80_sel = [
-                0x08, 0x00, 0x00, 0x18, 0x80, 0x10, 0xed, 0x03,
-                0x00, "XX", 0x00, 0x08, ctr_post & 0xff, (ctr_post >> 8) & 0xff, 0x00, 0x00
-            ]
         
         # Enviar secuencia con semáforo reentrante y tiempos críticos
         try:
@@ -1096,11 +1086,6 @@ class HelixConnection:
                 self.write(packet_a)
                 time.sleep(0.012)
                 
-                if not is_int:
-                    self.write(packet_b)
-                    time.sleep(0.012)
-                    self.write(post_packet_x80_sel)
-                
         except Exception as e:
             return False, f"Error durante la escritura USB: {e}"
 
@@ -1109,8 +1094,8 @@ class HelixConnection:
             self.live_write_ctr = (ctr_a + 0x1f) & 0xffff
             self.live_write_yy = (seq_a + 1) & 0xff
         else:
-            self.live_write_ctr = (ctr_post + 0x1f) & 0xffff
-            self.live_write_yy = (seq_b + 1) & 0xff
+            self.live_write_ctr = (ctr_a + 0x1f) & 0xffff
+            self.live_write_yy = (seq_a + 1) & 0xff
 
         return True, "Parámetro modificado exitosamente."
 

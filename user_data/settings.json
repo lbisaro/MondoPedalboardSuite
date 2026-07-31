@@ -4,7 +4,13 @@
         "smoothing": "1/12 Octave",
         "analyzer_mode": "Exponential Sine Sweep",
         "send_level_db": -25.0,
-        "calib_db": 5.914241790771484
+        "calib_db": 5.914241790771484,
+        "analysis_distances": [
+            1.0,
+            2.0,
+            3.5,
+            8.0
+        ]
     },
     "connection": {
         "driver_name": "ASIO",
